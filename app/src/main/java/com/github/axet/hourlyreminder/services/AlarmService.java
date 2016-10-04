@@ -163,7 +163,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         for (Alarm a : alarms) {
             if (a.time == time && a.enable) {
                 if (a.weekdaysCheck) {
-                    // be safe for another timezone. if we moved we better call setNext()
+                    // be safe for another timezone. if we moved we better call setNext().
+                    // but here we have to jump over next alarm.
                     a.setTomorrow();
                 } else {
                     a.setEnable(false);

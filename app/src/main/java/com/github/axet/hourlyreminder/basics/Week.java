@@ -41,6 +41,11 @@ public class Week {
     // (may be incorrect if user moved from one time zone to anoter)
     public long time;
 
+    // we have to keep original hours/minutes to proper handle time zone shifts
+
+    int hour;
+    int min;
+
     public Week(Context context) {
         this.context = context;
     }
@@ -241,6 +246,10 @@ public class Week {
     }
 
     public void setTime(long l) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(l);
+        this.hour = cal.get(Calendar.HOUR_OF_DAY);
+        this.min = cal.get(Calendar.MINUTE);
         this.time = l;
     }
 
@@ -248,13 +257,15 @@ public class Week {
     public void setTime(int hour, int min) {
         Calendar cur = Calendar.getInstance();
 
+        this.hour = hour;
+        this.min = min;
+
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, hour);
         cal.set(Calendar.MINUTE, min);
+        cal.getTimeInMillis();
 
-        this.time = cal.getTimeInMillis();
-
-        time = getAlarmTime(cal, cur);
+        this.time = getAlarmTime(cal, cur);
     }
 
     // move alarm to the next day (tomorrow)
@@ -263,10 +274,10 @@ public class Week {
     public void setTomorrow() {
         Calendar cur = Calendar.getInstance();
 
-        Calendar m = Calendar.getInstance();
-        m.setTimeInMillis(time);
-        int hour = m.get(Calendar.HOUR_OF_DAY);
-        int min = m.get(Calendar.MINUTE);
+//        Calendar m = Calendar.getInstance();
+//        m.setTimeInMillis(time);
+//        int hour = m.get(Calendar.HOUR_OF_DAY);
+//        int min = m.get(Calendar.MINUTE);
 
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, hour);
@@ -282,10 +293,10 @@ public class Week {
     public void setNext() {
         Calendar cur = Calendar.getInstance();
 
-        Calendar m = Calendar.getInstance();
-        m.setTimeInMillis(time);
-        int hour = m.get(Calendar.HOUR_OF_DAY);
-        int min = m.get(Calendar.MINUTE);
+//        Calendar m = Calendar.getInstance();
+//        m.setTimeInMillis(time);
+//        int hour = m.get(Calendar.HOUR_OF_DAY);
+//        int min = m.get(Calendar.MINUTE);
 
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, hour);

@@ -84,6 +84,12 @@ public class Alarm extends Week {
             Alarm a = this;
             a.id = o.getLong("id");
             a.time = o.getLong("time");
+            try {
+                a.hour = o.getInt("hour");
+                a.min = o.getInt("min");
+            } catch (JSONException e) { // <=1.4.5
+                setTime(a.time);
+            }
             a.enable = o.getBoolean("enable");
             a.weekdaysCheck = o.getBoolean("weekdays");
             a.setWeekDaysProperty(o.getJSONArray("weekdays_values"));
@@ -91,7 +97,7 @@ public class Alarm extends Week {
             a.ringtoneValue = o.getString("ringtone_value");
             a.beep = o.getBoolean("beep");
             a.speech = o.getBoolean("speech");
-        }catch(JSONException e) {
+        } catch (JSONException e) {
             throw new RuntimeException(e);
         }
     }
@@ -151,16 +157,16 @@ public class Alarm extends Week {
     }
 
     public int getHour() {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(time);
-        int hour = cal.get(Calendar.HOUR_OF_DAY);
+//        Calendar cal = Calendar.getInstance();
+//        cal.setTimeInMillis(time);
+//        int hour = cal.get(Calendar.HOUR_OF_DAY);
         return hour;
     }
 
     public int getMin() {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(time);
-        int min = cal.get(Calendar.MINUTE);
+//        Calendar cal = Calendar.getInstance();
+//        cal.setTimeInMillis(time);
+//        int min = cal.get(Calendar.MINUTE);
         return min;
     }
 
@@ -170,6 +176,8 @@ public class Alarm extends Week {
             JSONObject o = new JSONObject();
             o.put("id", a.id);
             o.put("time", a.time);
+            o.put("hour", a.hour);
+            o.put("min", a.min);
             o.put("enable", a.enable);
             o.put("weekdays", a.weekdaysCheck);
             o.put("weekdays_values", new JSONArray(a.getWeekDaysProperty()));
