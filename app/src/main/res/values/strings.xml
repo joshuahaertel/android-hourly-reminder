@@ -223,7 +223,8 @@
     <string name="Reminder">Reminder</string>
     <string name="Reminders15">Set reminders repeat 15 min, check \'reminders\'.</string>
 
-    <string name="UpcomingAlarm">Upcoming alarm</string>
+    <string name="UpcomingAlarm">Upcoming Alarm...</string>
+    <string name="UpcomingChime">Upcoming Chime...</string>
     <string name="Cancel">Cancel</string>
 
     <string name="Alarm">Alarm</string>
