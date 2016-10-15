@@ -4,10 +4,8 @@ import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
@@ -214,7 +212,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             updateNotificationUpcomingAlarm(0);
         } else {
             long time = all.first();
-
             updateNotificationUpcomingAlarm(time);
         }
 
@@ -315,6 +312,23 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
     }
 
+    boolean isAlarm(long time) {
+        for (Alarm a : alarms) {
+            if (a.time == time && a.getEnable())
+                return true;
+        }
+        return false;
+    }
+
+    boolean isReminder(long time) {
+        for (Reminder r : reminders) {
+            if (r.time == time && r.enabled) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // show notification_upcoming. (about upcoming alarm)
     //
     // time - 0 cancel notifcation
@@ -338,6 +352,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
             String subject = getString(R.string.UpcomingAlarm);
+            if (isReminder(time))
+                subject = getString(R.string.UpcomingChime);
             String text = Alarm.format(this, time);
 
             RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(getBaseContext(), R.layout.notification_alarm_light, R.layout.notification_alarm_dark));

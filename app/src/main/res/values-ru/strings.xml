@@ -45,7 +45,8 @@
     <string name="ToastTime">Текущее время %1$s</string>
     <string name="Today">Сегодня</string>
     <string name="Tomorrow">Завтра</string>
-    <string name="UpcomingAlarm">Оповещение Будильник</string>
+    <string name="UpcomingAlarm">Будильник через...</string>
+    <string name="UpcomingChime">Оповещение через...</string>
 
     <string-array name="weekdays_text">
         <item>Пн</item>
