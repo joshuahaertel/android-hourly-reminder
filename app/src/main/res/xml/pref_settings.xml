@@ -34,7 +34,7 @@
     <SwitchPreferenceCompat
         android:defaultValue="true"
         android:key="alarm"
-        android:summary="Use 'alarm' event type for hourly reminders (more precise on timing)"
+        android:summary="Use 'alarm' event type for hourly reminders (more precise on timing, and power saving mode)"
         android:title="Exact Timing" />
 
     <SwitchPreferenceCompat
