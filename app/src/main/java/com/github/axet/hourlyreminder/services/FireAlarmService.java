@@ -33,6 +33,7 @@ import com.github.axet.hourlyreminder.basics.Alarm;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.TreeSet;
 
 public class FireAlarmService extends Service implements SensorEventListener {
     public static final String TAG = FireAlarmService.class.getSimpleName();
@@ -179,9 +180,15 @@ public class FireAlarmService extends Service implements SensorEventListener {
         } else {
             alarm = getAlarm(intent);
 
+            String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
+
             if (alarm == null) { // started without alarm
-                String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
                 alarm = new Alarm(this, json);
+            } else { // alarm loaded, does it interference with current running alarm?
+                if (!json.isEmpty()) { // yep, we already firering alarm, show missed
+                    Alarm a = new Alarm(this, json);
+                    showNotificationMissed(this, a);
+                }
             }
 
             SharedPreferences.Editor editor = shared.edit();
@@ -343,29 +350,27 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     // show notification about missed alarm
     public static void showNotificationMissed(Context context, Alarm a) {
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
-        int auto = ALARM_AUTO_OFF;
-        if (m > 0)
-            auto = ALARM_SNOOZE_AUTO_OFF;
-
-        final Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, a.getHour());
-        cal.set(Calendar.MINUTE, a.getMin());
-        cal.add(Calendar.MINUTE, auto);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-
-        long time = cal.getTimeInMillis();
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
 
-        if (time == 0) {
+        if (a == null) {
             notificationManager.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
         } else {
-            Calendar c = Calendar.getInstance();
-            c.setTimeInMillis(time);
-            int hour = c.get(Calendar.HOUR_OF_DAY);
-            int min = c.get(Calendar.MINUTE);
+            final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+            Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+            int auto = ALARM_AUTO_OFF;
+            if (m > 0)
+                auto = ALARM_SNOOZE_AUTO_OFF;
+
+            final Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, a.getHour());
+            cal.set(Calendar.MINUTE, a.getMin());
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            cal.add(Calendar.MINUTE, auto);
+            long time = cal.getTimeInMillis();
+
+            int hour = a.getHour();
+            int min = a.getMin();
 
             PendingIntent main = PendingIntent.getActivity(context, 0,
                     new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", time),
@@ -439,6 +444,15 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     public static void snooze(Context context, long time) {
         List<Alarm> list = HourlyApplication.loadAlarms(context);
+
+        // create old list, we need to check conflicts with old alarms only, not shifted
+        TreeSet<Long> alarms = new TreeSet<>();
+        for (Alarm a : list) {
+            if (a.enabled)
+                alarms.add(a.time);
+        }
+        long old = alarms.first();
+
         for (Alarm a : list) {
             if (a.time == time) { // can be disabled
                 boolean b = a.enabled;
@@ -447,14 +461,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 boolean done = false;
 
                 if (!done) {
-                    for (Alarm aa : list) {
-                        if (aa == a) // skip self
-                            continue;
-                        if (aa.time == a.time && aa.enabled) { // did we hit another enabled alarm? exit
-                            FireAlarmService.showNotificationMissed(context, a);
-                            a.setEnable(b); // enable && setNext
-                            done = true;
-                        }
+                    if (a.time >= old) { // did we hit another enabled alarm? stop snooze
+                        FireAlarmService.showNotificationMissed(context, a);
+                        a.setEnable(b); // enable && setNext
+                        done = true;
                     }
                 }
 
@@ -462,9 +472,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
                     final Calendar cur = Calendar.getInstance();
                     cur.setTimeInMillis(a.time);
 
-                    if (dismiss(context, cur, a)) {
+                    if (dismiss(context, cur, a)) { // outdated by snooze timeout?
                         FireAlarmService.showNotificationMissed(context, a);
                         a.setEnable(b); // enable && setNext
+                        done = true;
                     }
                 }
             }
