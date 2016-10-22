@@ -145,7 +145,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     // create list for alarms. 'time' list for alarms (hronological order)
-    public TreeSet<Long> generateAlarms(Calendar cur) {
+    public TreeSet<Long> generateAlarms() {
         TreeSet<Long> alarms = new TreeSet<>();
 
         for (Alarm a : this.alarms) {
@@ -202,7 +202,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             all.addAll(reminders);
         }
         // check alarms
-        alarms = generateAlarms(cur);
+        alarms = generateAlarms();
         all.addAll(alarms);
 
         Intent alarmIntent = new Intent(this, AlarmService.class).setAction(ALARM);
