@@ -14,8 +14,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class Reminder extends Week {
-    public boolean enabled;
-
     public Reminder(Context context) {
         super(context);
 

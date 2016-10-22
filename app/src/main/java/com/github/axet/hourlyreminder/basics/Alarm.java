@@ -1,10 +1,10 @@
 package com.github.axet.hourlyreminder.basics;
 
 import android.content.Context;
-import android.content.res.Configuration;
-import android.content.res.Resources;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.text.format.DateFormat;
 
 import com.github.axet.hourlyreminder.app.HourlyApplication;
@@ -19,15 +19,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Locale;
 
 public class Alarm extends Week {
     public final static Uri DEFAULT_RING = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 
     // unique id
     public long id;
-    // enabled?
-    public boolean enable;
     // alarm with ringtone?
     public boolean ringtone;
     // uri or file
@@ -48,13 +45,9 @@ public class Alarm extends Week {
     }
 
     public Alarm(Alarm copy) {
-        super(copy.context);
+        super(copy);
 
         id = copy.id;
-        time = copy.time;
-        enable = copy.enable;
-        weekdaysCheck = copy.weekdaysCheck;
-        weekDaysValues = new ArrayList<>(copy.weekDaysValues);
         ringtone = copy.ringtone;
         ringtoneValue = copy.ringtoneValue;
         beep = copy.beep;
@@ -66,7 +59,7 @@ public class Alarm extends Week {
 
         this.id = System.currentTimeMillis();
 
-        enable = false;
+        enabled = false;
         weekdaysCheck = true;
         weekDaysValues = new ArrayList<>(Arrays.asList(Week.EVERYDAY));
         ringtone = false;
@@ -90,11 +83,11 @@ public class Alarm extends Week {
             } catch (JSONException e) { // <=1.4.5
                 setTime(a.time);
             }
-            a.enable = o.getBoolean("enable");
+            a.enabled = o.getBoolean("enable");
             a.weekdaysCheck = o.getBoolean("weekdays");
             a.setWeekDaysProperty(o.getJSONArray("weekdays_values"));
             a.ringtone = o.getBoolean("ringtone");
-            a.ringtoneValue = o.getString("ringtone_value");
+            a.ringtoneValue = o.optString("ringtone_value", null);
             a.beep = o.getBoolean("beep");
             a.speech = o.getBoolean("speech");
         } catch (JSONException e) {
@@ -105,11 +98,10 @@ public class Alarm extends Week {
     public Alarm(Context context, long time) {
         this(context);
 
-        this.enable = true;
+        this.enabled = true;
         this.beep = true;
         this.weekdaysCheck = false;
         this.ringtone = true;
-
 
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(time);
@@ -124,68 +116,67 @@ public class Alarm extends Week {
         return f.format(new Date(time));
     }
 
-    public static String format(Context context, long time) {
+    public String format() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, min);
         if (DateFormat.is24HourFormat(context)) {
             SimpleDateFormat f = new SimpleDateFormat("HH:mm");
-            return f.format(new Date(time));
+            return f.format(cal.getTime());
         } else {
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(time);
-            int hour = cal.get(Calendar.HOUR_OF_DAY);
-
-            Resources res = context.getResources();
-            Configuration conf = res.getConfiguration();
-            Locale locale = conf.locale;
-
             SimpleDateFormat f = new SimpleDateFormat("h:mm");
-            return f.format(new Date(time)) + " " + HourlyApplication.getHourString(context, locale, hour);
+            return f.format(cal.getTime());
         }
     }
 
-    public String format() {
-        return format(context, time);
-    }
-
     public void setEnable(boolean e) {
-        this.enable = e;
+        this.enabled = e;
         if (e)
             setNext();
     }
 
     public boolean getEnable() {
-        return enable;
+        return enabled;
+    }
+
+    // move current alarm +10 mins
+    public void snooze() {
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        String min = shared.getString(HourlyApplication.PREFERENCE_SNOOZE_DELAY, "10");
+        Integer m = Integer.parseInt(min);
+
+        enabled = true;
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, m);
+        time = cal.getTimeInMillis();
+    }
+
+    public boolean isSnoozed() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(time);
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int min = cal.get(Calendar.MINUTE);
+        return hour != this.hour || min != this.min;
     }
 
     public int getHour() {
-//        Calendar cal = Calendar.getInstance();
-//        cal.setTimeInMillis(time);
-//        int hour = cal.get(Calendar.HOUR_OF_DAY);
         return hour;
     }
 
     public int getMin() {
-//        Calendar cal = Calendar.getInstance();
-//        cal.setTimeInMillis(time);
-//        int min = cal.get(Calendar.MINUTE);
         return min;
     }
 
-    public String save() {
+    public JSONObject save() {
         try {
             Alarm a = this;
-            JSONObject o = new JSONObject();
-            o.put("id", a.id);
-            o.put("time", a.time);
-            o.put("hour", a.hour);
-            o.put("min", a.min);
-            o.put("enable", a.enable);
-            o.put("weekdays", a.weekdaysCheck);
-            o.put("weekdays_values", new JSONArray(a.getWeekDaysProperty()));
+            JSONObject o = super.save();
+            o.put("id", this.id);
             o.put("ringtone", a.ringtone);
             o.put("ringtone_value", a.ringtoneValue);
             o.put("beep", a.beep);
             o.put("speech", a.speech);
-            return o.toString();
+            return o;
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

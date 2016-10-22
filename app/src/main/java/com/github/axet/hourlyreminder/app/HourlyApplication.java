@@ -20,6 +20,7 @@ import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.Week;
 import com.github.axet.hourlyreminder.services.AlarmService;
+import com.github.axet.hourlyreminder.services.FireAlarmService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -78,6 +79,8 @@ public class HourlyApplication extends Application {
 
     public static final String PREFERENCE_ACTIVE_ALARM= "active_alarm";
 
+    public static final String PREFERENCE_SNOOZE_AFTER= "snooze_after";
+    public static final String PREFERENCE_SNOOZE_DELAY= "snooze_time";
 
     static HashMap<Uri, String> titles = new HashMap<>();
 
@@ -107,6 +110,8 @@ public class HourlyApplication extends Application {
             edit.putInt(PREFERENCE_VERSION, VERSION);
             edit.commit();
         }
+
+        FireAlarmService.startIfActive(this);
     }
 
     public static int getActionbarColor(Context context) {
@@ -215,7 +220,7 @@ public class HourlyApplication extends Application {
             }
             ids.add(a.id);
 
-            edit.putString(PREFERENCE_ALARMS_PREFIX + i, a.save());
+            edit.putString(PREFERENCE_ALARMS_PREFIX + i, a.save().toString());
         }
         edit.commit();
 
@@ -255,7 +260,7 @@ public class HourlyApplication extends Application {
     }
 
     public static void toastAlarmSet(Context context, Alarm a) {
-        if (!a.enable) {
+        if (!a.enabled) {
             Toast.makeText(context, context.getString(R.string.alarm_disabled), Toast.LENGTH_SHORT).show();
             return;
         }

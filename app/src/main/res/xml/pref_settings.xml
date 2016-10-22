@@ -16,6 +16,26 @@
         android:title="Increasing Alarm Volume" />
 
     <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/snooze_after_text"
+        android:entryValues="@array/snooze_after_values"
+        android:key="snooze_after"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:summary="Set snooze time after minutes"
+        android:title="Alarm Snooze After..." />
+
+    <ListPreference
+        android:defaultValue="10"
+        android:entries="@array/snooze_text"
+        android:entryValues="@array/snooze_values"
+        android:key="snooze_time"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:summary="Set snooze time minutes"
+        android:title="Alarm Snooze Minutes..." />
+
+    <ListPreference
         android:defaultValue=""
         android:entries="@array/languages_text"
         android:entryValues="@array/languages_values"

@@ -82,6 +82,22 @@
         <item>5 сек</item>
     </string-array>
 
+    <string-array name="snooze_after_text">
+        <item>Off</item>
+        <item>1 мин</item>
+        <item>2 мин</item>
+        <item>3 мин</item>
+        <item>4 мин</item>
+        <item>5 мин</item>
+    </string-array>
+
+    <string-array name="snooze_text">
+        <item>5 мин</item>
+        <item>10 мин</item>
+        <item>15 мин</item>
+        <item>20 мин</item>
+    </string-array>
+
     <string-array name="themes_text">
         <item>Тема Светлый (по умолчанию)</item>
         <item>Тема Темный</item>
@@ -149,4 +165,6 @@
 
     <string name="reset">Сброс</string>
     <string name="play">Слушать</string>
+    <string name="snoozed">Повтор</string>
+    <string name="snooze">Отложить</string>
 </resources>

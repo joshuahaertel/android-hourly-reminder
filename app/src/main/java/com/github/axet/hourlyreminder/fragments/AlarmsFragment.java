@@ -414,7 +414,7 @@ public class AlarmsFragment extends Fragment implements ListAdapter, AbsListView
                     public void onClick(View v) {
                         long time = a.time;
                         a.setWeek(week, child.isChecked());
-                        if (a.time != time && a.enable) {
+                        if (a.time != time && a.enabled) {
                             HourlyApplication.toastAlarmSet(getActivity(), a);
                         }
                         save(a);
@@ -579,7 +579,7 @@ public class AlarmsFragment extends Fragment implements ListAdapter, AbsListView
                     Runnable r = new Runnable() {
                         @Override
                         public void run() {
-                            if (a.enable)
+                            if (a.enabled)
                                 HourlyApplication.toastAlarmSet(getActivity(), a);
                             updateTime(view, a);
                             save(a);
@@ -732,23 +732,17 @@ public class AlarmsFragment extends Fragment implements ListAdapter, AbsListView
         TextView am = (TextView) view.findViewById(R.id.alarm_am);
         TextView pm = (TextView) view.findViewById(R.id.alarm_pm);
 
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(a.getTime());
-        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int hour = a.getHour();
 
         am.setText(HourlyApplication.getHourString(getActivity(), hour));
         pm.setText(HourlyApplication.getHourString(getActivity(), hour));
 
-        if (DateFormat.is24HourFormat(getActivity())) {
-            SimpleDateFormat f = new SimpleDateFormat("HH:mm");
-            time.setText(f.format(new Date(a.time)));
+        time.setText(a.format());
 
+        if (DateFormat.is24HourFormat(getActivity())) {
             am.setVisibility(View.GONE);
             pm.setVisibility(View.GONE);
         } else {
-            SimpleDateFormat f = new SimpleDateFormat("h:mm");
-            time.setText(f.format(new Date(a.time)));
-
             am.setVisibility(a.getHour() >= 12 ? View.GONE : View.VISIBLE);
             pm.setVisibility(a.getHour() >= 12 ? View.VISIBLE : View.GONE);
         }

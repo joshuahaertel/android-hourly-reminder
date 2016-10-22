@@ -1,16 +1,23 @@
 package com.github.axet.hourlyreminder.basics;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.text.format.DateFormat;
 
 import com.github.axet.hourlyreminder.R;
+import com.github.axet.hourlyreminder.app.HourlyApplication;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -32,6 +39,8 @@ public class Week {
 
     public Context context;
 
+    // enabled?
+    public boolean enabled;
     // alarm on selected weekdays only
     public boolean weekdaysCheck;
     // weekday values
@@ -40,14 +49,23 @@ public class Week {
     //
     // (may be incorrect if user moved from one time zone to anoter)
     public long time;
-
     // we have to keep original hours/minutes to proper handle time zone shifts
-
     int hour;
     int min;
 
     public Week(Context context) {
         this.context = context;
+    }
+
+    public Week(Week copy) {
+        this.context = copy.context;
+
+        enabled = copy.enabled;
+        time = copy.time;
+        hour = copy.hour;
+        min = copy.min;
+        weekdaysCheck = copy.weekdaysCheck;
+        weekDaysValues = new ArrayList<>(copy.weekDaysValues);
     }
 
     // keep proper order week days
@@ -369,6 +387,39 @@ public class Week {
                 cal.set(Calendar.MILLISECOND, 0);
                 return cal.getTimeInMillis();
             }
+        }
+    }
+
+    public static String format(Context context, long time) {
+        if (DateFormat.is24HourFormat(context)) {
+            SimpleDateFormat f = new SimpleDateFormat("HH:mm");
+            return f.format(new Date(time));
+        } else {
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(time);
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+
+            Resources res = context.getResources();
+            Configuration conf = res.getConfiguration();
+            Locale locale = conf.locale;
+
+            SimpleDateFormat f = new SimpleDateFormat("h:mm");
+            return f.format(new Date(time)) + " " + HourlyApplication.getHourString(context, locale, hour);
+        }
+    }
+
+    public JSONObject save() {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("time", this.time);
+            o.put("hour", this.hour);
+            o.put("min", this.min);
+            o.put("enable", this.enabled);
+            o.put("weekdays", this.weekdaysCheck);
+            o.put("weekdays_values", new JSONArray(this.getWeekDaysProperty()));
+            return o;
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
     }
 }
