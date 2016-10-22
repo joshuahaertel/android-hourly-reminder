@@ -22,6 +22,8 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.widgets.BeepDialogFragment;
 
+import java.io.IOException;
+
 public class Sound extends TTS {
     public static final String TAG = Sound.class.getSimpleName();
 
@@ -317,9 +319,9 @@ public class Sound extends TTS {
 
     public void playRingtone(Uri uri) {
         playerClose();
-        player = MediaPlayer.create(context, uri);
+        player = create(uri);
         if (player == null) {
-            player = MediaPlayer.create(context, Alarm.DEFAULT_RING);
+            player = create(Alarm.DEFAULT_RING);
         }
         if (player == null) {
             if (tone != null) {
@@ -328,12 +330,6 @@ public class Sound extends TTS {
             tone = new ToneGenerator(SOUND_CHANNEL, 100);
             tone.startTone(ToneGenerator.TONE_CDMA_CALL_SIGNAL_ISDN_NORMAL);
             return;
-        }
-        if (Build.VERSION.SDK_INT >= 21) {
-            player.setAudioAttributes(new AudioAttributes.Builder()
-                    .setUsage(SOUND_CHANNEL)
-                    .setContentType(SOUND_TYPE)
-                    .build());
         }
         player.setLooping(true);
 
@@ -354,7 +350,7 @@ public class Sound extends TTS {
         final float startVolume;
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        float systemVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM) / (float) am.getStreamVolume(AudioManager.STREAM_ALARM);
+        float systemVolume = am.getStreamMaxVolume(SOUND_STREAM) / (float) am.getStreamVolume(SOUND_STREAM);
         float alarmVolume = getVolume();
 
         // if user trying to reduce alarms volume, then use it as start volume. else start from silence
@@ -436,22 +432,67 @@ public class Sound extends TTS {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
     }
 
+    MediaPlayer create(Uri uri) {
+        if (Build.VERSION.SDK_INT >= 21) {
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(SOUND_CHANNEL)
+                    .setContentType(SOUND_TYPE)
+                    .build();
+
+            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            int audioSessionId = am.generateAudioSessionId();
+
+            try {
+                MediaPlayer mp = new MediaPlayer();
+                final AudioAttributes aa = audioAttributes != null ? audioAttributes : new AudioAttributes.Builder().build();
+                mp.setAudioAttributes(aa);
+                mp.setAudioSessionId(audioSessionId);
+                mp.setAudioStreamType(SOUND_STREAM);
+                mp.setDataSource(context, uri);
+                mp.prepare();
+                return mp;
+            } catch (IOException ex) {
+                Log.d(TAG, "create failed:", ex);
+                // fall through
+            } catch (IllegalArgumentException ex) {
+                Log.d(TAG, "create failed:", ex);
+                // fall through
+            } catch (SecurityException ex) {
+                Log.d(TAG, "create failed:", ex);
+                // fall through
+            }
+            return null;
+        } else {
+            try {
+                MediaPlayer mp = new MediaPlayer();
+                mp.setDataSource(context, uri);
+                mp.setAudioStreamType(SOUND_STREAM);
+                mp.prepare();
+                return mp;
+            } catch (IOException ex) {
+                Log.d(TAG, "create failed:", ex);
+                // fall through
+            } catch (IllegalArgumentException ex) {
+                Log.d(TAG, "create failed:", ex);
+                // fall through
+            } catch (SecurityException ex) {
+                Log.d(TAG, "create failed:", ex);
+                // fall through
+            }
+            return null;
+        }
+    }
+
     public MediaPlayer playOnce(Uri uri, final Runnable done) {
-        MediaPlayer player = MediaPlayer.create(context, uri);
+        MediaPlayer player = create(uri);
         if (player == null) {
-            player = MediaPlayer.create(context, DEFAULT_ALARM);
+            player = create(DEFAULT_ALARM);
         }
         if (player == null) {
             Toast.makeText(context, context.getString(R.string.NoDefaultRingtone), Toast.LENGTH_SHORT).show();
             if (done != null)
                 done.run();
             return null;
-        }
-        if (Build.VERSION.SDK_INT >= 21) {
-            player.setAudioAttributes(new AudioAttributes.Builder()
-                    .setUsage(SOUND_CHANNEL)
-                    .setContentType(SOUND_TYPE)
-                    .build());
         }
 
         // https://code.google.com/p/android/issues/detail?id=1314

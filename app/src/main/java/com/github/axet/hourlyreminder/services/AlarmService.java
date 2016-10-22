@@ -149,7 +149,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         TreeSet<Long> alarms = new TreeSet<>();
 
         for (Alarm a : this.alarms) {
-            if (a.enable)
+            if (a.enabled)
                 alarms.add(a.time);
         }
 
@@ -159,7 +159,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // cancel alarm 'time' by set it time for day+1 (same hour:min)
     public void tomorrow(long time) {
         for (Alarm a : alarms) {
-            if (a.time == time && a.enable) {
+            if (a.time == time && a.enabled) {
                 if (a.weekdaysCheck) {
                     // be safe for another timezone. if we moved we better call setNext().
                     // but here we have to jump over next alarm.
@@ -286,12 +286,17 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         } else {
             Calendar cur = Calendar.getInstance();
 
-            SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-            int repeat = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_REPEAT, "60")) * 60;
-
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(time);
-            cal.add(Calendar.SECOND, -(repeat / 4));
+
+            if (isReminder(time)) {
+                SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+                int repeat = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_REPEAT, "60")) * 60;
+                int sec = repeat / 4;
+                cal.add(Calendar.SECOND, -sec);
+            } else {
+                cal.add(Calendar.MINUTE, -15);
+            }
 
             if (cur.after(cal)) {
                 // we already 15 before alarm, show notification_upcoming
@@ -355,6 +360,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (isReminder(time))
                 subject = getString(R.string.UpcomingChime);
             String text = Alarm.format(this, time);
+            for (Alarm a : alarms) {
+                if (a.time == time) {
+                    if (a.isSnoozed()) {
+                        text += " (" + getString(R.string.snoozed) + ": " + a.format() + ")";
+                    }
+                }
+            }
 
             RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(getBaseContext(), R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
             view.setOnClickPendingIntent(R.id.notification_button, button);
@@ -390,7 +402,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         // here can be two alarms with same time
         for (Alarm a : alarms) {
-            if (a.time == time && a.enable) {
+            if (a.time == time && a.enabled) {
                 Log.d(TAG, "Sound Alarm " + Alarm.format(a.time));
                 Alarm old = new Alarm(a);
                 if (!a.weekdaysCheck) {

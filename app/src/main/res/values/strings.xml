@@ -108,6 +108,38 @@
         <item>5</item>
     </string-array>
 
+    <string-array name="snooze_after_text">
+        <item>Off</item>
+        <item>1 min</item>
+        <item>2 min</item>
+        <item>3 min</item>
+        <item>4 min</item>
+        <item>5 min</item>
+    </string-array>
+
+    <string-array name="snooze_after_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string-array name="snooze_text">
+        <item>5 min</item>
+        <item>10 min</item>
+        <item>15 min</item>
+        <item>20 min</item>
+    </string-array>
+
+    <string-array name="snooze_values" translatable="false">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+    </string-array>
+
     <string name="system">System Language</string>
 
     <string-array name="languages_text" translatable="false">
@@ -256,4 +288,6 @@
     <string name="speak_time_24">%1$s hundred hours</string>
     <string name="reset">Reset</string>
     <string name="play">Play</string>
+    <string name="snoozed">Snoozed</string>
+    <string name="snooze">Snooze</string>
 </resources>

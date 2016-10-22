@@ -45,6 +45,7 @@ public class SoundConfig {
     Float volume;
 
     // AudioSystem.STREAM_ALARM AudioManager.STREAM_ALARM;
+    final static int SOUND_STREAM = AudioManager.STREAM_ALARM;
     final static int SOUND_CHANNEL = AudioAttributes.USAGE_ALARM;
     final static int SOUND_TYPE = AudioAttributes.CONTENT_TYPE_SONIFICATION;
 

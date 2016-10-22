@@ -2,4 +2,5 @@
 <resources>
     <attr name="alarmBackground" format="color" />
     <attr name="alarmRing" format="reference" />
+    <attr name="alarmDismiss" format="reference" />
 </resources>

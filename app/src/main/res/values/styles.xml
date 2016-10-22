@@ -6,6 +6,7 @@
         <item name="colorAccent">@color/colorAccentLight</item>
         <item name="alarmBackground">@color/alarmBackgroundLight</item>
         <item name="alarmRing">@drawable/round_circle_light</item>
+        <item name="alarmDismiss">@drawable/round_dismiss_light</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="dialogTheme">@style/AppThemeDialogLight</item>
         <item name="alertDialogTheme">@style/AppThemeDialogLight</item>
@@ -30,6 +31,7 @@
         <item name="colorAccent">@color/colorAccentDark</item>
         <item name="alarmBackground">@color/actionBarBackgroundDark</item>
         <item name="alarmRing">@drawable/round_circle_dark</item>
+        <item name="alarmDismiss">@drawable/round_dismiss_dark</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="dialogTheme">@style/AppThemeDialogLight</item>
         <item name="alertDialogTheme">@style/AppThemeDialogDark</item>

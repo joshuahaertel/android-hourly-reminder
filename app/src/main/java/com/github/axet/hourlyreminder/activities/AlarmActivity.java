@@ -15,11 +15,13 @@ import android.widget.TextView;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -28,14 +30,25 @@ import java.util.Date;
 public class AlarmActivity extends AppCompatActivity {
     public static final String TAG = AlarmActivity.class.getSimpleName();
 
+    // alarm activity action. close it.
+    public static final String CLOSE_ACTIVITY = AlarmActivity.class.getCanonicalName() + ".CLOSE_ACTIVITY";
+
     Handler handler = new Handler();
     Runnable updateClock;
+    long time;
 
     public static void showAlarmActivity(Context context, long time, Sound.Silenced silenced) {
         Intent intent = new Intent(context, AlarmActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("time", time);
         intent.putExtra("silenced", silenced);
+        context.startActivity(intent);
+    }
+
+    public static void closeAlarmActivity(Context context) {
+        Intent intent = new Intent(context, AlarmActivity.class);
+        intent.setAction(CLOSE_ACTIVITY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
 
@@ -56,8 +69,9 @@ public class AlarmActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         String action = intent.getAction();
-        if (action != null && action.equals(FireAlarmService.CLOSE_ACTIVITY)) {
+        if (action != null && action.equals(CLOSE_ACTIVITY)) {
             finish();
+            return;
         }
     }
 
@@ -76,9 +90,20 @@ public class AlarmActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        long time = intent.getLongExtra("time", 0);
+        time = intent.getLongExtra("time", 0);
+
         View alarm = findViewById(R.id.alarm);
-        updateTime(alarm, time);
+
+        List<Alarm> list = HourlyApplication.loadAlarms(this);
+        for (Alarm a : list) {
+            if (a.time == time) { // conflicts are ok here
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(a.time);
+                cal.set(Calendar.HOUR_OF_DAY, a.getHour());
+                cal.set(Calendar.MINUTE, a.getMin());
+                updateTime(alarm, cal.getTimeInMillis());
+            }
+        }
 
         updateClock();
 
@@ -86,6 +111,15 @@ public class AlarmActivity extends AppCompatActivity {
         dismiss.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                finish();
+            }
+        });
+
+        View snooze = findViewById(R.id.alarm_snooze_button);
+        snooze.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FireAlarmService.snooze(AlarmActivity.this, time);
                 finish();
             }
         });
@@ -118,7 +152,7 @@ public class AlarmActivity extends AppCompatActivity {
 
         // handing startActivity with Intent.FLAG_ACTIVITY_NEW_TASK
         String action = intent.getAction();
-        if (action != null && action.equals(FireAlarmService.CLOSE_ACTIVITY))
+        if (action != null && action.equals(CLOSE_ACTIVITY))
             finish();
     }
 
@@ -143,7 +177,6 @@ public class AlarmActivity extends AppCompatActivity {
         handler.postDelayed(updateClock, 1000);
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -163,7 +196,7 @@ public class AlarmActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestory");
+        Log.d(TAG, "onDestroy");
 
         FireAlarmService.dismissActiveAlarm(this);
 
@@ -204,4 +237,5 @@ public class AlarmActivity extends AppCompatActivity {
     public void onBackPressed() {
         moveTaskToBack(false);
     }
+
 }

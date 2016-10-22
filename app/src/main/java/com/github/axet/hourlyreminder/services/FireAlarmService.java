@@ -9,6 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,20 +32,19 @@ import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Alarm;
 
 import java.util.Calendar;
+import java.util.List;
 
-public class FireAlarmService extends Service {
+public class FireAlarmService extends Service implements SensorEventListener {
     public static final String TAG = FireAlarmService.class.getSimpleName();
 
     public static final String FIRE_ALARM = FireAlarmService.class.getCanonicalName() + ".FIRE_ALARM";
-
-    // alarm activity action. close it.
-    public static final String CLOSE_ACTIVITY = FireAlarmService.class.getCanonicalName() + ".CLOSE_ACTIVITY";
 
     // notification click -> show activity broadcast
     public static final String SHOW_ACTIVITY = FireAlarmService.class.getCanonicalName() + ".SHOW_ACTIVITY";
 
     // minutes
-    public static final int ALARM_AUTO_OFF = 15;
+    public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
+    public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if no auto snooze enabled wait 45 min
 
     FireAlarmReceiver receiver = new FireAlarmReceiver();
     Sound sound;
@@ -49,6 +52,10 @@ public class FireAlarmService extends Service {
     Runnable alive;
     boolean alarmActivity = false;
     Sound.Silenced silenced = Sound.Silenced.NONE;
+    float mGZ;
+    int mEventCountSinceGZChanged;
+    Alarm alarm;
+    SensorManager sm;
 
     PhoneStateChangeListener pscl;
 
@@ -81,16 +88,18 @@ public class FireAlarmService extends Service {
     public class FireAlarmReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(FireAlarmReceiver.class.getSimpleName(), "FireAlarmReceiver " + intent.getAction());
+            String a = intent.getAction();
 
-            if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
+            Log.d(FireAlarmReceiver.class.getSimpleName(), "FireAlarmReceiver " + a);
+
+            if (a.equals(Intent.ACTION_SCREEN_ON)) {
                 long time = intent.getLongExtra("time", 0);
                 showAlarmActivity(time, silenced);
             }
-            if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+            if (a.equals(Intent.ACTION_SCREEN_OFF)) {
                 // do nothing. do not annoy user. he will see alarm screen on next screen on event.
             }
-            if (intent.getAction().equals(SHOW_ACTIVITY)) {
+            if (a.equals(SHOW_ACTIVITY)) {
                 long time = intent.getLongExtra("time", 0);
                 showAlarmActivity(time, silenced);
             }
@@ -100,11 +109,15 @@ public class FireAlarmService extends Service {
     public static void activateAlarm(Context context, Alarm a) {
         context.startService(new Intent(context, FireAlarmService.class)
                 .setAction(FIRE_ALARM)
-                .putExtra("time", a.time)
-                .putExtra("beep", a.beep)
-                .putExtra("speech", a.speech)
-                .putExtra("ringtone", a.ringtone)
-                .putExtra("ringtoneValue", a.ringtoneValue));
+                .putExtra("state", a.save().toString()));
+    }
+
+    public static void startIfActive(Context context) {
+        context.stopService(new Intent(context, FireAlarmService.class));
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        if (!shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "").isEmpty()) {
+            context.startService(new Intent(context, FireAlarmService.class));
+        }
     }
 
     public static void dismissActiveAlarm(Context context) {
@@ -127,13 +140,13 @@ public class FireAlarmService extends Service {
     }
 
     public Alarm getAlarm(Intent intent) {
-        Alarm a = new Alarm(this);
+        Alarm a;
 
-        a.time = intent.getLongExtra("time", 0);
-        a.beep = intent.getBooleanExtra("beep", false);
-        a.speech = intent.getBooleanExtra("speech", false);
-        a.ringtone = intent.getBooleanExtra("ringtone", false);
-        a.ringtoneValue = intent.getStringExtra("ringtoneValue");
+        String json = intent.getStringExtra("state");
+        if (json == null || json.isEmpty())
+            return null;
+
+        a = new Alarm(this, json);
 
         return a;
     }
@@ -156,71 +169,125 @@ public class FireAlarmService extends Service {
             tm.listen(pscl, PhoneStateListener.LISTEN_CALL_STATE);
         }
 
-        Alarm a;
-
         if (intent == null) {
             Log.d(TAG, "onStartCommand restart");
             String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
             if (json.isEmpty())
                 return START_NOT_STICKY;
 
-            a = new Alarm(this, json);
+            alarm = new Alarm(this, json);
         } else {
-            a = getAlarm(intent);
+            alarm = getAlarm(intent);
+
+            if (alarm == null) { // started without alarm
+                String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
+                alarm = new Alarm(this, json);
+            }
 
             SharedPreferences.Editor editor = shared.edit();
-            editor.putString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, a.save());
+            editor.putString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, alarm.save().toString());
             editor.commit();
         }
 
-        Log.d(TAG, "time=" + Alarm.format(a.time));
+        Log.d(TAG, "id=" + alarm.id + ", time=" + Alarm.format(alarm.time));
 
-        if (!alive(a.time)) {
+        if (!alive(alarm)) {
             stopSelf();
-            showNotificationMissed(a.time);
+            showNotificationMissed(this, alarm);
             return START_NOT_STICKY;
         }
 
-        showNotificationAlarm(a.time);
+        sm = (SensorManager) getSystemService(SENSOR_SERVICE);
+        if (sm != null) {
+            Sensor a = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            if (a != null)
+                sm.registerListener(this, a, SensorManager.SENSOR_DELAY_GAME);
+        }
+
+        showNotificationAlarm(alarm.time);
 
         // do we have silence alarm?
-        silenced = sound.playAlarm(a);
+        silenced = sound.playAlarm(alarm);
 
-        showAlarmActivity(a.time, silenced);
+        showAlarmActivity(alarm.time, silenced);
 
         return super.onStartCommand(intent, flags, startId);
     }
 
-    boolean alive(final long time) {
+    static boolean dismiss(Context context, final Alarm a) { // do we have to dismiss (due timeout) alarm?
         Calendar cur = Calendar.getInstance();
+        return dismiss(context, cur, a);
+    }
 
-        Calendar cal = Calendar.getInstance();
+    static boolean dismiss(Context context, Calendar cur, final Alarm a) { // do we have to dismiss (due timeout) alarm?
+        final Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(a.time); // dismiss checks for alarm scheduled time (original hour/min)
+        cal.set(Calendar.HOUR_OF_DAY, a.getHour());
+        cal.set(Calendar.MINUTE, a.getMin());
+        return dismiss(context, cur, cal.getTimeInMillis());
+    }
+
+    static boolean dismiss(Context context, Calendar cur, long time) { // do we have to dismiss (due timeout) alarm?
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+        int auto = ALARM_AUTO_OFF;
+        if (m > 0)
+            auto = ALARM_SNOOZE_AUTO_OFF;
+
+        final Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(time);
-        cal.add(Calendar.MINUTE, ALARM_AUTO_OFF);
+        cal.add(Calendar.MINUTE, auto);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
-        boolean b = cal.after(cur);
+        return cur.after(cal);
+    }
 
-        if (b) {
+    public boolean snooze(final Alarm a) { // false - do not snooze, true - snooze
+        Calendar cur = Calendar.getInstance();
+
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+
+        if (m == 0)
+            return false;
+
+        final Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(a.time); // snooze check alarm fire time (not hours/mins)
+        cal.add(Calendar.MINUTE, m);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        return cur.after(cal);
+    }
+
+    boolean alive(final Alarm a) {
+        if (!dismiss(this, a)) { // do not check snooze on first run
             alive = new Runnable() {
                 @Override
                 public void run() {
-                    if (!alive(time)) {
+                    if (snooze(a)) {
+                        snooze(FireAlarmService.this, a.time);
                         stopSelf();
-                        showNotificationMissed(time);
+                        return;
+                    }
+                    if (!alive(a)) {
+                        showNotificationMissed(FireAlarmService.this, a);
+                        stopSelf();
+                        return;
                     }
                 }
             };
             handle.postDelayed(alive, 1000 * 60);
+            return true;
         }
 
-        return b;
+        return false;
     }
 
-    public void showAlarmActivity(long time, Sound.Silenced silenced) {
+    public void showAlarmActivity(long id, Sound.Silenced silenced) {
         alarmActivity = true;
-        AlarmActivity.showAlarmActivity(this, time, silenced);
+        AlarmActivity.showAlarmActivity(this, id, silenced);
     }
 
     @Nullable
@@ -262,21 +329,35 @@ public class FireAlarmService extends Service {
 
         if (alarmActivity) {
             alarmActivity = false;
-            Intent intent = new Intent(this, AlarmActivity.class);
-            intent.setAction(CLOSE_ACTIVITY);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            AlarmActivity.closeAlarmActivity(this);
         }
 
         if (alive != null) {
             handle.removeCallbacks(alive);
             alive = null;
         }
+
+        if (sm != null)
+            sm.unregisterListener(this);
     }
 
     // show notification about missed alarm
-    void showNotificationMissed(long time) {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+    public static void showNotificationMissed(Context context, Alarm a) {
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+        int auto = ALARM_AUTO_OFF;
+        if (m > 0)
+            auto = ALARM_SNOOZE_AUTO_OFF;
+
+        final Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, a.getHour());
+        cal.set(Calendar.MINUTE, a.getMin());
+        cal.add(Calendar.MINUTE, auto);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        long time = cal.getTimeInMillis();
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
 
         if (time == 0) {
             notificationManager.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
@@ -286,20 +367,20 @@ public class FireAlarmService extends Service {
             int hour = c.get(Calendar.HOUR_OF_DAY);
             int min = c.get(Calendar.MINUTE);
 
-            PendingIntent main = PendingIntent.getActivity(this, 0,
-                    new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", time),
+            PendingIntent main = PendingIntent.getActivity(context, 0,
+                    new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", time),
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
-            String text = getString(R.string.AlarmMissedAfter, hour, min, ALARM_AUTO_OFF);
+            String text = context.getString(R.string.AlarmMissedAfter, hour, min, ALARM_AUTO_OFF);
 
-            RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(getBaseContext(), R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
             view.setOnClickPendingIntent(R.id.notification_base, main);
-            view.setTextViewText(R.id.notification_subject, getString(R.string.AlarmMissed));
+            view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));
             view.setTextViewText(R.id.notification_text, text);
             view.setViewVisibility(R.id.notification_button, View.GONE);
 
-            Notification.Builder builder = new Notification.Builder(this)
-                    .setContentTitle(getString(R.string.Alarm))
+            Notification.Builder builder = new Notification.Builder(context)
+                    .setContentTitle(context.getString(R.string.Alarm))
                     .setContentText(text)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                     .setContent(view);
@@ -354,6 +435,76 @@ public class FireAlarmService extends Service {
 
             notificationManager.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, builder.build());
         }
+    }
+
+    public static void snooze(Context context, long time) {
+        List<Alarm> list = HourlyApplication.loadAlarms(context);
+        for (Alarm a : list) {
+            if (a.time == time) { // can be disabled
+                boolean b = a.enabled;
+                a.snooze();
+
+                boolean done = false;
+
+                if (!done) {
+                    for (Alarm aa : list) {
+                        if (aa == a) // skip self
+                            continue;
+                        if (aa.time == a.time && aa.enabled) { // did we hit another enabled alarm? exit
+                            FireAlarmService.showNotificationMissed(context, a);
+                            a.setEnable(b); // enable && setNext
+                            done = true;
+                        }
+                    }
+                }
+
+                if (!done) {
+                    final Calendar cur = Calendar.getInstance();
+                    cur.setTimeInMillis(a.time);
+
+                    if (dismiss(context, cur, a)) {
+                        FireAlarmService.showNotificationMissed(context, a);
+                        a.setEnable(b); // enable && setNext
+                    }
+                }
+            }
+        }
+        HourlyApplication.saveAlarms(context, list);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        int type = event.sensor.getType();
+        if (type == Sensor.TYPE_ACCELEROMETER) {
+            float gz = event.values[2];
+            if (mGZ == 0) {
+                mGZ = gz;
+            } else {
+                if ((mGZ * gz) < 0) {
+                    mEventCountSinceGZChanged++;
+                    if (mEventCountSinceGZChanged >= 10) {
+                        mGZ = gz;
+                        mEventCountSinceGZChanged = 0;
+                        if (gz > 0) {
+                            Log.d(TAG, "now screen is facing up.");
+                        } else if (gz < 0) {
+                            Log.d(TAG, "now screen is facing down.");
+                            snooze(this, alarm.time);
+                            dismissActiveAlarm(this);
+                        }
+                    }
+                } else {
+                    if (mEventCountSinceGZChanged > 0) {
+                        mGZ = gz;
+                        mEventCountSinceGZChanged = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 }
 
