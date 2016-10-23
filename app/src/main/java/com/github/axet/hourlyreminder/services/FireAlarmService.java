@@ -451,7 +451,6 @@ public class FireAlarmService extends Service implements SensorEventListener {
             if (a.enabled)
                 alarms.add(a.time);
         }
-        long old = alarms.first();
 
         for (Alarm a : list) {
             if (a.time == time) { // can be disabled
@@ -461,10 +460,12 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 boolean done = false;
 
                 if (!done) {
-                    if (a.time >= old) { // did we hit another enabled alarm? stop snooze
-                        FireAlarmService.showNotificationMissed(context, a);
-                        a.setEnable(b); // enable && setNext
-                        done = true;
+                    if(!alarms.isEmpty()) {
+                        if (a.time >= alarms.first()) { // did we hit another enabled alarm? stop snooze
+                            FireAlarmService.showNotificationMissed(context, a);
+                            a.setEnable(b); // enable && setNext
+                            done = true;
+                        }
                     }
                 }
 
