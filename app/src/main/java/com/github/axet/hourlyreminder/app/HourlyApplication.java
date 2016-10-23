@@ -409,7 +409,7 @@ public class HourlyApplication extends Application {
         String s = uri.getScheme();
 
         if (s == null || s.equals("file")) {
-            File f = new File(file);
+            File f = new File(uri.getPath());
             return f.getName();
         }
 
