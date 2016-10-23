@@ -292,9 +292,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
         return false;
     }
 
-    public void showAlarmActivity(long id, Sound.Silenced silenced) {
+    public void showAlarmActivity(long time, Sound.Silenced silenced) {
         alarmActivity = true;
-        AlarmActivity.showAlarmActivity(this, id, silenced);
+        AlarmActivity.showAlarmActivity(this, time, silenced);
     }
 
     @Nullable
