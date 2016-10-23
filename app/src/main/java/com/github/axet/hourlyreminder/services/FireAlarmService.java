@@ -51,7 +51,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     Sound sound;
     Handler handle = new Handler();
     Runnable alive;
-    boolean alarmActivity = false;
+    boolean alarmActivity = false; // if service crashed, activity willbe closed. ok to have var.
     Sound.Silenced silenced = Sound.Silenced.NONE;
     float mGZ;
     int mEventCountSinceGZChanged;
