@@ -77,10 +77,10 @@ public class HourlyApplication extends Application {
 
     public static final String PREFERENCE_LANGUAGE = "language";
 
-    public static final String PREFERENCE_ACTIVE_ALARM= "active_alarm";
+    public static final String PREFERENCE_ACTIVE_ALARM = "active_alarm";
 
-    public static final String PREFERENCE_SNOOZE_AFTER= "snooze_after";
-    public static final String PREFERENCE_SNOOZE_DELAY= "snooze_time";
+    public static final String PREFERENCE_SNOOZE_AFTER = "snooze_after";
+    public static final String PREFERENCE_SNOOZE_DELAY = "snooze_time";
 
     static HashMap<Uri, String> titles = new HashMap<>();
 
@@ -404,17 +404,24 @@ public class HourlyApplication extends Application {
         if (file.isEmpty())
             return null;
 
-        File f = new File(file);
-        if (f.exists()) {
+        if (file.startsWith("/")) {
+            File f = new File(file);
             return f.getName();
         }
 
         Uri uri = Uri.parse(file);
 
+        if (uri.getScheme().equals("file")) {
+            File f = new File(uri.getPath());
+            return f.getName();
+        }
+
         String title = titles.get(uri);
         if (title != null)
             return title;
         Ringtone rt = RingtoneManager.getRingtone(context, uri);
+        if (rt == null)
+            return null;
         title = rt.getTitle(context);
         rt.stop();
         titles.put(uri, title);
