@@ -404,14 +404,11 @@ public class HourlyApplication extends Application {
         if (file.isEmpty())
             return null;
 
-        if (file.startsWith("/")) {
-            File f = new File(file);
-            return f.getName();
-        }
-
         Uri uri = Uri.parse(file);
 
-        if (uri.getScheme().equals("file")) {
+        String s = uri.getScheme();
+
+        if (s == null || s.equals("file")) {
             File f = new File(uri.getPath());
             return f.getName();
         }

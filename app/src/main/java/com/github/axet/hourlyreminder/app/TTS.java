@@ -231,7 +231,7 @@ public class TTS extends SoundConfig {
 
         if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
-            params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, SOUND_STREAM);
+            params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, SOUND_CHANNEL);
             params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, getVolume());
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS) {
