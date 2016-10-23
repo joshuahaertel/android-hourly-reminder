@@ -70,7 +70,7 @@ public class Sound extends TTS {
         // http://stackoverflow.com/questions/27602492
         //
         // with MODE_STATIC setNotificationMarkerPosition not called
-        AudioTrack track = new AudioTrack(SOUND_CHANNEL, sampleRate,
+        AudioTrack track = new AudioTrack(SOUND_STREAM, sampleRate,
                 AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT,
                 stereo * (Short.SIZE / 8), AudioTrack.MODE_STREAM);
         track.write(samples, 0, stereo);
@@ -327,7 +327,7 @@ public class Sound extends TTS {
             if (tone != null) {
                 tone.release();
             }
-            tone = new ToneGenerator(SOUND_CHANNEL, 100);
+            tone = new ToneGenerator(SOUND_STREAM, 100);
             tone.startTone(ToneGenerator.TONE_CDMA_CALL_SIGNAL_ISDN_NORMAL);
             return;
         }
