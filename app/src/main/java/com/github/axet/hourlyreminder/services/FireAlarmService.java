@@ -182,7 +182,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
             String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
 
-            if (alarm == null) { // started without alarm
+            if (alarm == null) { // started without alarm, read stored alarm
                 alarm = new Alarm(this, json);
             } else { // alarm loaded, does it interference with current running alarm?
                 if (!json.isEmpty()) { // yep, we already firering alarm, show missed
@@ -376,7 +376,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                     new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", time),
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
-            String text = context.getString(R.string.AlarmMissedAfter, hour, min, ALARM_AUTO_OFF);
+            String text = context.getString(R.string.AlarmMissedAfter, hour, min, auto);
 
             RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
             view.setOnClickPendingIntent(R.id.notification_base, main);
