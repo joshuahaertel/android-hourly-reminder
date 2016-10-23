@@ -457,26 +457,15 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 boolean b = a.enabled;
                 a.snooze();
 
-                boolean done = false;
-
-                if (!done) {
-                    if(!alarms.isEmpty()) {
-                        if (a.time >= alarms.first()) { // did we hit another enabled alarm? stop snooze
-                            FireAlarmService.showNotificationMissed(context, a);
-                            a.setEnable(b); // enable && setNext
-                            done = true;
-                        }
-                    }
-                }
-
-                if (!done) {
+                if (!alarms.isEmpty() && a.time >= alarms.first()) { // did we hit another enabled alarm? stop snooze
+                    FireAlarmService.showNotificationMissed(context, a);
+                    a.setEnable(b); // enable && setNext
+                } else {
                     final Calendar cur = Calendar.getInstance();
                     cur.setTimeInMillis(a.time);
-
                     if (dismiss(context, cur, a)) { // outdated by snooze timeout?
                         FireAlarmService.showNotificationMissed(context, a);
                         a.setEnable(b); // enable && setNext
-                        done = true;
                     }
                 }
             }
