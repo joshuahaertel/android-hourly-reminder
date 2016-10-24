@@ -737,7 +737,7 @@ public class AlarmsFragment extends Fragment implements ListAdapter, AbsListView
         am.setText(HourlyApplication.getHourString(getActivity(), hour));
         pm.setText(HourlyApplication.getHourString(getActivity(), hour));
 
-        time.setText(a.format());
+        time.setText(a.format2412());
 
         if (DateFormat.is24HourFormat(getActivity())) {
             am.setVisibility(View.GONE);

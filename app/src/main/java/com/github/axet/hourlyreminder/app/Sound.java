@@ -169,7 +169,7 @@ public class Sound extends TTS {
                     break;
             }
             text += "\n";
-            text += context.getResources().getString(R.string.ToastTime, Alarm.format(context, time));
+            text += context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, time));
 
             Toast t = Toast.makeText(context, text, Toast.LENGTH_SHORT);
             TextView v = (TextView) t.getView().findViewById(android.R.id.message);
@@ -412,7 +412,7 @@ public class Sound extends TTS {
     }
 
     public void timeToast(long time) {
-        String text = context.getResources().getString(R.string.ToastTime, Alarm.format(context, time));
+        String text = context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, time));
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
     }
 

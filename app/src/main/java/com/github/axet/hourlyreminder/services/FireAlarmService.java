@@ -196,7 +196,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
             editor.commit();
         }
 
-        Log.d(TAG, "id=" + alarm.id + ", time=" + Alarm.format(alarm.time));
+        Log.d(TAG, "id=" + alarm.id + ", time=" + Alarm.format24(alarm.time));
 
         if (!alive(alarm)) {
             stopSelf();
@@ -373,7 +373,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                     new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", time),
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
-            String text = context.getString(R.string.AlarmMissedAfter, a.format(), auto);
+            String text = context.getString(R.string.AlarmMissedAfter, a.format2412ap(), auto);
 
             RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
             view.setOnClickPendingIntent(R.id.notification_base, main);

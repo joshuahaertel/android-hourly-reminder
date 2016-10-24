@@ -359,11 +359,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             String subject = getString(R.string.UpcomingAlarm);
             if (isReminder(time))
                 subject = getString(R.string.UpcomingChime);
-            String text = Alarm.format(this, time);
+            String text = Alarm.format2412ap(this, time);
             for (Alarm a : alarms) {
                 if (a.time == time) {
                     if (a.isSnoozed()) {
-                        text += " (" + getString(R.string.snoozed) + ": " + a.format() + ")";
+                        text += " (" + getString(R.string.snoozed) + ": " + a.format2412ap() + ")";
                     }
                 }
             }
@@ -403,7 +403,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         // here can be two alarms with same time
         for (Alarm a : alarms) {
             if (a.time == time && a.enabled) {
-                Log.d(TAG, "Sound Alarm " + Alarm.format(a.time));
+                Log.d(TAG, "Sound Alarm " + Alarm.format24(a.time));
                 Alarm old = new Alarm(a);
                 if (!a.weekdaysCheck) {
                     // disable alarm after it goes off for non rcuring alarms (!a.weekdays)
