@@ -369,14 +369,11 @@ public class FireAlarmService extends Service implements SensorEventListener {
             cal.add(Calendar.MINUTE, auto);
             long time = cal.getTimeInMillis();
 
-            int hour = a.getHour();
-            int min = a.getMin();
-
             PendingIntent main = PendingIntent.getActivity(context, 0,
                     new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", time),
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
-            String text = context.getString(R.string.AlarmMissedAfter, hour, min, auto);
+            String text = context.getString(R.string.AlarmMissedAfter, a.format(), auto);
 
             RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
             view.setOnClickPendingIntent(R.id.notification_base, main);
