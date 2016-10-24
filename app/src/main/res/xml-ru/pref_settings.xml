@@ -19,11 +19,11 @@
         android:defaultValue="0"
         android:entries="@array/snooze_after_text"
         android:entryValues="@array/snooze_after_values"
-        android:key="snooze_auto"
+        android:key="snooze_after"
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
         android:summary="Set snooze time after minutes"
-        android:title="Отложить Будильник После..." />
+        android:title="Отложить Будильник после..." />
 
     <ListPreference
         android:defaultValue="10"
@@ -33,7 +33,7 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
         android:summary="Set snooze time minutes"
-        android:title="Отложить Будильник На..." />
+        android:title="Отложить Будильник на..." />
 
     <ListPreference
         android:defaultValue=""
