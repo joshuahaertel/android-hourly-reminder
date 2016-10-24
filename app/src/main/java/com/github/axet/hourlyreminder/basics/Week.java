@@ -390,11 +390,19 @@ public class Week {
         }
     }
 
-    public static String format(Context context, long time) {
+    public static String format2412(Context context, long time) {
         if (DateFormat.is24HourFormat(context)) {
             SimpleDateFormat f = new SimpleDateFormat("HH:mm");
             return f.format(new Date(time));
         } else {
+            SimpleDateFormat f = new SimpleDateFormat("h:mm");
+            return f.format(new Date(time));
+        }
+    }
+
+    public static String format2412ap(Context context, long time) {
+        String s = format2412(context, time);
+        if (!DateFormat.is24HourFormat(context)) {
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(time);
             int hour = cal.get(Calendar.HOUR_OF_DAY);
@@ -403,9 +411,9 @@ public class Week {
             Configuration conf = res.getConfiguration();
             Locale locale = conf.locale;
 
-            SimpleDateFormat f = new SimpleDateFormat("h:mm");
-            return f.format(new Date(time)) + " " + HourlyApplication.getHourString(context, locale, hour);
+            s += " " + HourlyApplication.getHourString(context, locale, hour);
         }
+        return s;
     }
 
     public JSONObject save() {

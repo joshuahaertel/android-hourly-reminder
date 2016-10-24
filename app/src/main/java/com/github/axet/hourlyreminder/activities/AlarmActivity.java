@@ -218,16 +218,12 @@ public class AlarmActivity extends AppCompatActivity {
         am.setText(HourlyApplication.getHourString(this, hour));
         pm.setText(HourlyApplication.getHourString(this, hour));
 
-        if (DateFormat.is24HourFormat(this)) {
-            SimpleDateFormat f = new SimpleDateFormat("HH:mm");
-            time.setText(f.format(new Date(t)));
+        time.setText(Alarm.format2412(this, t));
 
+        if (DateFormat.is24HourFormat(this)) {
             am.setVisibility(View.GONE);
             pm.setVisibility(View.GONE);
         } else {
-            SimpleDateFormat f = new SimpleDateFormat("h:mm");
-            time.setText(f.format(new Date(t)));
-
             am.setVisibility(hour >= 12 ? View.GONE : View.VISIBLE);
             pm.setVisibility(hour >= 12 ? View.VISIBLE : View.GONE);
         }

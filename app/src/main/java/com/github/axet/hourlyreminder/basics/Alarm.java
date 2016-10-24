@@ -111,22 +111,23 @@ public class Alarm extends Week {
         setTime(hour, min);
     }
 
-    public static String format(long time) {
+    public static String format24(long time) {
         SimpleDateFormat f = new SimpleDateFormat("HH:mm");
         return f.format(new Date(time));
     }
 
-    public String format() {
+    public String format2412() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, hour);
         cal.set(Calendar.MINUTE, min);
-        if (DateFormat.is24HourFormat(context)) {
-            SimpleDateFormat f = new SimpleDateFormat("HH:mm");
-            return f.format(cal.getTime());
-        } else {
-            SimpleDateFormat f = new SimpleDateFormat("h:mm");
-            return f.format(cal.getTime());
-        }
+        return Alarm.format2412(context, cal.getTimeInMillis());
+    }
+
+    public String format2412ap() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, min);
+        return format2412ap(context, cal.getTimeInMillis());
     }
 
     public void setEnable(boolean e) {

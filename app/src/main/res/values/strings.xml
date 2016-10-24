@@ -261,7 +261,7 @@
 
     <string name="Alarm">Alarm</string>
     <string name="AlarmMissed">Alarm missed</string>
-    <string name="AlarmMissedAfter">Alarm %1$02d:%2$02d dismissed after %3$d mins</string>
+    <string name="AlarmMissedAfter">Alarm %1$s dismissed after %2$d mins</string>
 
     <string name="dismiss_alarm">Dismiss Alarm</string>
 
