@@ -294,7 +294,7 @@ public class HourlyApplication extends Application {
         Toast.makeText(context, context.getString(R.string.alarm_set_for, str), Toast.LENGTH_SHORT).show();
     }
 
-    public static String getHoursString(Context context, List<String> hours) {
+    public static String getHours2String(Context context, List<String> hours) {
         boolean h24 = DateFormat.is24HourFormat(context);
 
         String[] AMPM = new String[]{
@@ -474,14 +474,16 @@ public class HourlyApplication extends Application {
         return str;
     }
 
-    public static String getHourString(Context context, int hour) {
+    // night/am/mid/pm hour string
+    public static String getHour4String(Context context, int hour) {
         Resources res = context.getResources();
         Configuration conf = res.getConfiguration();
         Locale locale = conf.locale;
-        return getHourString(context, locale, hour);
+        return getHour4String(context, locale, hour);
     }
 
-    public static String getHourString(Context context, Locale locale, int hour) {
+    // night/am/mid/pm hour string
+    public static String getHour4String(Context context, Locale locale, int hour) {
         switch (hour) {
             case 0:
             case 1:
@@ -511,6 +513,47 @@ public class HourlyApplication extends Application {
             case 22:
             case 23:
                 return getString(context, locale, R.string.day_4_pm);
+        }
+        throw new RuntimeException("bad hour");
+    }
+
+    // am/pm hour string
+    public static String getHour2String(Context context, int hour) {
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        Locale locale = conf.locale;
+        return getHour2String(context, locale, hour);
+    }
+
+    // am/pm hour string
+    public static String getHour2String(Context context, Locale locale, int hour) {
+        switch (hour) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+                return getString(context, locale, R.string.day_am);
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+                return getString(context, locale, R.string.day_pm);
         }
 
         throw new RuntimeException("bad hour");

@@ -215,8 +215,8 @@ public class AlarmActivity extends AppCompatActivity {
         cal.setTimeInMillis(t);
         int hour = cal.get(Calendar.HOUR_OF_DAY);
 
-        am.setText(HourlyApplication.getHourString(this, hour));
-        pm.setText(HourlyApplication.getHourString(this, hour));
+        am.setText(HourlyApplication.getHour2String(this, hour));
+        pm.setText(HourlyApplication.getHour2String(this, hour));
 
         time.setText(Alarm.format2412(this, t));
 

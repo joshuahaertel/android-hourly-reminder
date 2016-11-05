@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="@dimen/appbar_padding_top"
-    tools:context=".activities.MainActivity$AlarmsFragment">
+    tools:context=".fragments.AlarmsFragment">
 
     <com.github.axet.androidlibrary.widgets.EqualLinearLayout
         android:layout_width="match_parent"

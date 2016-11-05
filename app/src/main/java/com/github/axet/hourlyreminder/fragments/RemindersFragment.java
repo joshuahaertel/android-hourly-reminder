@@ -90,7 +90,7 @@ public class RemindersFragment extends PreferenceFragment implements PreferenceF
 
             if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
                 List sortedList = new ArrayList((Set) value);
-                preference.setSummary(HourlyApplication.getHoursString(preference.getContext(), sortedList));
+                preference.setSummary(HourlyApplication.getHours2String(preference.getContext(), sortedList));
                 return true;
             }
 
