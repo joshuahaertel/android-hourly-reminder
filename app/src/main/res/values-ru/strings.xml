@@ -125,10 +125,16 @@
     <string name="wednesday">С</string>
     <string name="saturday">С</string>
 
-    <string name="day_night">ночи</string>
-    <string name="day_am">утра</string>
-    <string name="day_mid">дня</string>
-    <string name="day_pm">вечера</string>
+    <string name="day_am">дп</string>
+    <string name="day_pm">пп</string>
+
+    <string name="day_pm_full">после полудня</string>
+    <string name="day_am_full">до полудня</string>
+
+    <string name="day_4_night">ночи</string>
+    <string name="day_4_am">утра</string>
+    <string name="day_4_mid">дня</string>
+    <string name="day_4_pm">вечера</string>
 
     <string name="WaitTTS">Ждем TTS</string>
     <string name="Weekdays">Рабочие дни</string>

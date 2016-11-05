@@ -45,8 +45,8 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Reminder;
-import com.github.axet.hourlyreminder.widgets.DaysDialogFragment;
-import com.github.axet.hourlyreminder.widgets.HoursDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.DaysDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
 import com.github.axet.androidlibrary.widgets.SeekBarPreference;
 import com.github.axet.androidlibrary.widgets.SeekBarPreferenceDialogFragment;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
@@ -398,7 +398,7 @@ public class RemindersFragment extends PreferenceFragment implements PreferenceF
 
         {
             final Context context = inflater.getContext();
-            ViewGroup layout = (ViewGroup) view.findViewById(R.id.list_container);
+            ViewGroup layout = (ViewGroup) view.findViewById(android.R.id.list_container);
             RecyclerView v = getListView();
 
             int fab_margin = (int) getResources().getDimension(R.dimen.fab_margin);

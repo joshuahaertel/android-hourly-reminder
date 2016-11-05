@@ -267,8 +267,14 @@
 
     <string name="day_pm">PM</string>
     <string name="day_am">AM</string>
-    <string name="day_night">AM</string>
-    <string name="day_mid">PM</string>
+
+    <string name="day_pm_full">PM</string>
+    <string name="day_am_full">AM</string>
+
+    <string name="day_4_pm">PM</string>
+    <string name="day_4_am">AM</string>
+    <string name="day_4_night">AM</string>
+    <string name="day_4_mid">PM</string>
 
     <string name="beep">Beep</string>
     <string name="speech">Speech</string>

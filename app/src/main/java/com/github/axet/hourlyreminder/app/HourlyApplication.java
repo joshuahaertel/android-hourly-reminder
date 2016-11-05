@@ -302,8 +302,8 @@ public class HourlyApplication extends Application {
                 "12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
         };
 
-        String AM = "am";
-        String PM = "pm";
+        String AM = context.getString(R.string.day_am);
+        String PM = context.getString(R.string.day_pm);
 
         String H = context.getString(R.string.hour_symbol);
 
@@ -488,7 +488,7 @@ public class HourlyApplication extends Application {
             case 2:
             case 3:
             case 4:
-                return getString(context, locale, R.string.day_night);
+                return getString(context, locale, R.string.day_4_night);
             case 5:
             case 6:
             case 7:
@@ -496,21 +496,21 @@ public class HourlyApplication extends Application {
             case 9:
             case 10:
             case 11:
-                return getString(context, locale, R.string.day_am);
+                return getString(context, locale, R.string.day_4_am);
             case 12:
             case 13:
             case 14:
             case 15:
             case 16:
             case 17:
-                return getString(context, locale, R.string.day_mid);
+                return getString(context, locale, R.string.day_4_mid);
             case 18:
             case 19:
             case 20:
             case 21:
             case 22:
             case 23:
-                return getString(context, locale, R.string.day_pm);
+                return getString(context, locale, R.string.day_4_pm);
         }
 
         throw new RuntimeException("bad hour");

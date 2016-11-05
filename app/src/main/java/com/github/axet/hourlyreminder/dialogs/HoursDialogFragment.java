@@ -1,10 +1,8 @@
-package com.github.axet.hourlyreminder.widgets;
+package com.github.axet.hourlyreminder.dialogs;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v14.preference.MultiSelectListPreference;
 import android.support.v14.preference.PreferenceDialogFragment;
@@ -12,22 +10,16 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
 
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.app.HourlyApplication;
-import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Reminder;
-import com.github.axet.hourlyreminder.basics.Week;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class DaysDialogFragment extends PreferenceDialogFragment {
+public class HoursDialogFragment extends PreferenceDialogFragment {
     private boolean mPreferenceChanged;
-
-    int startweek = 0;
 
     int[] ids = new int[]{
             R.id.hours_00,
@@ -56,13 +48,40 @@ public class DaysDialogFragment extends PreferenceDialogFragment {
             R.id.hours_23,
     };
 
+    String[] AMPM = new String[]{
+            "12",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+    };
+
     Set<String> values;
 
-    public DaysDialogFragment() {
+    public HoursDialogFragment() {
     }
 
-    public static DaysDialogFragment newInstance(String key) {
-        DaysDialogFragment fragment = new DaysDialogFragment();
+    public static HoursDialogFragment newInstance(String key) {
+        HoursDialogFragment fragment = new HoursDialogFragment();
         Bundle b = new Bundle(1);
         b.putString("key", key);
         fragment.setArguments(b);
@@ -97,69 +116,50 @@ public class DaysDialogFragment extends PreferenceDialogFragment {
         Context context = builder.getContext();
 
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final View view = inflater.inflate(R.layout.days, null, false);
+        final View view = inflater.inflate(R.layout.hours, null, false);
 
-        startweek = 0;
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String s = prefs.getString(HourlyApplication.PREFERENCE_WEEKSTART, "");
-        for (int i = 0; i < Week.DAYS.length; i++) {
-            if (s.equals(Week.DAYS_VALUES[i])) {
-                startweek = i;
-                break;
+        for (int i = 0; i < ids.length; i++) {
+            CheckBox c = (CheckBox) view.findViewById(ids[i]);
+            String h = Reminder.format(i);
+            boolean b = values.contains(h);
+            c.setChecked(b);
+            c.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    changed(view);
+                }
+            });
+            if (!DateFormat.is24HourFormat(context)) {
+                c.setText(AMPM[i]);
             }
         }
 
-        LinearLayout weekdaysValues = (LinearLayout) view.findViewById(R.id.alarm_week);
+        View am = view.findViewById(R.id.hours_am);
+        View pm = view.findViewById(R.id.hours_pm);
 
-        int[] vv = new int[]{
-                R.string.monday,
-                R.string.tuesday,
-                R.string.wednesday,
-                R.string.thursday,
-                R.string.friday,
-                R.string.saturday,
-                R.string.sunday,
-        };
-
-        for (int i = 0; i < weekdaysValues.getChildCount(); i++) {
-            final CheckBox child = (CheckBox) weekdaysValues.getChildAt(i);
-            if (child instanceof CheckBox) {
-                String name = getString(vv[startweek]);
-                String tag = Week.DAYS_VALUES[startweek];
-                child.setText(name);
-
-                child.setTag(tag);
-
-                child.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        changed(child);
-                    }
-                });
-                boolean b = values.contains(tag);
-                child.setChecked(b);
-                startweek++;
-                if (startweek >= Week.DAYS.length)
-                    startweek = 0;
-            }
+        if (DateFormat.is24HourFormat(context)) {
+            am.setVisibility(View.GONE);
+            pm.setVisibility(View.GONE);
+        }else {
+            am.setVisibility(View.VISIBLE);
+            pm.setVisibility(View.VISIBLE);
         }
 
         builder.setView(view);
     }
 
-    void changed(CheckBox view) {
+    void changed(View view) {
         mPreferenceChanged = true;
 
-        String tag = (String) view.getTag();
-
-        if (view.isChecked()) {
-            values.add(tag);
-        } else {
-            values.remove(tag);
+        Set<String> s = new TreeSet<>();
+        for (int i = 0; i < ids.length; i++) {
+            CheckBox c = (CheckBox) view.findViewById(ids[i]);
+            String h = Reminder.format(i);
+            if (c.isChecked()) {
+                s.add(h);
+            }
         }
-
-        values = new TreeSet<>(values);
+        values = s;
     }
 
     @Override

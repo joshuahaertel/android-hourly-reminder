@@ -33,8 +33,8 @@ import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.widgets.BeepDialogFragment;
-import com.github.axet.hourlyreminder.widgets.HoursDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.BeepDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
 
 public class SettingsFragment extends PreferenceFragment implements PreferenceFragment.OnPreferenceDisplayDialogCallback, SharedPreferences.OnSharedPreferenceChangeListener {
     Sound sound;
@@ -228,7 +228,7 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
 
         {
             final Context context = inflater.getContext();
-            ViewGroup layout = (ViewGroup) view.findViewById(R.id.list_container);
+            ViewGroup layout = (ViewGroup) view.findViewById(android.R.id.list_container);
             RecyclerView v = getListView();
 
             int fab_margin = (int) getResources().getDimension(R.dimen.fab_margin);

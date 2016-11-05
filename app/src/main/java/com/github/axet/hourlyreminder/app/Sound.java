@@ -20,7 +20,7 @@ import android.widget.Toast;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.widgets.BeepDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.BeepDialogFragment;
 
 import java.io.IOException;
 
