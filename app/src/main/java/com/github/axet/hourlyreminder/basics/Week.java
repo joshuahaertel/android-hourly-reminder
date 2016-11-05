@@ -411,7 +411,7 @@ public class Week {
             Configuration conf = res.getConfiguration();
             Locale locale = conf.locale;
 
-            s += " " + HourlyApplication.getHour2String(context, locale, hour);
+            s += HourlyApplication.getHour2String(context, locale, hour);
         }
         return s;
     }

@@ -26,6 +26,14 @@ public class ReminderSet extends WeekSet {
         load(hours, repeat);
     }
 
+    public ReminderSet(Context context, long time) {
+        super(context);
+        setTime(time);
+        this.beep = true;
+        this.speech = true;
+        this.ringtone = false;
+    }
+
     public ReminderSet(Context context, String json) {
         super(context, json);
     }

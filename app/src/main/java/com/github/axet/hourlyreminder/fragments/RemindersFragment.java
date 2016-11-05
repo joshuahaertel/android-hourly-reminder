@@ -1,30 +1,29 @@
 package com.github.axet.hourlyreminder.fragments;
 
-import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class RemindersFragment extends WeekSetFragment {
+public class RemindersFragment extends WeekSetFragment implements DialogInterface.OnDismissListener {
 
     List<ReminderSet> reminders = new ArrayList<>();
 
@@ -132,39 +131,24 @@ public class RemindersFragment extends WeekSetFragment {
     public void fillDetailed(final View view, final WeekSet a, boolean animate) {
         super.fillDetailed(view, a, animate);
 
+        final ReminderSet rr = (ReminderSet) a;
+
         final TextView time = (TextView) view.findViewById(R.id.alarm_time);
         updateTime(view, (ReminderSet) a);
         time.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TimePickerDialog d = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
-                    // onTimeSet called twice on old phones
-                    //
-                    // http://stackoverflow.com/questions/19452993
-                    Runnable r = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (a.enabled)
-                                HourlyApplication.toastAlarmSet(getActivity(), a);
-                            updateTime(view, (ReminderSet) a);
-                            save(a);
-                        }
-                    };
+                HoursDialogFragment dialog = new HoursDialogFragment();
 
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        a.setTime(hourOfDay, minute);
-                        if (r != null) {
-                            r.run();
-                            r = null;
-                        }
-                    }
-                }, a.getHour(), a.getMin(), DateFormat.is24HourFormat(getActivity()));
-                d.show();
+                Bundle args = new Bundle();
+                args.putStringArrayList("hours", new ArrayList<>(rr.hours));
+
+                dialog.setArguments(args);
+                dialog.show(getFragmentManager(), "");
             }
         });
 
-        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value);
+        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
         ringtoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -176,6 +160,14 @@ public class RemindersFragment extends WeekSetFragment {
                 RemindersOldFragment.selectRingtone(RemindersFragment.this, uri);
             }
         });
+
+        View every = view.findViewById(R.id.alarm_every);
+        every.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ;
+            }
+        });
     }
 
     @Override
@@ -184,6 +176,9 @@ public class RemindersFragment extends WeekSetFragment {
         TextView time = (TextView) view.findViewById(R.id.alarm_time);
         updateTime(view, (ReminderSet) a);
         time.setClickable(false);
+
+        View every = view.findViewById(R.id.alarm_every);
+        every.setClickable(false);
     }
 
     void updateTime(View view, ReminderSet a) {
@@ -197,5 +192,10 @@ public class RemindersFragment extends WeekSetFragment {
 //        pm.setText(HourlyApplication.getHour4String(getActivity(), hour));
 
         time.setText(a.format());
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        dialogInterface=null;
     }
 }

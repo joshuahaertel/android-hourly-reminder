@@ -179,6 +179,7 @@
                             android:orientation="horizontal">
 
                             <LinearLayout
+                                android:id="@+id/alarm_ringtone_value_box"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginRight="10dp"

@@ -47,6 +47,7 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Reminder;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.DaysPrefDialogFragment;
 import com.github.axet.hourlyreminder.dialogs.HoursPrefDialogFragment;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
@@ -354,42 +355,18 @@ public class RemindersOldFragment extends PreferenceFragment implements Preferen
         findPreference(HourlyApplication.PREFERENCE_BEEP).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                Boolean beep = (Boolean) o;
-                boolean speak = ((SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_SPEAK)).isChecked();
-                if (!beep && !speak) {
-                    annonce(getActivity());
-                }
                 return true;
             }
         });
         findPreference(HourlyApplication.PREFERENCE_SPEAK).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                Boolean speak = (Boolean) o;
-                boolean beep = ((SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_BEEP)).isChecked();
-                if (!beep && !speak) {
-                    annonce(getActivity());
-                }
                 return true;
             }
         });
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.registerOnSharedPreferenceChangeListener(this);
-    }
-
-    static void annonce(Context context) {
-        SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
-        boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
-        annonce(context, v);
-    }
-
-    static void annonce(Context context, boolean v) {
-        if (v) {
-            Toast.makeText(context, R.string.reminders_vibrate, Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(context, R.string.reminders_silence, Toast.LENGTH_LONG).show();
-        }
     }
 
     @Override
@@ -435,7 +412,7 @@ public class RemindersOldFragment extends PreferenceFragment implements Preferen
                     if (sound.playerClose()) {
                         return;
                     }
-                    sound.soundReminder(System.currentTimeMillis());
+                    sound.soundReminder(new ReminderSet(context, System.currentTimeMillis()));
                 }
             });
         }

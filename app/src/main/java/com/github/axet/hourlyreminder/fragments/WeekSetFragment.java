@@ -459,7 +459,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             }
         });
 
-        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value);
+        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
         ringtoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

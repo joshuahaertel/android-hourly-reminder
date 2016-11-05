@@ -33,6 +33,7 @@ import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.dialogs.HoursPrefDialogFragment;
 
@@ -149,7 +150,6 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
                         permitted(PERMISSIONS_V, 2);
                         return false;
                     }
-                    annonce((boolean) o);
                     return true;
                 }
             });
@@ -167,16 +167,6 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
     void setVibr() {
         SwitchPreferenceCompat s = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_VIBRATE);
         s.setChecked(true);
-        annonce(true);
-    }
-
-    void annonce(boolean v) {
-        SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-        boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
-        boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
-        if (!b && !s) {
-            RemindersOldFragment.annonce(getActivity(), v);
-        }
     }
 
     @Override
@@ -262,7 +252,7 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    sound.soundReminder(System.currentTimeMillis());
+                    sound.soundReminder(new ReminderSet(context, System.currentTimeMillis()));
                 }
             });
         }

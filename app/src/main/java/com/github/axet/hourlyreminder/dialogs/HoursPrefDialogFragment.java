@@ -21,60 +21,6 @@ import java.util.TreeSet;
 public class HoursPrefDialogFragment extends PreferenceDialogFragment {
     private boolean mPreferenceChanged;
 
-    int[] ids = new int[]{
-            R.id.hours_00,
-            R.id.hours_01,
-            R.id.hours_02,
-            R.id.hours_03,
-            R.id.hours_04,
-            R.id.hours_05,
-            R.id.hours_06,
-            R.id.hours_07,
-            R.id.hours_08,
-            R.id.hours_09,
-            R.id.hours_10,
-            R.id.hours_11,
-            R.id.hours_12,
-            R.id.hours_13,
-            R.id.hours_14,
-            R.id.hours_15,
-            R.id.hours_16,
-            R.id.hours_17,
-            R.id.hours_18,
-            R.id.hours_19,
-            R.id.hours_20,
-            R.id.hours_21,
-            R.id.hours_22,
-            R.id.hours_23,
-    };
-
-    String[] AMPM = new String[]{
-            "12",
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-            "10",
-            "11",
-            "12",
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-            "10",
-            "11",
-    };
-
     Set<String> values;
 
     public HoursPrefDialogFragment() {
@@ -116,8 +62,8 @@ public class HoursPrefDialogFragment extends PreferenceDialogFragment {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View view = inflater.inflate(R.layout.hours, null, false);
 
-        for (int i = 0; i < ids.length; i++) {
-            CheckBox c = (CheckBox) view.findViewById(ids[i]);
+        for (int i = 0; i < HoursDialogFragment.ids.length; i++) {
+            CheckBox c = (CheckBox) view.findViewById(HoursDialogFragment.ids[i]);
             String h = Reminder.format(i);
             boolean b = values.contains(h);
             c.setChecked(b);
@@ -128,7 +74,7 @@ public class HoursPrefDialogFragment extends PreferenceDialogFragment {
                 }
             });
             if (!DateFormat.is24HourFormat(context)) {
-                c.setText(AMPM[i]);
+                c.setText(HoursDialogFragment.AMPM[i]);
             }
         }
 
@@ -149,8 +95,8 @@ public class HoursPrefDialogFragment extends PreferenceDialogFragment {
     void changed(View view) {
         mPreferenceChanged = true;
         Set<String> s = new TreeSet<>();
-        for (int i = 0; i < ids.length; i++) {
-            CheckBox c = (CheckBox) view.findViewById(ids[i]);
+        for (int i = 0; i < HoursDialogFragment.ids.length; i++) {
+            CheckBox c = (CheckBox) view.findViewById(HoursDialogFragment.ids[i]);
             String h = Reminder.format(i);
             if (c.isChecked()) {
                 s.add(h);

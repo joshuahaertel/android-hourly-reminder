@@ -53,8 +53,11 @@ public class HourlyApplication extends Application {
     public static final String PREFERENCE_ALARM = "alarm";
     public static final String PREFERENCE_ALARMS_PREFIX = "alarm_";
 
+    public static final String PREFERENCE_REMINDERS_PREFIX = "reminders_";
+
     public static final String PREFERENCE_BEEP_CUSTOM = "beep_custom";
 
+    // reminders <=1.5.9
     public static final String PREFERENCE_BEEP = "beep";
     public static final String PREFERENCE_CUSTOM_SOUND = "custom_sound";
     public static final String PREFERENCE_CUSTOM_SOUND_OFF = "off";
@@ -230,56 +233,76 @@ public class HourlyApplication extends Application {
     }
 
     public static List<ReminderSet> loadReminders(Context context) {
+        ArrayList<ReminderSet> list = new ArrayList<>();
+
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        boolean enabled = shared.getBoolean(PREFERENCE_ENABLED, false);
-        int repeat = Integer.parseInt(shared.getString(PREFERENCE_REPEAT, "60"));
-        Set<String> hours = shared.getStringSet(PREFERENCE_HOURS, new HashSet<String>());
+        int count = shared.getInt(PREFERENCE_REMINDERS_PREFIX + "count", -1);
 
-        boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
-        boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
-        boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
+        if (count == -1) { // <=1.5.9
+            boolean enabled = shared.getBoolean(PREFERENCE_ENABLED, false);
+            int repeat = Integer.parseInt(shared.getString(PREFERENCE_REPEAT, "60"));
+            Set<String> hours = shared.getStringSet(PREFERENCE_HOURS, new HashSet<String>());
 
-        ReminderSet rs = new ReminderSet(context, hours, repeat);
-        rs.enabled = enabled;
-        rs.speech = s;
-        rs.beep = b;
-        rs.ringtone = c;
+            boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
+            boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
+            boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
 
-        String custom = shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "");
-        if (custom.equals("ringtone")) {
-            String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, "");
-            rs.ringtoneValue = uri;
-        } else if (custom.equals("sound")) {
-            String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, "");
-            rs.ringtoneValue = uri;
+            ReminderSet rs = new ReminderSet(context, hours, repeat);
+            rs.enabled = enabled;
+            rs.speech = s;
+            rs.beep = b;
+            rs.ringtone = c;
+
+            String custom = shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "");
+            if (custom.equals("ringtone")) {
+                String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, "");
+                rs.ringtoneValue = uri;
+            } else if (custom.equals("sound")) {
+                String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, "");
+                rs.ringtoneValue = uri;
+            }
+            list.add(rs);
+        } else {
+            Set<Long> ids = new TreeSet<>();
+
+            for (int i = 0; i < count; i++) {
+                String json = shared.getString(PREFERENCE_REMINDERS_PREFIX + i, "");
+                ReminderSet a = new ReminderSet(context, json);
+
+                while (ids.contains(a.id)) {
+                    a.id++;
+                }
+                ids.add(a.id);
+
+                list.add(a);
+            }
         }
 
-        ArrayList<ReminderSet> list = new ArrayList<>();
-        list.add(rs);
         return list;
     }
 
     public static void saveReminders(Context context, List<ReminderSet> reminders) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor edit = shared.edit();
+        edit.putInt(PREFERENCE_REMINDERS_PREFIX + "count", reminders.size());
 
-        if (reminders.size() > 1) {
-            ReminderSet r = reminders.get(0);
-            SharedPreferences.Editor edit = shared.edit();
-            edit.putBoolean(PREFERENCE_ENABLED, r.enabled);
-            edit.putInt(PREFERENCE_REPEAT, r.repeat);
-            edit.putStringSet(PREFERENCE_HOURS, r.hours);
-            edit.putBoolean(PREFERENCE_SPEAK, r.speech);
-            edit.putBoolean(PREFERENCE_BEEP, r.beep);
-            if (r.ringtone) {
-                edit.putString(PREFERENCE_CUSTOM_SOUND, "ringtone"); // "sound"
-            } else {
-                edit.putString(PREFERENCE_CUSTOM_SOUND, HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
+        Set<Long> ids = new TreeSet<>();
+
+        for (int i = 0; i < reminders.size(); i++) {
+            ReminderSet a = reminders.get(i);
+
+            while (ids.contains(a.id)) {
+                a.id++;
             }
-            edit.putString(PREFERENCE_RINGTONE, r.ringtoneValue);
-            edit.putString(PREFERENCE_SOUND, r.ringtoneValue);
-            edit.commit();
+            ids.add(a.id);
+
+            edit.putString(PREFERENCE_REMINDERS_PREFIX + i, a.save().toString());
         }
+        edit.commit();
+
+        AlarmService.start(context);
+
     }
 
     public static void toastAlarmSet(Context context, WeekSet a) {

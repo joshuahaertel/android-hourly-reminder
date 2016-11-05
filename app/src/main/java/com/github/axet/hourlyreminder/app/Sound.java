@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.basics.Alarm;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 
@@ -80,7 +81,7 @@ public class Sound extends TTS {
         return track;
     }
 
-    public Silenced silencedReminder() {
+    public Silenced silencedReminder(ReminderSet rr) {
         Silenced ss = silenced();
 
         if (ss != Silenced.NONE)
@@ -89,9 +90,9 @@ public class Sound extends TTS {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
-        boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
-        boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
-        boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
+        boolean c = rr.ringtone;
+        boolean s = rr.speech;
+        boolean b = rr.beep;
 
         if (!v && !c && !s && !b)
             return Silenced.SETTINGS;
@@ -144,10 +145,10 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public void soundReminder(final long time) {
+    public void soundReminder(final ReminderSet rr) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        Silenced s = silencedReminder();
+        Silenced s = silencedReminder(rr);
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
@@ -170,7 +171,7 @@ public class Sound extends TTS {
                     break;
             }
             text += "\n";
-            text += context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, time));
+            text += context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, rr.time));
 
             Toast t = Toast.makeText(context, text, Toast.LENGTH_SHORT);
             TextView v = (TextView) t.getView().findViewById(android.R.id.message);
@@ -187,8 +188,8 @@ public class Sound extends TTS {
         final Runnable custom = new Runnable() {
             @Override
             public void run() {
-                if (!shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF)) {
-                    playCustom(null);
+                if (rr.ringtone) {
+                    playCustom(rr, null);
                 }
             }
         };
@@ -196,8 +197,8 @@ public class Sound extends TTS {
         final Runnable speech = new Runnable() {
             @Override
             public void run() {
-                if (shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false)) {
-                    playSpeech(time, custom);
+                if (rr.speech) {
+                    playSpeech(rr.time, custom);
                 } else {
                     custom.run();
                 }
@@ -207,7 +208,7 @@ public class Sound extends TTS {
         final Runnable beep = new Runnable() {
             @Override
             public void run() {
-                if (shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false)) {
+                if (rr.beep) {
                     playBeep(speech);
                 } else {
                     speech.run();
@@ -215,21 +216,16 @@ public class Sound extends TTS {
             }
         };
 
-        timeToast(time);
+        timeToast(rr.time);
 
         beep.run();
     }
 
-    public void playCustom(final Runnable done) {
+    public void playCustom(final ReminderSet rr, final Runnable done) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        String custom = shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "");
-
-        if (custom.equals("ringtone")) {
-            String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, "");
-            playCustom(uri, done);
-        } else if (custom.equals("sound")) {
-            String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, "");
+        if (rr.ringtone) {
+            String uri = rr.ringtoneValue;
             playCustom(uri, done);
         } else {
             if (done != null)

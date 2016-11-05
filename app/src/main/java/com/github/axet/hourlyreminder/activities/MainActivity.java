@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -30,11 +31,10 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
 import com.github.axet.hourlyreminder.fragments.RemindersFragment;
-import com.github.axet.hourlyreminder.fragments.RemindersOldFragment;
 import com.github.axet.hourlyreminder.fragments.SettingsFragment;
 import com.github.axet.hourlyreminder.services.AlarmService;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, DialogInterface.OnDismissListener {
     // MainActivity action
     public static final String SHOW_ALARMS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_ALARMS_PAGE";
     public static final String SHOW_SETTINGS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_SETTINGS_PAGE";
@@ -216,6 +216,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
+        Fragment f1, f2, f3;
+
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -224,11 +226,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return new RemindersOldFragment();
+                    if (f1 == null)
+                        f1 = new RemindersFragment();
+                    return f1;
                 case 1:
-                    return new AlarmsFragment();
+                    if (f2 == null)
+                        f2 = new AlarmsFragment();
+                    return f2;
                 case 2:
-                    return new SettingsFragment();
+                    if (f3 == null)
+                        f3 = new SettingsFragment();
+                    return f3;
                 default:
                     throw new RuntimeException("bad page");
             }
@@ -261,6 +269,15 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             finish();
             startActivity(new Intent(MainActivity.this, MainActivity.class));
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        }
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        int i = mViewPager.getCurrentItem();
+        Fragment f = mSectionsPagerAdapter.getItem(i);
+        if (f instanceof DialogInterface.OnDismissListener) {
+            ((DialogInterface.OnDismissListener) f).onDismiss(dialogInterface);
         }
     }
 }

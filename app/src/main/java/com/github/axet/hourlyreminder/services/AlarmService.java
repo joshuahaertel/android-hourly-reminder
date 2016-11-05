@@ -435,7 +435,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             for (Reminder r : rr.list) {
                 if (r.time == time && r.enabled) {
                     if (!alarmed)
-                        sound.soundReminder(time);
+                        sound.soundReminder(rr);
 
                     // calling setNext is more safe. if this alarm have to fire today we will reset it
                     // to the same time. if it is already past today's time (as we expect) then it will
