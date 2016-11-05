@@ -18,6 +18,7 @@ import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Reminder;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.Week;
 import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
@@ -227,36 +228,14 @@ public class HourlyApplication extends Application {
         AlarmService.start(context);
     }
 
-    public static List<Reminder> loadReminders(Context context) {
-        ArrayList<Reminder> list = new ArrayList<>();
-
+    public static ReminderSet loadReminders(Context context) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         int repeat = Integer.parseInt(shared.getString(PREFERENCE_REPEAT, "60"));
-
         Set<String> hours = shared.getStringSet(PREFERENCE_HOURS, new HashSet<String>());
 
-        for (int hour = 0; hour < 24; hour++) {
-            String h = Reminder.format(hour);
-
-            Reminder r = new Reminder(context);
-            r.enabled = hours.contains(h);
-            r.setTime(hour, 0);
-            list.add(r);
-
-            String next = Reminder.format(hour + 1);
-
-            if (r.enabled && hours.contains(next)) {
-                for (int m = repeat; m < 60; m += repeat) {
-                    r = new Reminder(context);
-                    r.enabled = true;
-                    r.setTime(hour, m);
-                    list.add(r);
-                }
-            }
-        }
-
-        return list;
+        ReminderSet rs = new ReminderSet(context, hours, repeat);
+        return rs;
     }
 
     public static void toastAlarmSet(Context context, Alarm a) {

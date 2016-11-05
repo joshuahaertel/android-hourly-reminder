@@ -430,4 +430,12 @@ public class Week {
             throw new RuntimeException(e);
         }
     }
+
+    public int getHour() {
+        return hour;
+    }
+
+    public int getMin() {
+        return min;
+    }
 }

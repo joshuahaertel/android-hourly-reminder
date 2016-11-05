@@ -21,6 +21,7 @@ import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Reminder;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -57,7 +58,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     Sound sound;
     List<Alarm> alarms;
-    List<Reminder> reminders;
+    ReminderSet reminders;
 
     public AlarmService() {
         super();
@@ -136,7 +137,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     public TreeSet<Long> generateReminders(Calendar cur) {
         TreeSet<Long> alarms = new TreeSet<>();
 
-        for (Reminder r : reminders) {
+        for (Reminder r : reminders.list) {
             if (r.enabled)
                 alarms.add(r.time);
         }
@@ -173,7 +174,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
 
-        for (Reminder r : reminders) {
+        for (Reminder r : reminders.list) {
             if (r.time == time && r.enabled) {
                 r.setTomorrow();
             }
@@ -326,7 +327,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     boolean isReminder(long time) {
-        for (Reminder r : reminders) {
+        for (Reminder r : reminders.list) {
             if (r.time == time && r.enabled) {
                 return true;
             }
@@ -424,7 +425,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
 
-        for (Reminder r : reminders) {
+        for (Reminder r : reminders.list) {
             if (r.time == time && r.enabled) {
                 if (!alarmed)
                     sound.soundReminder(time);
