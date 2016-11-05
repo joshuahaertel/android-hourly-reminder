@@ -1,22 +1,15 @@
 package com.github.axet.hourlyreminder.basics;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.preference.PreferenceManager;
-
-import com.github.axet.hourlyreminder.app.HourlyApplication;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Comparator;
-import java.util.Date;
 
 public class WeekSet extends Week {
     public final static Uri DEFAULT_RING = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
@@ -67,9 +60,27 @@ public class WeekSet extends Week {
     }
 
     public WeekSet(Context context, String json) {
-        this(context);
+        super(context);
         try {
             JSONObject o = new JSONObject(json);
+            load(o);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setEnable(boolean e) {
+        this.enabled = e;
+        if (e)
+            setNext();
+    }
+
+    public boolean getEnable() {
+        return enabled;
+    }
+
+    public void load(JSONObject o) {
+        try {
             WeekSet a = this;
             a.id = o.getLong("id");
             a.time = o.getLong("time");
@@ -89,16 +100,6 @@ public class WeekSet extends Week {
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void setEnable(boolean e) {
-        this.enabled = e;
-        if (e)
-            setNext();
-    }
-
-    public boolean getEnable() {
-        return enabled;
     }
 
     public JSONObject save() {

@@ -20,6 +20,7 @@ import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.Week;
+import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
@@ -228,17 +229,60 @@ public class HourlyApplication extends Application {
         AlarmService.start(context);
     }
 
-    public static ReminderSet loadReminders(Context context) {
+    public static List<ReminderSet> loadReminders(Context context) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
+        boolean enabled = shared.getBoolean(PREFERENCE_ENABLED, false);
         int repeat = Integer.parseInt(shared.getString(PREFERENCE_REPEAT, "60"));
         Set<String> hours = shared.getStringSet(PREFERENCE_HOURS, new HashSet<String>());
 
+        boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
+        boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
+        boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
+
         ReminderSet rs = new ReminderSet(context, hours, repeat);
-        return rs;
+        rs.enabled = enabled;
+        rs.speech = s;
+        rs.beep = b;
+        rs.ringtone = c;
+
+        String custom = shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "");
+        if (custom.equals("ringtone")) {
+            String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, "");
+            rs.ringtoneValue = uri;
+        } else if (custom.equals("sound")) {
+            String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, "");
+            rs.ringtoneValue = uri;
+        }
+
+        ArrayList<ReminderSet> list = new ArrayList<>();
+        list.add(rs);
+        return list;
     }
 
-    public static void toastAlarmSet(Context context, Alarm a) {
+    public static void saveReminders(Context context, List<ReminderSet> reminders) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if (reminders.size() > 1) {
+            ReminderSet r = reminders.get(0);
+            SharedPreferences.Editor edit = shared.edit();
+            edit.putBoolean(PREFERENCE_ENABLED, r.enabled);
+            edit.putInt(PREFERENCE_REPEAT, r.repeat);
+            edit.putStringSet(PREFERENCE_HOURS, r.hours);
+            edit.putBoolean(PREFERENCE_SPEAK, r.speech);
+            edit.putBoolean(PREFERENCE_BEEP, r.beep);
+            if (r.ringtone) {
+                edit.putString(PREFERENCE_CUSTOM_SOUND, "ringtone"); // "sound"
+            } else {
+                edit.putString(PREFERENCE_CUSTOM_SOUND, HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
+            }
+            edit.putString(PREFERENCE_RINGTONE, r.ringtoneValue);
+            edit.putString(PREFERENCE_SOUND, r.ringtoneValue);
+            edit.commit();
+        }
+    }
+
+    public static void toastAlarmSet(Context context, WeekSet a) {
         if (!a.enabled) {
             Toast.makeText(context, context.getString(R.string.alarm_disabled), Toast.LENGTH_SHORT).show();
             return;

@@ -58,7 +58,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     Sound sound;
     List<Alarm> alarms;
-    ReminderSet reminders;
+    List<ReminderSet> reminders;
 
     public AlarmService() {
         super();
@@ -137,9 +137,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     public TreeSet<Long> generateReminders(Calendar cur) {
         TreeSet<Long> alarms = new TreeSet<>();
 
-        for (Reminder r : reminders.list) {
-            if (r.enabled)
-                alarms.add(r.time);
+        for (ReminderSet rr : reminders) {
+            for (Reminder r : rr.list) {
+                if (r.enabled)
+                    alarms.add(r.time);
+            }
         }
 
         return alarms;
@@ -174,9 +176,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
 
-        for (Reminder r : reminders.list) {
-            if (r.time == time && r.enabled) {
-                r.setTomorrow();
+        for (ReminderSet rr : reminders) {
+            for (Reminder r : rr.list) {
+                if (r.time == time && r.enabled) {
+                    r.setTomorrow();
+                }
             }
         }
 
@@ -327,9 +331,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     boolean isReminder(long time) {
-        for (Reminder r : reminders.list) {
-            if (r.time == time && r.enabled) {
-                return true;
+        for (ReminderSet rr : reminders) {
+            for (Reminder r : rr.list) {
+                if (r.time == time && r.enabled) {
+                    return true;
+                }
             }
         }
         return false;
@@ -425,19 +431,21 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
 
-        for (Reminder r : reminders.list) {
-            if (r.time == time && r.enabled) {
-                if (!alarmed)
-                    sound.soundReminder(time);
+        for (ReminderSet rr : reminders) {
+            for (Reminder r : rr.list) {
+                if (r.time == time && r.enabled) {
+                    if (!alarmed)
+                        sound.soundReminder(time);
 
-                // calling setNext is more safe. if this alarm have to fire today we will reset it
-                // to the same time. if it is already past today's time (as we expect) then it will
-                // be set for tomorrow.
-                //
-                // also safe if we moved to another timezone.
-                r.setNext();
+                    // calling setNext is more safe. if this alarm have to fire today we will reset it
+                    // to the same time. if it is already past today's time (as we expect) then it will
+                    // be set for tomorrow.
+                    //
+                    // also safe if we moved to another timezone.
+                    r.setNext();
 
-                registerNextAlarm();
+                    registerNextAlarm();
+                }
             }
         }
     }

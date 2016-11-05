@@ -20,7 +20,7 @@ import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.BeepView;
 
-public class BeepDialogFragment extends PreferenceDialogFragment {
+public class BeepPrefDialogFragment extends PreferenceDialogFragment {
     private boolean mPreferenceChanged;
 
     Sound sound;
@@ -67,11 +67,11 @@ public class BeepDialogFragment extends PreferenceDialogFragment {
 
     BeepConfig beep = new BeepConfig();
 
-    public BeepDialogFragment() {
+    public BeepPrefDialogFragment() {
     }
 
-    public static BeepDialogFragment newInstance(String key) {
-        BeepDialogFragment fragment = new BeepDialogFragment();
+    public static BeepPrefDialogFragment newInstance(String key) {
+        BeepPrefDialogFragment fragment = new BeepPrefDialogFragment();
         Bundle b = new Bundle(1);
         b.putString("key", key);
         fragment.setArguments(b);
@@ -195,7 +195,7 @@ public class BeepDialogFragment extends PreferenceDialogFragment {
                 mPreferenceChanged = true;
 
                 ignore = true;
-                BeepDialogFragment.this.freq.setText("" + beep.value_f);
+                BeepPrefDialogFragment.this.freq.setText("" + beep.value_f);
                 ignore = false;
             }
 

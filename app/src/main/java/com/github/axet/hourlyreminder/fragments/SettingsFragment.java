@@ -33,8 +33,8 @@ import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.dialogs.BeepDialogFragment;
-import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.HoursPrefDialogFragment;
 
 public class SettingsFragment extends PreferenceFragment implements PreferenceFragment.OnPreferenceDisplayDialogCallback, SharedPreferences.OnSharedPreferenceChangeListener {
     Sound sound;
@@ -62,14 +62,14 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
         }
 
         if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
-            HoursDialogFragment f = HoursDialogFragment.newInstance(preference.getKey());
+            HoursPrefDialogFragment f = HoursPrefDialogFragment.newInstance(preference.getKey());
             ((DialogFragment) f).setTargetFragment(this, 0);
             ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
             return true;
         }
 
         if (preference.getKey().equals(HourlyApplication.PREFERENCE_BEEP_CUSTOM)) {
-            BeepDialogFragment f = BeepDialogFragment.newInstance(preference.getKey());
+            BeepPrefDialogFragment f = BeepPrefDialogFragment.newInstance(preference.getKey());
             ((DialogFragment) f).setTargetFragment(this, 0);
             ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
             return true;
@@ -111,19 +111,19 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             });
         }
 
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_VOLUME));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_VOLUME));
 
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_INCREASE_VOLUME));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_INCREASE_VOLUME));
 
         if (DateFormat.is24HourFormat(getActivity())) {
             getPreferenceScreen().removePreference(findPreference(HourlyApplication.PREFERENCE_SPEAK_AMPM));
         }
 
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_THEME));
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_WEEKSTART));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_THEME));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_WEEKSTART));
 
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_DELAY));
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_AFTER));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_DELAY));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_AFTER));
 
         findPreference(HourlyApplication.PREFERENCE_CALLSILENCE).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -175,7 +175,7 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
         boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
         boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
         if (!b && !s) {
-            RemindersFragment.annonce(getActivity(), v);
+            RemindersOldFragment.annonce(getActivity(), v);
         }
     }
 

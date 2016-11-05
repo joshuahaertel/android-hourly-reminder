@@ -20,7 +20,8 @@ import android.widget.Toast;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.dialogs.BeepDialogFragment;
+import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 
 import java.io.IOException;
 
@@ -101,7 +102,7 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public Silenced silencedAlarm(Alarm a) {
+    public Silenced silencedAlarm(WeekSet a) {
         Silenced ss = silenced();
 
         if (ss != Silenced.NONE)
@@ -226,47 +227,34 @@ public class Sound extends TTS {
 
         if (custom.equals("ringtone")) {
             String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, "");
-            playerClose();
-
-            Sound.this.done.clear();
-            Sound.this.done.add(done);
-
-            if (uri.isEmpty()) {
-                if (done != null)
-                    done.run();
-            } else {
-                player = playOnce(Uri.parse(uri), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (done != null && Sound.this.done.contains(done))
-                            done.run();
-                        playerClose();
-                    }
-                });
-            }
+            playCustom(uri, done);
         } else if (custom.equals("sound")) {
             String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, "");
-            playerClose();
-
-            Sound.this.done.clear();
-            Sound.this.done.add(done);
-
-            if (uri.isEmpty()) {
-                if (done != null)
-                    done.run();
-            } else {
-                player = playOnce(Uri.parse(uri), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (done != null && Sound.this.done.contains(done))
-                            done.run();
-                        playerClose();
-                    }
-                });
-            }
+            playCustom(uri, done);
         } else {
             if (done != null)
                 done.run();
+        }
+    }
+
+    void playCustom(String uri, final Runnable done) {
+        playerClose();
+
+        Sound.this.done.clear();
+        Sound.this.done.add(done);
+
+        if (uri.isEmpty()) {
+            if (done != null)
+                done.run();
+        } else {
+            player = playOnce(Uri.parse(uri), new Runnable() {
+                @Override
+                public void run() {
+                    if (done != null && Sound.this.done.contains(done))
+                        done.run();
+                    playerClose();
+                }
+            });
         }
     }
 
@@ -275,7 +263,7 @@ public class Sound extends TTS {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         String b = shared.getString(HourlyApplication.PREFERENCE_BEEP_CUSTOM, "1800:100");
 
-        BeepDialogFragment.BeepConfig beep = new BeepDialogFragment.BeepConfig();
+        BeepPrefDialogFragment.BeepConfig beep = new BeepPrefDialogFragment.BeepConfig();
         beep.load(b);
 
         playBeep(generateTone(beep.value_f, beep.value_l), done);
@@ -545,7 +533,7 @@ public class Sound extends TTS {
         return false;
     }
 
-    public Silenced playAlarm(final Alarm a) {
+    public Silenced playAlarm(final WeekSet a) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         Silenced s = silencedAlarm(a);

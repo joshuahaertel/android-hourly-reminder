@@ -30,6 +30,7 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
 import com.github.axet.hourlyreminder.fragments.RemindersFragment;
+import com.github.axet.hourlyreminder.fragments.RemindersOldFragment;
 import com.github.axet.hourlyreminder.fragments.SettingsFragment;
 import com.github.axet.hourlyreminder.services.AlarmService;
 
@@ -223,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return new RemindersFragment();
+                    return new RemindersOldFragment();
                 case 1:
                     return new AlarmsFragment();
                 case 2:
