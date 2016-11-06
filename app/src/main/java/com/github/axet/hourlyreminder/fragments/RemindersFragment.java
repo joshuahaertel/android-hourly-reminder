@@ -201,6 +201,8 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                     public void onClick(DialogInterface dialog, int which) {
                         String s = ss.get(which);
                         int min = Integer.parseInt(s);
+                        rr.repeat = min;
+                        save(rr);
 
                         // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
                         if (Build.VERSION.SDK_INT >= 23) {
@@ -216,8 +218,6 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                             }
                         }
 
-                        rr.repeat = min;
-                        save(rr);
                         dialog.dismiss();
                     }
                 });
