@@ -302,17 +302,17 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         }
     }
 
+    void setWeek(WeekSet a, int week, boolean c) {
+        a.setWeek(week, c);
+        save(a);
+    }
+
     public void fillDetailed(final View view, final WeekSet a, boolean animate) {
         final Switch enable = (Switch) view.findViewById(R.id.alarm_enable);
         enable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.setEnable(enable.isChecked());
-
-                if (enable.isChecked())
-                    HourlyApplication.toastAlarmSet(getActivity(), a);
-
-                save(a);
+                setEnable(a, enable.isChecked());
             }
         });
         enable.setChecked(a.getEnable());
@@ -331,12 +331,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 child.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        long time = a.time;
-                        a.setWeek(week, child.isChecked());
-                        if (a.time != time && a.enabled) {
-                            HourlyApplication.toastAlarmSet(getActivity(), a);
-                        }
-                        save(a);
+                        setWeek(a, week,child.isChecked());
                     }
                 });
                 child.setChecked(a.isWeek(week));
@@ -565,6 +560,11 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         return true;
     }
 
+    void setEnable(WeekSet a, boolean e) {
+        a.setEnable(e);
+        save(a);
+    }
+
     public void fillCompact(final View view, final WeekSet a, boolean animate) {
         TextView time = (TextView) view.findViewById(R.id.alarm_time);
         time.setClickable(false);
@@ -573,12 +573,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         enable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.setEnable(enable.isChecked());
-
-                if (enable.isChecked())
-                    HourlyApplication.toastAlarmSet(getActivity(), a);
-
-                save(a);
+                setEnable(a, enable.isChecked());
             }
         });
         enable.setChecked(a.getEnable());

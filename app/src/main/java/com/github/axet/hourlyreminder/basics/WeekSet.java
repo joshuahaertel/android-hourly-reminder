@@ -9,7 +9,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 
 public class WeekSet extends Week {
     public final static Uri DEFAULT_RING = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
@@ -24,16 +23,6 @@ public class WeekSet extends Week {
     public boolean beep;
     // speech time?
     public boolean speech;
-
-    public static class CustomComparator implements Comparator<WeekSet> {
-        @Override
-        public int compare(WeekSet o1, WeekSet o2) {
-            int c = new Integer(o1.getHour()).compareTo(o2.getHour());
-            if (c != 0)
-                return c;
-            return new Integer(o1.getMin()).compareTo(o2.getMin());
-        }
-    }
 
     public WeekSet(WeekSet copy) {
         super(copy);
@@ -60,13 +49,7 @@ public class WeekSet extends Week {
     }
 
     public WeekSet(Context context, String json) {
-        super(context);
-        try {
-            JSONObject o = new JSONObject(json);
-            load(o);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
+        super(context, json);
     }
 
     public void setEnable(boolean e) {
@@ -79,38 +62,24 @@ public class WeekSet extends Week {
         return enabled;
     }
 
-    public void load(JSONObject o) {
-        try {
-            WeekSet a = this;
-            a.id = o.getLong("id");
-            a.time = o.getLong("time");
-            try {
-                a.hour = o.getInt("hour");
-                a.min = o.getInt("min");
-            } catch (JSONException e) { // <=1.4.5
-                setTime(a.time);
-            }
-            a.enabled = o.getBoolean("enable");
-            a.weekdaysCheck = o.getBoolean("weekdays");
-            a.setWeekDaysProperty(o.getJSONArray("weekdays_values"));
-            a.ringtone = o.getBoolean("ringtone");
-            a.ringtoneValue = o.optString("ringtone_value", null);
-            a.beep = o.getBoolean("beep");
-            a.speech = o.getBoolean("speech");
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
+    @Override
+    public void load(JSONObject o) throws JSONException {
+        super.load(o);
+        this.id = o.getLong("id");
+        this.ringtone = o.getBoolean("ringtone");
+        this.ringtoneValue = o.optString("ringtone_value", null);
+        this.beep = o.getBoolean("beep");
+        this.speech = o.getBoolean("speech");
     }
 
     public JSONObject save() {
         try {
-            WeekSet a = this;
             JSONObject o = super.save();
             o.put("id", this.id);
-            o.put("ringtone", a.ringtone);
-            o.put("ringtone_value", a.ringtoneValue);
-            o.put("beep", a.beep);
-            o.put("speech", a.speech);
+            o.put("ringtone", this.ringtone);
+            o.put("ringtone_value", this.ringtoneValue);
+            o.put("beep", this.beep);
+            o.put("speech", this.speech);
             return o;
         } catch (JSONException e) {
             throw new RuntimeException(e);

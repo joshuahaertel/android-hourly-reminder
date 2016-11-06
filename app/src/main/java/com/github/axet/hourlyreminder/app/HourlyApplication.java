@@ -21,6 +21,7 @@ import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.Week;
 import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.basics.WeekTime;
 import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
@@ -305,7 +306,7 @@ public class HourlyApplication extends Application {
 
     }
 
-    public static void toastAlarmSet(Context context, WeekSet a) {
+    public static void toastAlarmSet(Context context, WeekTime a) {
         if (!a.enabled) {
             Toast.makeText(context, context.getString(R.string.alarm_disabled), Toast.LENGTH_SHORT).show();
             return;

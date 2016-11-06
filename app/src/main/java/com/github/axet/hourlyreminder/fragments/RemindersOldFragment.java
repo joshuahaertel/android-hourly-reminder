@@ -26,7 +26,6 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceGroup;
 import android.support.v7.preference.PreferenceGroupAdapter;
 import android.support.v7.preference.PreferenceViewHolder;
-import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.ContentFrameLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -412,7 +411,7 @@ public class RemindersOldFragment extends PreferenceFragment implements Preferen
                     if (sound.playerClose()) {
                         return;
                     }
-                    sound.soundReminder(new ReminderSet(context, System.currentTimeMillis()));
+                    sound.soundReminder(new ReminderSet(context), System.currentTimeMillis());
                 }
             });
         }

@@ -17,6 +17,7 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.basics.WeekTime;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,6 +105,23 @@ public class AlarmsFragment extends WeekSetFragment {
     }
 
     @Override
+    void setWeek(WeekSet a, int week, boolean c) {
+        WeekTime t = (WeekTime) a;
+        long time = t.time;
+        super.setWeek(a, week, c);
+        if (t.time != time && a.enabled) {
+            HourlyApplication.toastAlarmSet(getActivity(), t);
+        }
+    }
+
+    @Override
+    void setEnable(WeekSet a, boolean e) {
+        super.setEnable(a, e);
+        if (e)
+            HourlyApplication.toastAlarmSet(getActivity(), (WeekTime) a);
+    }
+
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         super.onSharedPreferenceChanged(sharedPreferences, key);
         alarms = HourlyApplication.loadAlarms(getActivity());
@@ -152,6 +170,8 @@ public class AlarmsFragment extends WeekSetFragment {
     public void fillDetailed(final View view, final WeekSet a, boolean animate) {
         super.fillDetailed(view, a, animate);
 
+        final WeekTime t = (WeekTime) a;
+
         final TextView time = (TextView) view.findViewById(R.id.alarm_time);
         updateTime(view, (Alarm) a);
         time.setOnClickListener(new View.OnClickListener() {
@@ -165,7 +185,7 @@ public class AlarmsFragment extends WeekSetFragment {
                         @Override
                         public void run() {
                             if (a.enabled)
-                                HourlyApplication.toastAlarmSet(getActivity(), a);
+                                HourlyApplication.toastAlarmSet(getActivity(), t);
                             updateTime(view, (Alarm) a);
                             save(a);
                         }
@@ -173,13 +193,13 @@ public class AlarmsFragment extends WeekSetFragment {
 
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        a.setTime(hourOfDay, minute);
+                        t.setTime(hourOfDay, minute);
                         if (r != null) {
                             r.run();
                             r = null;
                         }
                     }
-                }, a.getHour(), a.getMin(), DateFormat.is24HourFormat(getActivity()));
+                }, t.getHour(), t.getMin(), DateFormat.is24HourFormat(getActivity()));
                 d.show();
             }
         });

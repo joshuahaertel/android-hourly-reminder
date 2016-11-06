@@ -37,8 +37,8 @@
                     android:layout_gravity="center">
 
                     <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_rotation_black_24dp"
                         android:tint="#9b9b9b" />
@@ -48,7 +48,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_margin="10dp"
+                        android:layout_margin="15dp"
                         android:gravity="center"
                         android:text="1ч" />
                 </FrameLayout>

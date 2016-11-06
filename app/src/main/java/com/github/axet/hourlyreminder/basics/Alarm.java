@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class Alarm extends WeekSet {
+public class Alarm extends WeekTime {
 
     public Alarm(Alarm copy) {
         super(copy);

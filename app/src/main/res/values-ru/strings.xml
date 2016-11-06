@@ -151,10 +151,11 @@
     <string name="system">Системный Язык</string>
 
     <string name="hour_symbol">ч</string>
+    <string name="min_symbol">м</string>
 
     <string name="dismiss">Отменить</string>
     <string name="dismiss_alarm">Отменить Будильник</string>
-    <string name="ringtone">Оповещение</string>
+    <string name="ringtone">Мелодия</string>
     <string name="speech">Голос</string>
     <string name="title_activity_alarm">Будильник</string>
     <string name="title_activity_main">Почасовое оповещение</string>
@@ -173,4 +174,5 @@
     <string name="play">Слушать</string>
     <string name="snoozed">Повтор</string>
     <string name="snooze">Отложить</string>
+    <string name="every">Периодичность</string>
 </resources>

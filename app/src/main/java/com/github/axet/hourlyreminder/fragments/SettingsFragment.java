@@ -252,7 +252,7 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    sound.soundReminder(new ReminderSet(context, System.currentTimeMillis()));
+                    sound.soundReminder(new ReminderSet(context), System.currentTimeMillis());
                 }
             });
         }

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Reminder extends Week {
+public class Reminder extends WeekTime {
     public Reminder(Context context) {
         super(context);
 

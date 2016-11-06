@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -23,15 +24,26 @@ public class ReminderSet extends WeekSet {
 
         this.repeat = repeat;
 
-        load(hours, repeat);
+        load(hours);
     }
 
-    public ReminderSet(Context context, long time) {
+    public ReminderSet(Context context, Set<String> hours) {
         super(context);
-        setTime(time);
+
+        this.repeat = 60;
+        this.enabled = true;
+        this.ringtone = false;
+
+        load(hours);
+    }
+
+    public ReminderSet(Context context) {
+        super(context);
         this.beep = true;
         this.speech = true;
         this.ringtone = false;
+        this.repeat = 60;
+        load(new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12"})));
     }
 
     public ReminderSet(Context context, String json) {
@@ -42,8 +54,9 @@ public class ReminderSet extends WeekSet {
         return HourlyApplication.getHours2String(context, new ArrayList<>(hours));
     }
 
-    void load(Set<String> hours, int repeat) {
-        ArrayList<Reminder> list = new ArrayList<>();
+    public void load(Set<String> hours) {
+        this.hours = new TreeSet<>(hours);
+        this.list = new ArrayList<>();
 
         for (int hour = 0; hour < 24; hour++) {
             String h = Reminder.format(hour);
@@ -64,12 +77,10 @@ public class ReminderSet extends WeekSet {
                 }
             }
         }
-        this.list = list;
-        this.hours = new TreeSet<>(hours);
     }
 
     @Override
-    public void load(JSONObject o) {
+    public void load(JSONObject o) throws JSONException {
         super.load(o);
         try {
             this.repeat = o.getInt("repeat");
@@ -78,7 +89,7 @@ public class ReminderSet extends WeekSet {
             for (int i = 0; i < list.length(); i++) {
                 hh.add(list.getString(i));
             }
-            load(hh, this.repeat);
+            load(hh);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

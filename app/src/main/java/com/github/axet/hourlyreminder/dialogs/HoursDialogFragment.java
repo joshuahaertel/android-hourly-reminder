@@ -83,6 +83,24 @@ public class HoursDialogFragment extends DialogFragment {
 
     Set<String> values;
 
+    public class Result implements DialogInterface {
+        public int index;
+        public Set<String> hours;
+
+        public Result() {
+            this.hours = values;
+            this.index = getArguments().getInt("index");
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public void dismiss() {
+        }
+    }
+
     public HoursDialogFragment() {
     }
 
@@ -185,7 +203,7 @@ public class HoursDialogFragment extends DialogFragment {
         super.onDismiss(dialog);
         Activity a = getActivity();
         if (a instanceof DialogInterface.OnDismissListener) {
-            ((DialogInterface.OnDismissListener) a).onDismiss(dialog);
+            ((DialogInterface.OnDismissListener) a).onDismiss(new Result());
         }
     }
 }

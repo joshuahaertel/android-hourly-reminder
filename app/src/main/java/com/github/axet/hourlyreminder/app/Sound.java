@@ -145,7 +145,7 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public void soundReminder(final ReminderSet rr) {
+    public void soundReminder(final ReminderSet rr, final long time) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         Silenced s = silencedReminder(rr);
@@ -171,7 +171,7 @@ public class Sound extends TTS {
                     break;
             }
             text += "\n";
-            text += context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, rr.time));
+            text += context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, time));
 
             Toast t = Toast.makeText(context, text, Toast.LENGTH_SHORT);
             TextView v = (TextView) t.getView().findViewById(android.R.id.message);
@@ -198,7 +198,7 @@ public class Sound extends TTS {
             @Override
             public void run() {
                 if (rr.speech) {
-                    playSpeech(rr.time, custom);
+                    playSpeech(time, custom);
                 } else {
                     custom.run();
                 }
@@ -216,7 +216,7 @@ public class Sound extends TTS {
             }
         };
 
-        timeToast(rr.time);
+        timeToast(time);
 
         beep.run();
     }
