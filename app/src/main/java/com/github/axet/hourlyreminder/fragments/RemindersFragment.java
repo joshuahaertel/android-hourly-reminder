@@ -1,10 +1,14 @@
 package com.github.axet.hourlyreminder.fragments;
 
 import android.app.Dialog;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -13,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
@@ -27,6 +32,20 @@ import java.util.List;
 public class RemindersFragment extends WeekSetFragment implements DialogInterface.OnDismissListener {
 
     List<ReminderSet> reminders = new ArrayList<>();
+
+    public static void selectRingtone(Fragment context, Uri uri) {
+        // W/MediaPlayer: Couldn't open file on client side; trying server side:
+        // java.lang.SecurityException: Permission Denial: reading com.android.providers.media.MediaProvider uri content://media/external/audio/media/17722
+        // from pid=697, uid=10204
+        // requires android.permission.READ_EXTERNAL_STORAGE, or grantUriPermission()
+        //
+        // context.grantUriPermission("com.android.providers.media.MediaProvider", Uri.parse("content://media/external/images/media"), Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        context.startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.Reminder))
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), 0);
+    }
 
     public RemindersFragment() {
     }
@@ -161,7 +180,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 if (!a.ringtoneValue.isEmpty()) {
                     uri = Uri.parse(a.ringtoneValue);
                 }
-                RemindersOldFragment.selectRingtone(RemindersFragment.this, uri);
+                selectRingtone(RemindersFragment.this, uri);
             }
         });
 
@@ -175,7 +194,23 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 builder.setSingleChoiceItems(R.array.repeat_text, ss.indexOf("" + rr.repeat), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         String s = ss.get(which);
-                        rr.repeat = Integer.parseInt(s);
+                        int min = Integer.parseInt(s);
+
+                        // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
+                        if (Build.VERSION.SDK_INT >= 23) {
+                            if (min < 15) {
+                                SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
+                                boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, false);
+                                if (!b) {
+                                    Toast.makeText(getActivity(), R.string.alarm_type_alarm, Toast.LENGTH_SHORT).show();
+                                    SharedPreferences.Editor edit = shared.edit();
+                                    edit.putBoolean(HourlyApplication.PREFERENCE_ALARM, true);
+                                    edit.commit();
+                                }
+                            }
+                        }
+
+                        rr.repeat = min;
                         save(rr);
                         dialog.dismiss();
                     }

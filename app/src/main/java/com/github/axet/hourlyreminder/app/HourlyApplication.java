@@ -46,11 +46,7 @@ public class HourlyApplication extends Application {
 
     public static final String PREFERENCE_VERSION = "version";
 
-    public static final String PREFERENCE_ENABLED = "enabled";
-    public static final String PREFERENCE_HOURS = "hours";
-    public static final String PREFERENCE_DAYS = "weekdays";
-    public static final String PREFERENCE_REPEAT = "repeat";
-    public static final String PREFERENCE_ALARM = "alarm";
+    public static final String PREFERENCE_ALARM = "alarm"; // use alarm type for reminders
     public static final String PREFERENCE_ALARMS_PREFIX = "alarm_";
 
     public static final String PREFERENCE_REMINDERS_PREFIX = "reminders_";
@@ -58,6 +54,10 @@ public class HourlyApplication extends Application {
     public static final String PREFERENCE_BEEP_CUSTOM = "beep_custom";
 
     // reminders <=1.5.9
+    public static final String PREFERENCE_ENABLED = "enabled";
+    public static final String PREFERENCE_HOURS = "hours";
+    public static final String PREFERENCE_DAYS = "weekdays";
+    public static final String PREFERENCE_REPEAT = "repeat";
     public static final String PREFERENCE_BEEP = "beep";
     public static final String PREFERENCE_CUSTOM_SOUND = "custom_sound";
     public static final String PREFERENCE_CUSTOM_SOUND_OFF = "off";
