@@ -125,6 +125,7 @@ public class HoursDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final AlertDialog d = new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.hours)
                 .setNegativeButton(getString(android.R.string.cancel),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {

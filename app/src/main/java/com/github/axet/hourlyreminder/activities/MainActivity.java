@@ -23,6 +23,7 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -33,6 +34,8 @@ import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
 import com.github.axet.hourlyreminder.fragments.RemindersFragment;
 import com.github.axet.hourlyreminder.fragments.SettingsFragment;
 import com.github.axet.hourlyreminder.services.AlarmService;
+
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, DialogInterface.OnDismissListener {
     // MainActivity action
@@ -216,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
-        Fragment f1, f2, f3;
+        HashMap<Integer, Fragment> map = new HashMap<>();
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -226,25 +229,30 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    if (f1 == null)
-                        f1 = new RemindersFragment();
-                    return f1;
+                    return new RemindersFragment();
                 case 1:
-                    if (f2 == null)
-                        f2 = new AlarmsFragment();
-                    return f2;
+                    return new AlarmsFragment();
                 case 2:
-                    if (f3 == null)
-                        f3 = new SettingsFragment();
-                    return f3;
+                    return new SettingsFragment();
                 default:
                     throw new RuntimeException("bad page");
             }
         }
 
         @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Object o = super.instantiateItem(container, position);
+            map.put(position, (Fragment) o);
+            return o;
+        }
+
+        @Override
         public int getCount() {
             return 3;
+        }
+
+        public Fragment getFragment(int pos) {
+            return map.get(pos);
         }
 
         @Override
@@ -264,7 +272,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     protected void onResume() {
         super.onResume();
-
         if (timeChanged) {
             finish();
             startActivity(new Intent(MainActivity.this, MainActivity.class));
@@ -275,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         int i = mViewPager.getCurrentItem();
-        Fragment f = mSectionsPagerAdapter.getItem(i);
+        Fragment f = mSectionsPagerAdapter.getFragment(i);
         if (f instanceof DialogInterface.OnDismissListener) {
             ((DialogInterface.OnDismissListener) f).onDismiss(dialogInterface);
         }

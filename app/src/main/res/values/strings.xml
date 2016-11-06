@@ -298,4 +298,5 @@
     <string name="snoozed">Snoozed</string>
     <string name="snooze">Snooze</string>
     <string name="every">Reminder Every</string>
+    <string name="hours">Hours</string>
 </resources>
