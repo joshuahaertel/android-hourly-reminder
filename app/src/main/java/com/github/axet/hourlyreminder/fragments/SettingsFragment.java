@@ -11,13 +11,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v13.app.FragmentCompat;
 import android.support.v14.preference.PreferenceFragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceGroup;
+import android.support.v7.preference.PreferenceGroupAdapter;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.ContentFrameLayout;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.Gravity;
@@ -27,19 +33,222 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.widgets.FilePathPreference;
 import com.github.axet.androidlibrary.widgets.SeekBarPreference;
 import com.github.axet.androidlibrary.widgets.SeekBarPreferenceDialogFragment;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.dialogs.HoursPrefDialogFragment;
+import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class SettingsFragment extends PreferenceFragment implements PreferenceFragment.OnPreferenceDisplayDialogCallback, SharedPreferences.OnSharedPreferenceChangeListener {
     Sound sound;
     Handler handler = new Handler();
+
+    static String getTitle(Context context, String t) {
+        String s = HourlyApplication.getTitle(context, t);
+        if (s == null)
+            s = "None";
+        return s;
+    }
+
+    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object value) {
+            String stringValue = value.toString();
+
+            if (preference.getKey().equals(HourlyApplication.PREFERENCE_RINGTONE)) {
+                preference.setSummary(getTitle(preference.getContext(), stringValue));
+                return true;
+            }
+
+            if (preference.getKey().equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND)) {
+                CustomSoundListPreference pp = (CustomSoundListPreference) preference;
+                pp.update(stringValue);
+                // keep update List type pref
+                // return true;
+            }
+
+            if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
+                List sortedList = new ArrayList((Set) value);
+                preference.setSummary(HourlyApplication.getHours2String(preference.getContext(), sortedList));
+                return true;
+            }
+
+            if (preference.getKey().equals(HourlyApplication.PREFERENCE_DAYS)) {
+                Reminder r = new Reminder(preference.getContext(), (Set) value);
+                preference.setSummary(r.getDays());
+                return true;
+            }
+
+            if (preference instanceof FilePathPreference) {
+                if (stringValue.isEmpty())
+                    stringValue = preference.getContext().getString(R.string.not_selected);
+                preference.setSummary(stringValue);
+                return true;
+            }
+
+            if (preference instanceof SeekBarPreference) {
+                float f = (Float) value;
+                preference.setSummary((int) (f * 100) + "%");
+            } else if (preference instanceof android.support.v14.preference.MultiSelectListPreference) {
+                List sortedList = new ArrayList((Set) value);
+                Collections.sort(sortedList);
+                preference.setSummary(sortedList.toString());
+            } else if (preference instanceof ListPreference) {
+                // For list preferences, look up the correct display value in
+                // the preference's 'entries' list.
+                ListPreference listPreference = (ListPreference) preference;
+                int index = listPreference.findIndexOfValue(stringValue);
+
+                // Set the summary to reflect the new value.
+                preference.setSummary(
+                        index >= 0
+                                ? listPreference.getEntries()[index]
+                                : null);
+            } else {
+                // For all other preferences, set the summary to the value's
+                // simple string representation.
+                preference.setSummary(stringValue);
+            }
+            return true;
+        }
+    };
+
+
+    //
+    // support library 23.0.1 and api 23 failed with:
+    //
+    // https://code.google.com/p/android/issues/detail?id=85392#makechanges
+    //
+    // http://stackoverflow.com/questions/30336635
+    //
+    // To fix this, we need create our own PreferenceGroupAdapter
+    //
+    class PreferenceGroupAdapterFix extends PreferenceGroupAdapter {
+        public PreferenceGroupAdapterFix(PreferenceGroup preferenceGroup) {
+            super(preferenceGroup);
+        }
+
+        public void onBindViewHolder(PreferenceViewHolder holder, int position) {
+            super.onBindViewHolder(holder, position);
+
+            // LinerLayoutManager.onLayoutChildren() call detach(), then fill() which cause:
+            //
+            // onBindViewHolder cause SwitchCompat.setCheck() call on currently detached view !!!
+            // so no animation starts.
+            // then called RecyclerView.attachViewToParent()
+        }
+
+        public void onViewAttachedToWindow(PreferenceViewHolder holder) {
+            super.onViewAttachedToWindow(holder);
+        }
+
+        public void onViewDetachedFromWindow(PreferenceViewHolder holder) {
+            super.onViewDetachedFromWindow(holder);
+        }
+    }
+
+    // LinearLayoutManager llm;
+
+    class LinearLayoutManagerFix extends LinearLayoutManager {
+        public LinearLayoutManagerFix(Context context) {
+            super(context);
+        }
+
+        public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
+            super.onLayoutChildren(recycler, state);
+        }
+
+        @Override
+        public void addView(View child) {
+            if (child.getParent() != null)
+                return;
+            super.addView(child);
+        }
+
+        @Override
+        public void addView(View child, int index) {
+            if (child.getParent() != null)
+                return;
+            super.addView(child, index);
+        }
+
+        @Override
+        public void addDisappearingView(View child) {
+            if (child.getParent() != null)
+                return;
+            super.addDisappearingView(child);
+        }
+
+        @Override
+        public void addDisappearingView(View child, int index) {
+            if (child.getParent() != null)
+                return;
+            super.addDisappearingView(child, index);
+        }
+    }
+
+    class RecyclerViewFix extends RecyclerView {
+        public RecyclerViewFix(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void attachViewToParent(View child, int index, ViewGroup.LayoutParams params) {
+            super.attachViewToParent(child, index, params);
+        }
+
+        @Override
+        protected void detachViewFromParent(View child) {
+            super.detachViewFromParent(child);
+        }
+
+        @Override
+        protected void detachViewFromParent(int index) {
+            super.detachViewFromParent(index);
+        }
+    }
+
+//    @Override
+//    public RecyclerView.LayoutManager onCreateLayoutManager() {
+//        return llm = new LinearLayoutManagerFix(this.getActivity());
+//    }
+
+//    @Override
+//    protected RecyclerView.Adapter onCreateAdapter(PreferenceScreen preferenceScreen) {
+//        return new PreferenceGroupAdapterFix(preferenceScreen);
+//    }
+
+//    @Override
+//    public RecyclerView onCreateRecyclerView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+//        //RecyclerView recyclerView = (RecyclerView)inflater.inflate(android.support.v14.preference.R.layout.preference_recyclerview, parent, false);
+//        RecyclerView recyclerView = new RecyclerViewFix(getActivity());
+//        recyclerView.setLayoutManager(this.onCreateLayoutManager());
+//        return recyclerView;
+//    }
+
+    public static void bindPreferenceSummaryToValue(Preference preference) {
+        // Set the listener to watch for value changes.
+        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
+
+        // Trigger the listener immediately with the preference's
+        // current value.
+        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                PreferenceManager
+                        .getDefaultSharedPreferences(preference.getContext())
+                        .getAll().get(preference.getKey()));
+    }
 
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
@@ -92,39 +301,42 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             getPreferenceScreen().removePreference(findPreference(HourlyApplication.PREFERENCE_ALARM));
         } else {
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
-
             findPreference(HourlyApplication.PREFERENCE_ALARM).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object o) {
-                    SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-                    int min = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_REPEAT, "60"));
-                    if (min < 15) {
-                        boolean b = (Boolean) o;
-                        if (!b) {
-                            Toast.makeText(getActivity(), R.string.Reminders15, Toast.LENGTH_SHORT).show();
-                            SharedPreferences.Editor edit = shared.edit();
-                            edit.putString(HourlyApplication.PREFERENCE_REPEAT, "15");
-                            edit.commit();
+                    boolean b = (Boolean) o;
+                    List<ReminderSet> reminders = HourlyApplication.loadReminders(getActivity());
+                    boolean set = false;
+                    for (ReminderSet rs : reminders) {
+                        if (rs.repeat < 15) {
+                            if (!b) {
+                                set = true;
+                                rs.repeat = 15;
+                            }
                         }
+                    }
+                    if (set) {
+                        Toast.makeText(getActivity(), R.string.Reminders15, Toast.LENGTH_SHORT).show();
+                        HourlyApplication.saveReminders(getActivity(), reminders);
                     }
                     return true;
                 }
             });
         }
 
-        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_VOLUME));
+        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_VOLUME));
 
-        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_INCREASE_VOLUME));
+        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_INCREASE_VOLUME));
 
         if (DateFormat.is24HourFormat(getActivity())) {
             getPreferenceScreen().removePreference(findPreference(HourlyApplication.PREFERENCE_SPEAK_AMPM));
         }
 
-        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_THEME));
-        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_WEEKSTART));
+        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_THEME));
+        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_WEEKSTART));
 
-        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_DELAY));
-        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_AFTER));
+        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_DELAY));
+        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_AFTER));
 
         findPreference(HourlyApplication.PREFERENCE_CALLSILENCE).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override

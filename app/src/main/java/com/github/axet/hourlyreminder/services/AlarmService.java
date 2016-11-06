@@ -201,16 +201,15 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
 
         TreeSet<Long> all = new TreeSet<>();
-        TreeSet<Long> reminders = new TreeSet<>();
+        TreeSet<Long> reminders;
         TreeSet<Long> alarms;
 
         Calendar cur = Calendar.getInstance();
 
         // check hourly reminders
-        if (shared.getBoolean(HourlyApplication.PREFERENCE_ENABLED, false)) {
-            reminders = generateReminders(cur);
-            all.addAll(reminders);
-        }
+        reminders = generateReminders(cur);
+        all.addAll(reminders);
+
         // check alarms
         alarms = generateAlarms();
         all.addAll(alarms);
@@ -299,14 +298,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(time);
 
-            if (isReminder(time)) {
-                SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-                int repeat = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_REPEAT, "60")) * 60;
-                int sec = repeat / 4;
-                cal.add(Calendar.SECOND, -sec);
-            } else {
-                cal.add(Calendar.MINUTE, -15);
-            }
+            int repeat = getRepeat(time) * 60; // make seconds
+            int sec = repeat / 4;
+            cal.add(Calendar.SECOND, -sec);
 
             if (cur.after(cal)) {
                 // we already 15 before alarm, show notification_upcoming
@@ -346,6 +340,21 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
         return false;
+    }
+
+    int getRepeat(long time) {
+        TreeSet<Integer> rep = new TreeSet<>();
+        rep.add(60); // default 60 minutes
+        for (ReminderSet rr : reminders) {
+            if (rr.enabled) {
+                for (Reminder r : rr.list) {
+                    if (r.time == time && r.enabled) {
+                        rep.add(rr.repeat); // add 15 or 5 or 30
+                    }
+                }
+            }
+        }
+        return rep.first(); // sorted smallest first, but 60 must
     }
 
     // show notification_upcoming. (about upcoming alarm)
@@ -470,23 +479,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 //        }
 
         // reset reminders on special events
-        if (key.equals(HourlyApplication.PREFERENCE_ENABLED)) {
-            reminders = HourlyApplication.loadReminders(this);
-            registerNextAlarm();
-        }
-        if (key.equals(HourlyApplication.PREFERENCE_HOURS)) {
-            reminders = HourlyApplication.loadReminders(this);
-            registerNextAlarm();
-        }
-        if (key.equals(HourlyApplication.PREFERENCE_DAYS)) {
-            reminders = HourlyApplication.loadReminders(this);
-            registerNextAlarm();
-        }
         if (key.equals(HourlyApplication.PREFERENCE_ALARM)) {
-            registerNextAlarm();
-        }
-        if (key.equals(HourlyApplication.PREFERENCE_REPEAT)) {
-            reminders = HourlyApplication.loadReminders(this);
             registerNextAlarm();
         }
     }
