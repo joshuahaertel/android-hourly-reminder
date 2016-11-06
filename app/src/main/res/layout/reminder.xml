@@ -16,11 +16,12 @@
             android:id="@+id/alarm_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp">
 
             <TextView
                 android:id="@+id/alarm_time"
-                android:layout_margin="5dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="09:00"
@@ -34,9 +35,9 @@
                 <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp"
-                    android:layout_gravity="center">
+                    android:layout_marginRight="15dp">
 
                     <ImageView
                         android:layout_width="40dp"
@@ -49,8 +50,8 @@
                         android:id="@+id/alarm_every"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
                         android:layout_gravity="center"
+                        android:gravity="center"
                         android:text="1ч" />
                 </FrameLayout>
 
