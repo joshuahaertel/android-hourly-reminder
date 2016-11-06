@@ -286,7 +286,7 @@
     <string name="dismiss">Dismiss</string>
 
     <string name="not_selected">(not selected)</string>
-    <string name="alarm_type_alarm">Setting alarm type to \'alarm\', check settings.</string>
+    <string name="alarm_type_alarm">Setting \'Exact Time\' on, check settings.</string>
     <string name="reminders_vibrate">Reminders set to vibrate only</string>
     <string name="reminders_silence">Reminders set to \'silence\'</string>
 

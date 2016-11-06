@@ -166,7 +166,7 @@
     <string name="speak_time_24">%1$s</string>
 
     <string name="not_selected">(не выбрано)</string>
-    <string name="alarm_type_alarm">Установлен тип оповещений \'alarm\', проверьте настройки.</string>
+    <string name="alarm_type_alarm">Включена опция \'Точное время\', проверьте настройки.</string>
     <string name="reminders_vibrate">Оповещения переведены в режим \'вибратор\'</string>
     <string name="reminders_silence">Оповещения переведены в беззвучный режим</string>
 

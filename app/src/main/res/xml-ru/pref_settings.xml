@@ -55,7 +55,7 @@
         android:defaultValue="true"
         android:key="alarm"
         android:summary="Использовать тип для оповещений 'alarm' (более точное срабатывание)"
-        android:title="Тип Оповещений" />
+        android:title="Точное время" />
 
     <SwitchPreferenceCompat
         android:defaultValue="true"
