@@ -83,13 +83,17 @@ public class HoursDialogFragment extends DialogFragment {
 
     Set<String> values;
 
+    boolean ok;
+
     public class Result implements DialogInterface {
         public int index;
         public Set<String> hours;
+        public boolean ok;
 
         public Result() {
             this.hours = values;
             this.index = getArguments().getInt("index");
+            this.ok = HoursDialogFragment.this.ok;
         }
 
         @Override
@@ -136,6 +140,7 @@ public class HoursDialogFragment extends DialogFragment {
                 .setPositiveButton(getString(android.R.string.ok),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
+                                ok = true;
                                 dialog.dismiss();
                             }
                         }
