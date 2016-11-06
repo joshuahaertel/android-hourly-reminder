@@ -1,4 +1,4 @@
-package com.github.axet.hourlyreminder.widgets;
+package com.github.axet.hourlyreminder.dialogs;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -8,7 +8,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v14.preference.MultiSelectListPreference;
 import android.support.v14.preference.PreferenceDialogFragment;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -16,15 +15,13 @@ import android.widget.LinearLayout;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
-import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.Week;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class DaysDialogFragment extends PreferenceDialogFragment {
+public class DaysPrefDialogFragment extends PreferenceDialogFragment {
     private boolean mPreferenceChanged;
 
     int startweek = 0;
@@ -58,11 +55,11 @@ public class DaysDialogFragment extends PreferenceDialogFragment {
 
     Set<String> values;
 
-    public DaysDialogFragment() {
+    public DaysPrefDialogFragment() {
     }
 
-    public static DaysDialogFragment newInstance(String key) {
-        DaysDialogFragment fragment = new DaysDialogFragment();
+    public static DaysPrefDialogFragment newInstance(String key) {
+        DaysPrefDialogFragment fragment = new DaysPrefDialogFragment();
         Bundle b = new Bundle(1);
         b.putString("key", key);
         fragment.setArguments(b);

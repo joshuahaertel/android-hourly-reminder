@@ -20,7 +20,9 @@ import android.widget.Toast;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.widgets.BeepDialogFragment;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
+import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 
 import java.io.IOException;
 
@@ -79,7 +81,7 @@ public class Sound extends TTS {
         return track;
     }
 
-    public Silenced silencedReminder() {
+    public Silenced silencedReminder(ReminderSet rr) {
         Silenced ss = silenced();
 
         if (ss != Silenced.NONE)
@@ -88,9 +90,9 @@ public class Sound extends TTS {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
-        boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
-        boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
-        boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
+        boolean c = rr.ringtone;
+        boolean s = rr.speech;
+        boolean b = rr.beep;
 
         if (!v && !c && !s && !b)
             return Silenced.SETTINGS;
@@ -101,7 +103,7 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public Silenced silencedAlarm(Alarm a) {
+    public Silenced silencedAlarm(WeekSet a) {
         Silenced ss = silenced();
 
         if (ss != Silenced.NONE)
@@ -143,10 +145,10 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public void soundReminder(final long time) {
+    public void soundReminder(final ReminderSet rr, final long time) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        Silenced s = silencedReminder();
+        Silenced s = silencedReminder(rr);
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
@@ -186,8 +188,8 @@ public class Sound extends TTS {
         final Runnable custom = new Runnable() {
             @Override
             public void run() {
-                if (!shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF)) {
-                    playCustom(null);
+                if (rr.ringtone) {
+                    playCustom(rr, null);
                 }
             }
         };
@@ -195,7 +197,7 @@ public class Sound extends TTS {
         final Runnable speech = new Runnable() {
             @Override
             public void run() {
-                if (shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false)) {
+                if (rr.speech) {
                     playSpeech(time, custom);
                 } else {
                     custom.run();
@@ -206,7 +208,7 @@ public class Sound extends TTS {
         final Runnable beep = new Runnable() {
             @Override
             public void run() {
-                if (shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false)) {
+                if (rr.beep) {
                     playBeep(speech);
                 } else {
                     speech.run();
@@ -219,54 +221,36 @@ public class Sound extends TTS {
         beep.run();
     }
 
-    public void playCustom(final Runnable done) {
+    public void playCustom(final ReminderSet rr, final Runnable done) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        String custom = shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "");
-
-        if (custom.equals("ringtone")) {
-            String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, "");
-            playerClose();
-
-            Sound.this.done.clear();
-            Sound.this.done.add(done);
-
-            if (uri.isEmpty()) {
-                if (done != null)
-                    done.run();
-            } else {
-                player = playOnce(Uri.parse(uri), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (done != null && Sound.this.done.contains(done))
-                            done.run();
-                        playerClose();
-                    }
-                });
-            }
-        } else if (custom.equals("sound")) {
-            String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, "");
-            playerClose();
-
-            Sound.this.done.clear();
-            Sound.this.done.add(done);
-
-            if (uri.isEmpty()) {
-                if (done != null)
-                    done.run();
-            } else {
-                player = playOnce(Uri.parse(uri), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (done != null && Sound.this.done.contains(done))
-                            done.run();
-                        playerClose();
-                    }
-                });
-            }
+        if (rr.ringtone) {
+            String uri = rr.ringtoneValue;
+            playCustom(uri, done);
         } else {
             if (done != null)
                 done.run();
+        }
+    }
+
+    void playCustom(String uri, final Runnable done) {
+        playerClose();
+
+        Sound.this.done.clear();
+        Sound.this.done.add(done);
+
+        if (uri.isEmpty()) {
+            if (done != null)
+                done.run();
+        } else {
+            player = playOnce(Uri.parse(uri), new Runnable() {
+                @Override
+                public void run() {
+                    if (done != null && Sound.this.done.contains(done))
+                        done.run();
+                    playerClose();
+                }
+            });
         }
     }
 
@@ -275,7 +259,7 @@ public class Sound extends TTS {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         String b = shared.getString(HourlyApplication.PREFERENCE_BEEP_CUSTOM, "1800:100");
 
-        BeepDialogFragment.BeepConfig beep = new BeepDialogFragment.BeepConfig();
+        BeepPrefDialogFragment.BeepConfig beep = new BeepPrefDialogFragment.BeepConfig();
         beep.load(b);
 
         playBeep(generateTone(beep.value_f, beep.value_l), done);
@@ -545,7 +529,7 @@ public class Sound extends TTS {
         return false;
     }
 
-    public Silenced playAlarm(final Alarm a) {
+    public Silenced playAlarm(final WeekSet a) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         Silenced s = silencedAlarm(a);

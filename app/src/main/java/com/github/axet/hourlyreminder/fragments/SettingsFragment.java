@@ -33,8 +33,9 @@ import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.widgets.BeepDialogFragment;
-import com.github.axet.hourlyreminder.widgets.HoursDialogFragment;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
+import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.HoursPrefDialogFragment;
 
 public class SettingsFragment extends PreferenceFragment implements PreferenceFragment.OnPreferenceDisplayDialogCallback, SharedPreferences.OnSharedPreferenceChangeListener {
     Sound sound;
@@ -62,14 +63,14 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
         }
 
         if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
-            HoursDialogFragment f = HoursDialogFragment.newInstance(preference.getKey());
+            HoursPrefDialogFragment f = HoursPrefDialogFragment.newInstance(preference.getKey());
             ((DialogFragment) f).setTargetFragment(this, 0);
             ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
             return true;
         }
 
         if (preference.getKey().equals(HourlyApplication.PREFERENCE_BEEP_CUSTOM)) {
-            BeepDialogFragment f = BeepDialogFragment.newInstance(preference.getKey());
+            BeepPrefDialogFragment f = BeepPrefDialogFragment.newInstance(preference.getKey());
             ((DialogFragment) f).setTargetFragment(this, 0);
             ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
             return true;
@@ -111,19 +112,19 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             });
         }
 
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_VOLUME));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_VOLUME));
 
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_INCREASE_VOLUME));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_INCREASE_VOLUME));
 
         if (DateFormat.is24HourFormat(getActivity())) {
             getPreferenceScreen().removePreference(findPreference(HourlyApplication.PREFERENCE_SPEAK_AMPM));
         }
 
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_THEME));
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_WEEKSTART));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_THEME));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_WEEKSTART));
 
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_DELAY));
-        RemindersFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_AFTER));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_DELAY));
+        RemindersOldFragment.bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SNOOZE_AFTER));
 
         findPreference(HourlyApplication.PREFERENCE_CALLSILENCE).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -149,7 +150,6 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
                         permitted(PERMISSIONS_V, 2);
                         return false;
                     }
-                    annonce((boolean) o);
                     return true;
                 }
             });
@@ -167,16 +167,6 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
     void setVibr() {
         SwitchPreferenceCompat s = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_VIBRATE);
         s.setChecked(true);
-        annonce(true);
-    }
-
-    void annonce(boolean v) {
-        SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-        boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
-        boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
-        if (!b && !s) {
-            RemindersFragment.annonce(getActivity(), v);
-        }
     }
 
     @Override
@@ -228,7 +218,7 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
 
         {
             final Context context = inflater.getContext();
-            ViewGroup layout = (ViewGroup) view.findViewById(R.id.list_container);
+            ViewGroup layout = (ViewGroup) view.findViewById(android.R.id.list_container);
             RecyclerView v = getListView();
 
             int fab_margin = (int) getResources().getDimension(R.dimen.fab_margin);
@@ -262,7 +252,7 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    sound.soundReminder(System.currentTimeMillis());
+                    sound.soundReminder(new ReminderSet(context), System.currentTimeMillis());
                 }
             });
         }

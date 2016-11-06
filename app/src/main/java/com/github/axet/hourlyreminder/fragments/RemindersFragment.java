@@ -1,585 +1,236 @@
 package com.github.axet.hourlyreminder.fragments;
 
-import android.Manifest;
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v13.app.FragmentCompat;
-import android.support.v14.preference.PreferenceFragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.preference.EditTextPreference;
-import android.support.v7.preference.ListPreference;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceGroup;
-import android.support.v7.preference.PreferenceGroupAdapter;
-import android.support.v7.preference.PreferenceViewHolder;
-import android.support.v7.preference.SwitchPreferenceCompat;
-import android.support.v7.widget.ContentFrameLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.Gravity;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.Toast;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import com.github.axet.androidlibrary.widgets.FilePathPreference;
-import com.github.axet.androidlibrary.widgets.OpenFileDialog;
-import com.github.axet.androidlibrary.widgets.RingtonePreference;
-import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
-import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.basics.Reminder;
-import com.github.axet.hourlyreminder.widgets.DaysDialogFragment;
-import com.github.axet.hourlyreminder.widgets.HoursDialogFragment;
-import com.github.axet.androidlibrary.widgets.SeekBarPreference;
-import com.github.axet.androidlibrary.widgets.SeekBarPreferenceDialogFragment;
-import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
+import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
-public class RemindersFragment extends PreferenceFragment implements PreferenceFragment.OnPreferenceDisplayDialogCallback, SharedPreferences.OnSharedPreferenceChangeListener {
+public class RemindersFragment extends WeekSetFragment implements DialogInterface.OnDismissListener {
 
-    public final static Uri DEFAULT_NOTIFICATION = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+    List<ReminderSet> reminders = new ArrayList<>();
 
-    Sound sound;
-    Handler handler = new Handler();
-
-    static String getTitle(Context context, String t) {
-        String s = HourlyApplication.getTitle(context, t);
-        if (s == null)
-            s = "None";
-        return s;
+    public RemindersFragment() {
     }
 
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
-
-            if (preference.getKey().equals(HourlyApplication.PREFERENCE_RINGTONE)) {
-                preference.setSummary(getTitle(preference.getContext(), stringValue));
-                return true;
+    int getPosition(long id) {
+        for (int i = 0; i < reminders.size(); i++) {
+            if (reminders.get(i).id == id) {
+                return i;
             }
-
-            if (preference.getKey().equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND)) {
-                CustomSoundListPreference pp = (CustomSoundListPreference) preference;
-                pp.update(stringValue);
-                // keep update List type pref
-                // return true;
-            }
-
-            if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
-                List sortedList = new ArrayList((Set) value);
-                preference.setSummary(HourlyApplication.getHoursString(preference.getContext(), sortedList));
-                return true;
-            }
-
-            if (preference.getKey().equals(HourlyApplication.PREFERENCE_DAYS)) {
-                Reminder r = new Reminder(preference.getContext(), (Set) value);
-                preference.setSummary(r.getDays());
-                return true;
-            }
-
-            if (preference instanceof FilePathPreference) {
-                if (stringValue.isEmpty())
-                    stringValue = preference.getContext().getString(R.string.not_selected);
-                preference.setSummary(stringValue);
-                return true;
-            }
-
-            if (preference instanceof SeekBarPreference) {
-                float f = (Float) value;
-                preference.setSummary((int) (f * 100) + "%");
-            } else if (preference instanceof android.support.v14.preference.MultiSelectListPreference) {
-                List sortedList = new ArrayList((Set) value);
-                Collections.sort(sortedList);
-                preference.setSummary(sortedList.toString());
-            } else if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
-            } else {
-                // For all other preferences, set the summary to the value's
-                // simple string representation.
-                preference.setSummary(stringValue);
-            }
-            return true;
         }
-    };
-
-    //
-    // support library 23.0.1 and api 23 failed with:
-    //
-    // https://code.google.com/p/android/issues/detail?id=85392#makechanges
-    //
-    // http://stackoverflow.com/questions/30336635
-    //
-    // To fix this, we need create our own PreferenceGroupAdapter
-    //
-    class PreferenceGroupAdapterFix extends PreferenceGroupAdapter {
-        public PreferenceGroupAdapterFix(PreferenceGroup preferenceGroup) {
-            super(preferenceGroup);
-        }
-
-        public void onBindViewHolder(PreferenceViewHolder holder, int position) {
-            super.onBindViewHolder(holder, position);
-
-            // LinerLayoutManager.onLayoutChildren() call detach(), then fill() which cause:
-            //
-            // onBindViewHolder cause SwitchCompat.setCheck() call on currently detached view !!!
-            // so no animation starts.
-            // then called RecyclerView.attachViewToParent()
-        }
-
-        public void onViewAttachedToWindow(PreferenceViewHolder holder) {
-            super.onViewAttachedToWindow(holder);
-        }
-
-        public void onViewDetachedFromWindow(PreferenceViewHolder holder) {
-            super.onViewDetachedFromWindow(holder);
-        }
-    }
-
-    // LinearLayoutManager llm;
-
-    class LinearLayoutManagerFix extends LinearLayoutManager {
-        public LinearLayoutManagerFix(Context context) {
-            super(context);
-        }
-
-        public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-            super.onLayoutChildren(recycler, state);
-        }
-
-        @Override
-        public void addView(View child) {
-            if (child.getParent() != null)
-                return;
-            super.addView(child);
-        }
-
-        @Override
-        public void addView(View child, int index) {
-            if (child.getParent() != null)
-                return;
-            super.addView(child, index);
-        }
-
-        @Override
-        public void addDisappearingView(View child) {
-            if (child.getParent() != null)
-                return;
-            super.addDisappearingView(child);
-        }
-
-        @Override
-        public void addDisappearingView(View child, int index) {
-            if (child.getParent() != null)
-                return;
-            super.addDisappearingView(child, index);
-        }
-    }
-
-    class RecyclerViewFix extends RecyclerView {
-        public RecyclerViewFix(Context context) {
-            super(context);
-        }
-
-        @Override
-        protected void attachViewToParent(View child, int index, ViewGroup.LayoutParams params) {
-            super.attachViewToParent(child, index, params);
-        }
-
-        @Override
-        protected void detachViewFromParent(View child) {
-            super.detachViewFromParent(child);
-        }
-
-        @Override
-        protected void detachViewFromParent(int index) {
-            super.detachViewFromParent(index);
-        }
-    }
-
-//    @Override
-//    public RecyclerView.LayoutManager onCreateLayoutManager() {
-//        return llm = new LinearLayoutManagerFix(this.getActivity());
-//    }
-
-//    @Override
-//    protected RecyclerView.Adapter onCreateAdapter(PreferenceScreen preferenceScreen) {
-//        return new PreferenceGroupAdapterFix(preferenceScreen);
-//    }
-
-//    @Override
-//    public RecyclerView onCreateRecyclerView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-//        //RecyclerView recyclerView = (RecyclerView)inflater.inflate(android.support.v14.preference.R.layout.preference_recyclerview, parent, false);
-//        RecyclerView recyclerView = new RecyclerViewFix(getActivity());
-//        recyclerView.setLayoutManager(this.onCreateLayoutManager());
-//        return recyclerView;
-//    }
-
-    public static void bindPreferenceSummaryToValue(Preference preference) {
-        // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-
-        // Trigger the listener immediately with the preference's
-        // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getAll().get(preference.getKey()));
+        return -1;
     }
 
     @Override
-    public void onCreatePreferences(Bundle bundle, String s) {
+    public int getCount() {
+        return reminders.size();
     }
 
     @Override
-    public Fragment getCallbackFragment() {
-        return this;
+    public Object getItem(int position) {
+        return reminders.get(position);
     }
 
     @Override
-    public boolean onPreferenceDisplayDialog(PreferenceFragment preferenceFragment, final Preference preference) {
-        if (preference instanceof SeekBarPreference) {
-            SeekBarPreferenceDialogFragment f = SeekBarPreferenceDialogFragment.newInstance(preference.getKey());
-            ((DialogFragment) f).setTargetFragment(this, 0);
-            ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
-            return true;
-        }
-
-        if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
-            HoursDialogFragment f = HoursDialogFragment.newInstance(preference.getKey());
-            ((DialogFragment) f).setTargetFragment(this, 0);
-            ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
-            return true;
-        }
-
-        if (preference.getKey().equals(HourlyApplication.PREFERENCE_DAYS)) {
-            DaysDialogFragment f = DaysDialogFragment.newInstance(preference.getKey());
-            ((DialogFragment) f).setTargetFragment(this, 0);
-            ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
-            return true;
-        }
-
-        if (preference.getKey().equals(HourlyApplication.PREFERENCE_SOUND)) {
-            if (permitted(1))
-                selectFile();
-            return true;
-        }
-
-        if (preference.getKey().equals(HourlyApplication.PREFERENCE_RINGTONE)) {
-            if (permitted(2))
-                selectRingtone();
-            return true;
-        }
-
-        return false;
+    public long getItemId(int position) {
+        return reminders.get(position).id;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.pref_reminders);
-        setHasOptionsMenu(true);
-
-        sound = new Sound(getActivity());
-
-        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_HOURS));
-
-        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_DAYS));
-
-        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_SOUND));
-
-        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_CUSTOM_SOUND));
-
-        bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_RINGTONE));
-
-        {
-            Preference p = findPreference(HourlyApplication.PREFERENCE_REPEAT);
-            p.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object o) {
-                    // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
-                    if (Build.VERSION.SDK_INT >= 23) {
-                        int min = Integer.parseInt((String) o);
-                        if (min < 15) {
-                            SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-                            boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, false);
-                            if (!b) {
-                                Toast.makeText(getActivity(), R.string.alarm_type_alarm, Toast.LENGTH_SHORT).show();
-                                SharedPreferences.Editor edit = shared.edit();
-                                edit.putBoolean(HourlyApplication.PREFERENCE_ALARM, true);
-                                edit.commit();
-                            }
-                        }
-                    }
-                    return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, o);
-                }
-            });
-            sBindPreferenceSummaryToValueListener.onPreferenceChange(p,
-                    PreferenceManager
-                            .getDefaultSharedPreferences(p.getContext())
-                            .getAll().get(p.getKey()));
-        }
-
-        findPreference(HourlyApplication.PREFERENCE_BEEP).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                Boolean beep = (Boolean) o;
-                boolean speak = ((SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_SPEAK)).isChecked();
-                if (!beep && !speak) {
-                    annonce(getActivity());
-                }
-                return true;
-            }
-        });
-        findPreference(HourlyApplication.PREFERENCE_SPEAK).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                Boolean speak = (Boolean) o;
-                boolean beep = ((SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_BEEP)).isChecked();
-                if (!beep && !speak) {
-                    annonce(getActivity());
-                }
-                return true;
-            }
-        });
-
-        SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-        shared.registerOnSharedPreferenceChangeListener(this);
-    }
-
-    static void annonce(Context context) {
-        SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
-        boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
-        annonce(context, v);
-    }
-
-    static void annonce(Context context, boolean v) {
-        if (v) {
-            Toast.makeText(context, R.string.reminders_vibrate, Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(context, R.string.reminders_silence, Toast.LENGTH_LONG).show();
-        }
+        reminders = HourlyApplication.loadReminders(getActivity());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = super.onCreateView(inflater, container, savedInstanceState);
-
-        {
-            final Context context = inflater.getContext();
-            ViewGroup layout = (ViewGroup) view.findViewById(R.id.list_container);
-            RecyclerView v = getListView();
-
-            int fab_margin = (int) getResources().getDimension(R.dimen.fab_margin);
-            int fab_size = ThemeUtils.dp2px(getActivity(), 61);
-            int pad = 0;
-            int top = 0;
-            if (Build.VERSION.SDK_INT <= 16) { // so, it bugged only on 16
-                pad = ThemeUtils.dp2px(context, 10);
-                top = (int) getResources().getDimension(R.dimen.appbar_padding_top);
-            }
-
-            v.setClipToPadding(false);
-            v.setPadding(pad, top, pad, pad + fab_size + fab_margin);
-
-            FloatingActionButton fab = new FloatingActionButton(context);
-            fab.setImageResource(R.drawable.play);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ContentFrameLayout.LayoutParams.WRAP_CONTENT, ContentFrameLayout.LayoutParams.WRAP_CONTENT);
-            lp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-            lp.setMargins(fab_margin, fab_margin, fab_margin, fab_margin);
-            fab.setLayoutParams(lp);
-            layout.addView(fab);
-
-            // fix nexus 9 tabled bug, when fab showed offscreen
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    view.requestLayout();
-                }
-            });
-
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (sound.playerClose()) {
-                        return;
-                    }
-                    sound.soundReminder(System.currentTimeMillis());
-                }
-            });
-        }
-
-        return view;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-        shared.unregisterOnSharedPreferenceChangeListener(this);
-
-        if (sound != null) {
-            sound.close();
-            sound = null;
-        }
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        if (s.equals(HourlyApplication.PREFERENCE_REPEAT)) {
-            Preference p = findPreference(HourlyApplication.PREFERENCE_REPEAT);
-            sBindPreferenceSummaryToValueListener.onPreferenceChange(p,
-                    PreferenceManager
-                            .getDefaultSharedPreferences(p.getContext())
-                            .getAll().get(p.getKey()));
-            ((ListPreference) p).setValue(sharedPreferences.getString(HourlyApplication.PREFERENCE_REPEAT, "60"));
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode != Activity.RESULT_OK) {
-            return;
-        }
-
-        if (requestCode == 0) {
-            Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-            EditTextPreference edit = (EditTextPreference) findPreference(HourlyApplication.PREFERENCE_RINGTONE);
-            String text = "";
-
-            if (uri != null) {
-                text = uri.toString();
-            }
-
-            edit.setText(text);
-            edit.getOnPreferenceChangeListener().onPreferenceChange(edit, text);
-            return;
-        }
-    }
-
-    void selectFile() {
-        final FilePathPreference pp = (FilePathPreference) findPreference(HourlyApplication.PREFERENCE_SOUND);
-
-        final OpenFileDialog f = new OpenFileDialog(getActivity());
-
-        String path = pp.getText();
-
-        if (path == null || path.isEmpty()) {
-            String def = Environment.getExternalStorageDirectory().getPath();
-            SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-            path = shared.getString(HourlyApplication.PREFERENCE_LAST_PATH, def);
-        }
-
-        f.setReadonly(true);
-        f.setCurrentPath(new File(path));
-        f.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        View rootView = inflater.inflate(R.layout.fragment_alarms, container, false);
+        list = (ListView) rootView.findViewById(R.id.section_label);
+        list.setAdapter(this);
+        list.setOnScrollListener(this);
+        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                File ff = f.getCurrentPath();
+            public void onClick(View v) {
+                HoursDialogFragment dialog = new HoursDialogFragment();
 
-                SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-                shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, ff.getParent()).commit();
+                ReminderSet rr = new ReminderSet(getActivity());
 
-                String fileName = ff.getPath();
-                if (pp.callChangeListener(fileName)) {
-                    pp.setText(fileName);
-                }
+                Bundle args = new Bundle();
+                args.putInt("index", -1);
+                args.putStringArrayList("hours", new ArrayList<>(rr.hours));
+
+                dialog.setArguments(args);
+                dialog.show(getFragmentManager(), "");
             }
         });
-        f.show();
-    }
 
-    void selectRingtone() {
-        // W/MediaPlayer: Couldn't open file on client side; trying server side:
-        // java.lang.SecurityException: Permission Denial: reading com.android.providers.media.MediaProvider uri content://media/external/audio/media/17722
-        // from pid=697, uid=10204
-        // requires android.permission.READ_EXTERNAL_STORAGE, or grantUriPermission()
-        //
-        // context.grantUriPermission("com.android.providers.media.MediaProvider", Uri.parse("content://media/external/images/media"), Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (selected > 0)
+            list.smoothScrollToPosition(getPosition(selected));
 
-        RingtonePreference pp = (RingtonePreference) findPreference(HourlyApplication.PREFERENCE_RINGTONE);
-        Uri uri = null;
-        if (!pp.getText().isEmpty()) {
-            uri = Uri.parse(pp.getText());
-        }
-        startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getActivity().getString(R.string.Reminder))
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), 0);
+        return rootView;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode) {
-            case 1:
-                if (permitted(permissions))
-                    selectFile();
-                else
-                    Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
-                break;
-            case 2:
-                if (permitted(permissions))
-                    selectRingtone();
-                else
-                    Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
-                break;
-        }
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        super.onSharedPreferenceChanged(sharedPreferences, key);
+        reminders = HourlyApplication.loadReminders(getActivity());
+        changed();
     }
 
-    public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+    @Override
+    public View getView(final int position, View convertView, final ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-    boolean permitted(String[] ss) {
-        for (String s : ss) {
-            if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
+        if (convertView == null) {
+            convertView = inflater.inflate(R.layout.reminder, parent, false);
+            convertView.setTag(-1);
         }
-        return true;
+
+        return super.getView(position, convertView, parent);
     }
 
-    boolean permitted(int code) {
-        for (String s : PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                FragmentCompat.requestPermissions(this, PERMISSIONS, code);
-                return false;
+    void save(WeekSet a) {
+        super.save(a);
+        HourlyApplication.saveReminders(getActivity(), reminders);
+    }
+
+    public void addAlarm(ReminderSet a) {
+        reminders.add(a);
+        select(a.id);
+        int pos = reminders.indexOf(a);
+        list.smoothScrollToPosition(pos);
+        HourlyApplication.saveReminders(getActivity(), reminders);
+        boxAnimate = false;
+    }
+
+    @Override
+    public void remove(WeekSet a) {
+        super.remove(a);
+        reminders.remove(a);
+        HourlyApplication.saveReminders(getActivity(), reminders);
+    }
+
+    @Override
+    public void fillDetailed(final View view, final WeekSet a, boolean animate) {
+        super.fillDetailed(view, a, animate);
+
+        final ReminderSet rr = (ReminderSet) a;
+
+        final TextView time = (TextView) view.findViewById(R.id.alarm_time);
+        updateTime(view, (ReminderSet) a);
+        time.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                HoursDialogFragment dialog = new HoursDialogFragment();
+
+                Bundle args = new Bundle();
+                args.putInt("index", reminders.indexOf(a));
+                args.putStringArrayList("hours", new ArrayList<>(rr.hours));
+
+                dialog.setArguments(args);
+                dialog.show(getFragmentManager(), "");
             }
+        });
+
+        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
+        ringtoneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentRequestRingtone = a;
+                Uri uri = null;
+                if (!a.ringtoneValue.isEmpty()) {
+                    uri = Uri.parse(a.ringtoneValue);
+                }
+                RemindersOldFragment.selectRingtone(RemindersFragment.this, uri);
+            }
+        });
+
+        TextView every = (TextView) view.findViewById(R.id.alarm_every);
+        every.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final List<String> ss = new ArrayList<>(Arrays.asList(getActivity().getResources().getStringArray(R.array.repeat_values)));
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(R.string.every);
+                builder.setSingleChoiceItems(R.array.repeat_text, ss.indexOf("" + rr.repeat), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        String s = ss.get(which);
+                        rr.repeat = Integer.parseInt(s);
+                        save(rr);
+                        dialog.dismiss();
+                    }
+                });
+                Dialog d = builder.create();
+                d.show();
+            }
+        });
+        updateEvery(every, a);
+    }
+
+    @Override
+    public void fillCompact(final View view, final WeekSet a, boolean animate) {
+        super.fillCompact(view, a, animate);
+        TextView time = (TextView) view.findViewById(R.id.alarm_time);
+        updateTime(view, (ReminderSet) a);
+        time.setClickable(false);
+
+        TextView every = (TextView) view.findViewById(R.id.alarm_every);
+        every.setClickable(false);
+
+        updateEvery(every, a);
+    }
+
+    void updateEvery(TextView every, WeekSet a) {
+        String str = "";
+        final ReminderSet rr = (ReminderSet) a;
+        switch (rr.repeat) {
+            case 60:
+                str = "1" + getString(R.string.hour_symbol);
+                break;
+            default:
+                str = "" + rr.repeat + getString(R.string.min_symbol);
+                break;
         }
-        return true;
+        every.setText(str);
+    }
+
+    void updateTime(View view, ReminderSet a) {
+        TextView time = (TextView) view.findViewById(R.id.alarm_time);
+        time.setText(a.format());
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        if (dialogInterface instanceof HoursDialogFragment.Result) {
+            HoursDialogFragment.Result r = (HoursDialogFragment.Result) dialogInterface;
+            if (r.index == -1) {
+                ReminderSet rs = new ReminderSet(getActivity(), r.hours);
+                addAlarm(rs);
+            } else {
+                ReminderSet rs = reminders.get(r.index);
+                rs.load(r.hours);
+            }
+            HourlyApplication.saveReminders(getActivity(), reminders);
+        }
     }
 }

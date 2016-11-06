@@ -45,13 +45,6 @@ public class Week {
     public boolean weekdaysCheck;
     // weekday values
     public List<Integer> weekDaysValues;
-    // actual alarm go time.
-    //
-    // (may be incorrect if user moved from one time zone to anoter)
-    public long time;
-    // we have to keep original hours/minutes to proper handle time zone shifts
-    int hour;
-    int min;
 
     public Week(Context context) {
         this.context = context;
@@ -61,11 +54,18 @@ public class Week {
         this.context = copy.context;
 
         enabled = copy.enabled;
-        time = copy.time;
-        hour = copy.hour;
-        min = copy.min;
         weekdaysCheck = copy.weekdaysCheck;
         weekDaysValues = new ArrayList<>(copy.weekDaysValues);
+    }
+
+    public Week(Context context, String json) {
+        this(context);
+        try {
+            JSONObject o = new JSONObject(json);
+            load(o);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // keep proper order week days
@@ -259,90 +259,10 @@ public class Week {
         setNext();
     }
 
-    public long getTime() {
-        return time;
-    }
-
-    public void setTime(long l) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(l);
-        this.hour = cal.get(Calendar.HOUR_OF_DAY);
-        this.min = cal.get(Calendar.MINUTE);
-        this.time = l;
-    }
-
-    // set today alarm
-    public void setTime(int hour, int min) {
-        Calendar cur = Calendar.getInstance();
-
-        this.hour = hour;
-        this.min = min;
-
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, hour);
-        cal.set(Calendar.MINUTE, min);
-        cal.getTimeInMillis();
-
-        this.time = getAlarmTime(cal, cur);
-    }
-
-    // move alarm to the next day (tomorrow)
-    //
-    // (including weekdays checks)
-    public void setTomorrow() {
-        Calendar cur = Calendar.getInstance();
-
-//        Calendar m = Calendar.getInstance();
-//        m.setTimeInMillis(time);
-//        int hour = m.get(Calendar.HOUR_OF_DAY);
-//        int min = m.get(Calendar.MINUTE);
-
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, hour);
-        cal.set(Calendar.MINUTE, min);
-        cal.add(Calendar.DATE, 1);
-
-        time = getAlarmTime(cal, cur);
-    }
-
     // set alarm to go off next possible time
     //
     // today or tomorrow (including weekday checks)
     public void setNext() {
-        Calendar cur = Calendar.getInstance();
-
-//        Calendar m = Calendar.getInstance();
-//        m.setTimeInMillis(time);
-//        int hour = m.get(Calendar.HOUR_OF_DAY);
-//        int min = m.get(Calendar.MINUTE);
-
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, hour);
-        cal.set(Calendar.MINUTE, min);
-
-        time = getAlarmTime(cal, cur);
-    }
-
-    // If alarm time > current time == tomorrow. Or compare hours.
-    public boolean isToday() {
-        Calendar cur = Calendar.getInstance();
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(time);
-
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-        return fmt.format(cur.getTime()).equals(fmt.format(cal.getTime()));
-    }
-
-    public boolean isTomorrow() {
-        Calendar cur = Calendar.getInstance();
-        cur.add(Calendar.DATE, 1);
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(time);
-
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-        return fmt.format(cur.getTime()).equals(fmt.format(cal.getTime()));
     }
 
     // get time for Alarm Manager
@@ -411,17 +331,20 @@ public class Week {
             Configuration conf = res.getConfiguration();
             Locale locale = conf.locale;
 
-            s += " " + HourlyApplication.getHourString(context, locale, hour);
+            s += HourlyApplication.getHour2String(context, locale, hour);
         }
         return s;
+    }
+
+    public void load(JSONObject o) throws JSONException {
+        this.enabled = o.getBoolean("enable");
+        this.weekdaysCheck = o.getBoolean("weekdays");
+        this.setWeekDaysProperty(o.getJSONArray("weekdays_values"));
     }
 
     public JSONObject save() {
         try {
             JSONObject o = new JSONObject();
-            o.put("time", this.time);
-            o.put("hour", this.hour);
-            o.put("min", this.min);
             o.put("enable", this.enabled);
             o.put("weekdays", this.weekdaysCheck);
             o.put("weekdays_values", new JSONArray(this.getWeekDaysProperty()));

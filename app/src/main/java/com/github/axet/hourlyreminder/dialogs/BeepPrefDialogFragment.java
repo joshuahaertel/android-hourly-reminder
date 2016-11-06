@@ -1,4 +1,4 @@
-package com.github.axet.hourlyreminder.widgets;
+package com.github.axet.hourlyreminder.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -6,28 +6,21 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v14.preference.MultiSelectListPreference;
 import android.support.v14.preference.PreferenceDialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.format.DateFormat;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.basics.Reminder;
+import com.github.axet.hourlyreminder.widgets.BeepPreference;
+import com.github.axet.hourlyreminder.widgets.BeepView;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.TreeSet;
-
-public class BeepDialogFragment extends PreferenceDialogFragment {
+public class BeepPrefDialogFragment extends PreferenceDialogFragment {
     private boolean mPreferenceChanged;
 
     Sound sound;
@@ -74,11 +67,11 @@ public class BeepDialogFragment extends PreferenceDialogFragment {
 
     BeepConfig beep = new BeepConfig();
 
-    public BeepDialogFragment() {
+    public BeepPrefDialogFragment() {
     }
 
-    public static BeepDialogFragment newInstance(String key) {
-        BeepDialogFragment fragment = new BeepDialogFragment();
+    public static BeepPrefDialogFragment newInstance(String key) {
+        BeepPrefDialogFragment fragment = new BeepPrefDialogFragment();
         Bundle b = new Bundle(1);
         b.putString("key", key);
         fragment.setArguments(b);
@@ -202,7 +195,7 @@ public class BeepDialogFragment extends PreferenceDialogFragment {
                 mPreferenceChanged = true;
 
                 ignore = true;
-                BeepDialogFragment.this.freq.setText("" + beep.value_f);
+                BeepPrefDialogFragment.this.freq.setText("" + beep.value_f);
                 ignore = false;
             }
 

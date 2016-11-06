@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/day_am"
+            android:text="@string/day_am_full"
             android:textSize="20dp" />
 
         <com.github.axet.androidlibrary.widgets.SquareLinearLayout
@@ -126,7 +126,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/day_pm"
+            android:text="@string/day_pm_full"
             android:textSize="20dp" />
 
         <com.github.axet.androidlibrary.widgets.SquareLinearLayout

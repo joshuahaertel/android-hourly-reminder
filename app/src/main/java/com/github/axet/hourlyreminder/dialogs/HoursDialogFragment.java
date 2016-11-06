@@ -1,14 +1,18 @@
-package com.github.axet.hourlyreminder.widgets;
+package com.github.axet.hourlyreminder.dialogs;
 
-import android.app.AlertDialog;
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v14.preference.MultiSelectListPreference;
-import android.support.v14.preference.PreferenceDialogFragment;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
 
 import com.github.axet.hourlyreminder.R;
@@ -18,10 +22,12 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class HoursDialogFragment extends PreferenceDialogFragment {
+public class HoursDialogFragment extends DialogFragment {
     private boolean mPreferenceChanged;
 
-    int[] ids = new int[]{
+    View v;
+
+    public static int[] ids = new int[]{
             R.id.hours_00,
             R.id.hours_01,
             R.id.hours_02,
@@ -48,7 +54,7 @@ public class HoursDialogFragment extends PreferenceDialogFragment {
             R.id.hours_23,
     };
 
-    String[] AMPM = new String[]{
+    public static String[] AMPM = new String[]{
             "12",
             "1",
             "2",
@@ -77,46 +83,77 @@ public class HoursDialogFragment extends PreferenceDialogFragment {
 
     Set<String> values;
 
-    public HoursDialogFragment() {
+    public class Result implements DialogInterface {
+        public int index;
+        public Set<String> hours;
+
+        public Result() {
+            this.hours = values;
+            this.index = getArguments().getInt("index");
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public void dismiss() {
+        }
     }
 
-    public static HoursDialogFragment newInstance(String key) {
-        HoursDialogFragment fragment = new HoursDialogFragment();
-        Bundle b = new Bundle(1);
-        b.putString("key", key);
-        fragment.setArguments(b);
-        return fragment;
+    public HoursDialogFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (savedInstanceState != null) {
-            values = new TreeSet<String>(Arrays.asList(savedInstanceState.getStringArray("values")));
+            values = new TreeSet<>(Arrays.asList(savedInstanceState.getStringArray("values")));
             mPreferenceChanged = savedInstanceState.getBoolean("changed");
         } else {
-            MultiSelectListPreference preference = (MultiSelectListPreference) getPreference();
-            values = new TreeSet<>(preference.getValues());
+            values = new TreeSet<>(getArguments().getStringArrayList("hours"));
         }
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-
         outState.putStringArray("values", values.toArray(new String[]{}));
         outState.putBoolean("changed", mPreferenceChanged);
     }
 
     @Override
-    protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-        super.onPrepareDialogBuilder(builder);
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final AlertDialog d = new AlertDialog.Builder(getActivity())
+                .setNegativeButton(getString(android.R.string.cancel),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                dialog.dismiss();
+                            }
+                        }
+                )
+                .setPositiveButton(getString(android.R.string.ok),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                dialog.dismiss();
+                            }
+                        }
+                )
+                .setView(createView(LayoutInflater.from(getActivity()), null, savedInstanceState))
+                .create();
+        return d;
+    }
 
-        Context context = builder.getContext();
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return v;
+    }
 
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    View createView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Context context = inflater.getContext();
         final View view = inflater.inflate(R.layout.hours, null, false);
+        v = view;
 
         for (int i = 0; i < ids.length; i++) {
             CheckBox c = (CheckBox) view.findViewById(ids[i]);
@@ -140,17 +177,16 @@ public class HoursDialogFragment extends PreferenceDialogFragment {
         if (DateFormat.is24HourFormat(context)) {
             am.setVisibility(View.GONE);
             pm.setVisibility(View.GONE);
-        }else {
+        } else {
             am.setVisibility(View.VISIBLE);
             pm.setVisibility(View.VISIBLE);
         }
 
-        builder.setView(view);
+        return view;
     }
 
     void changed(View view) {
         mPreferenceChanged = true;
-
         Set<String> s = new TreeSet<>();
         for (int i = 0; i < ids.length; i++) {
             CheckBox c = (CheckBox) view.findViewById(ids[i]);
@@ -163,14 +199,11 @@ public class HoursDialogFragment extends PreferenceDialogFragment {
     }
 
     @Override
-    public void onDialogClosed(boolean positiveResult) {
-        MultiSelectListPreference preference = (MultiSelectListPreference) getPreference();
-        if (positiveResult && this.mPreferenceChanged) {
-            if (preference.callChangeListener(values)) {
-                preference.setValues(values);
-            }
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        Activity a = getActivity();
+        if (a instanceof DialogInterface.OnDismissListener) {
+            ((DialogInterface.OnDismissListener) a).onDismiss(new Result());
         }
-
-        this.mPreferenceChanged = false;
     }
 }

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".activities.MainActivity$AlarmsFragment">
+    tools:context=".fragments.AlarmsFragment">
 
     <LinearLayout
         android:id="@+id/alarm_base"
@@ -20,8 +20,7 @@
 
             <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/alarm_time"
@@ -180,6 +179,7 @@
                             android:orientation="horizontal">
 
                             <LinearLayout
+                                android:id="@+id/alarm_ringtone_value_box"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginRight="10dp"

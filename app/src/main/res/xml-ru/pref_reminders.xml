@@ -61,5 +61,5 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
         android:summary="Установить повторение оповещения"
-        android:title="Периодичность" />
+        android:title="@string/every" />
 </PreferenceScreen>

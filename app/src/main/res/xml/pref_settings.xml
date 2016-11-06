@@ -23,7 +23,7 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
         android:summary="Set snooze time after minutes"
-        android:title="Alarm Snooze After..." />
+        android:title="Alarm Snooze after..." />
 
     <ListPreference
         android:defaultValue="10"
@@ -33,7 +33,7 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
         android:summary="Set snooze time minutes"
-        android:title="Alarm Snooze Minutes..." />
+        android:title="Alarm Snooze minutes..." />
 
     <ListPreference
         android:defaultValue=""

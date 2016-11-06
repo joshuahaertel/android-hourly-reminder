@@ -179,7 +179,7 @@ public class TTS extends SoundConfig {
         Locale ru = new Locale("ru");
         if (locale.toString().startsWith(ru.toString())) {
             if (speakAMPMFlag) {
-                speakAMPM = HourlyApplication.getHourString(context, ru, hour);
+                speakAMPM = HourlyApplication.getHour4String(context, ru, hour);
             }
 
             speakHour = HourlyApplication.getQuantityString(context, ru, R.plurals.hours, h, h);
@@ -203,7 +203,7 @@ public class TTS extends SoundConfig {
         Locale en = new Locale("en");
         if (locale.toString().startsWith(en.toString()) || speak.isEmpty()) {
             if (speakAMPMFlag) {
-                speakAMPM = HourlyApplication.getHourString(context, en, hour);
+                speakAMPM = HourlyApplication.getHour4String(context, en, hour);
             }
 
             speakHour = String.format("%d", h);

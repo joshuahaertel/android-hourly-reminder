@@ -221,6 +221,7 @@
     <string name="alarm_set_for">Alarm set for%s from now!</string>
     <string name="alarm_disabled">Alarm is disabled</string>
     <string name="hour_symbol">h</string>
+    <string name="min_symbol">m</string>
 
     <string-array name="themes_text">
         <item>Theme White (default)</item>
@@ -267,8 +268,14 @@
 
     <string name="day_pm">PM</string>
     <string name="day_am">AM</string>
-    <string name="day_night">AM</string>
-    <string name="day_mid">PM</string>
+
+    <string name="day_pm_full">PM</string>
+    <string name="day_am_full">AM</string>
+
+    <string name="day_4_pm">PM</string>
+    <string name="day_4_am">AM</string>
+    <string name="day_4_night">AM</string>
+    <string name="day_4_mid">PM</string>
 
     <string name="beep">Beep</string>
     <string name="speech">Speech</string>
@@ -290,4 +297,5 @@
     <string name="play">Play</string>
     <string name="snoozed">Snoozed</string>
     <string name="snooze">Snooze</string>
+    <string name="every">Reminder Every</string>
 </resources>

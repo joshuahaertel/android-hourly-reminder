@@ -18,7 +18,9 @@ import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Reminder;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.Week;
+import com.github.axet.hourlyreminder.basics.WeekTime;
 import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
@@ -51,8 +53,11 @@ public class HourlyApplication extends Application {
     public static final String PREFERENCE_ALARM = "alarm";
     public static final String PREFERENCE_ALARMS_PREFIX = "alarm_";
 
+    public static final String PREFERENCE_REMINDERS_PREFIX = "reminders_";
+
     public static final String PREFERENCE_BEEP_CUSTOM = "beep_custom";
 
+    // reminders <=1.5.9
     public static final String PREFERENCE_BEEP = "beep";
     public static final String PREFERENCE_CUSTOM_SOUND = "custom_sound";
     public static final String PREFERENCE_CUSTOM_SOUND_OFF = "off";
@@ -227,39 +232,83 @@ public class HourlyApplication extends Application {
         AlarmService.start(context);
     }
 
-    public static List<Reminder> loadReminders(Context context) {
-        ArrayList<Reminder> list = new ArrayList<>();
+    public static List<ReminderSet> loadReminders(Context context) {
+        ArrayList<ReminderSet> list = new ArrayList<>();
 
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        int repeat = Integer.parseInt(shared.getString(PREFERENCE_REPEAT, "60"));
+        int count = shared.getInt(PREFERENCE_REMINDERS_PREFIX + "count", -1);
 
-        Set<String> hours = shared.getStringSet(PREFERENCE_HOURS, new HashSet<String>());
+        if (count == -1) { // <=1.5.9
+            boolean enabled = shared.getBoolean(PREFERENCE_ENABLED, false);
+            int repeat = Integer.parseInt(shared.getString(PREFERENCE_REPEAT, "60"));
+            Set<String> hours = shared.getStringSet(PREFERENCE_HOURS, new HashSet<String>());
+            Set<String> days = shared.getStringSet(HourlyApplication.PREFERENCE_DAYS, new TreeSet<String>());
 
-        for (int hour = 0; hour < 24; hour++) {
-            String h = Reminder.format(hour);
+            boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
+            boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
+            boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
 
-            Reminder r = new Reminder(context);
-            r.enabled = hours.contains(h);
-            r.setTime(hour, 0);
-            list.add(r);
+            ReminderSet rs = new ReminderSet(context, hours, repeat);
+            rs.enabled = enabled;
+            rs.speech = s;
+            rs.beep = b;
+            rs.ringtone = c;
+            rs.weekdaysCheck = true;
+            rs.setWeekDaysProperty(days);
 
-            String next = Reminder.format(hour + 1);
+            String custom = shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "");
+            if (custom.equals("ringtone")) {
+                String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, "");
+                rs.ringtoneValue = uri;
+            } else if (custom.equals("sound")) {
+                String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, "");
+                rs.ringtoneValue = uri;
+            }
+            list.add(rs);
+        } else {
+            Set<Long> ids = new TreeSet<>();
 
-            if (r.enabled && hours.contains(next)) {
-                for (int m = repeat; m < 60; m += repeat) {
-                    r = new Reminder(context);
-                    r.enabled = true;
-                    r.setTime(hour, m);
-                    list.add(r);
+            for (int i = 0; i < count; i++) {
+                String json = shared.getString(PREFERENCE_REMINDERS_PREFIX + i, "");
+                ReminderSet a = new ReminderSet(context, json);
+
+                while (ids.contains(a.id)) {
+                    a.id++;
                 }
+                ids.add(a.id);
+
+                list.add(a);
             }
         }
 
         return list;
     }
 
-    public static void toastAlarmSet(Context context, Alarm a) {
+    public static void saveReminders(Context context, List<ReminderSet> reminders) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor edit = shared.edit();
+        edit.putInt(PREFERENCE_REMINDERS_PREFIX + "count", reminders.size());
+
+        Set<Long> ids = new TreeSet<>();
+
+        for (int i = 0; i < reminders.size(); i++) {
+            ReminderSet a = reminders.get(i);
+
+            while (ids.contains(a.id)) {
+                a.id++;
+            }
+            ids.add(a.id);
+
+            edit.putString(PREFERENCE_REMINDERS_PREFIX + i, a.save().toString());
+        }
+        edit.commit();
+
+        AlarmService.start(context);
+
+    }
+
+    public static void toastAlarmSet(Context context, WeekTime a) {
         if (!a.enabled) {
             Toast.makeText(context, context.getString(R.string.alarm_disabled), Toast.LENGTH_SHORT).show();
             return;
@@ -294,7 +343,7 @@ public class HourlyApplication extends Application {
         Toast.makeText(context, context.getString(R.string.alarm_set_for, str), Toast.LENGTH_SHORT).show();
     }
 
-    public static String getHoursString(Context context, List<String> hours) {
+    public static String getHours2String(Context context, List<String> hours) {
         boolean h24 = DateFormat.is24HourFormat(context);
 
         String[] AMPM = new String[]{
@@ -302,8 +351,8 @@ public class HourlyApplication extends Application {
                 "12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
         };
 
-        String AM = "am";
-        String PM = "pm";
+        String AM = context.getString(R.string.day_am);
+        String PM = context.getString(R.string.day_pm);
 
         String H = context.getString(R.string.hour_symbol);
 
@@ -474,21 +523,65 @@ public class HourlyApplication extends Application {
         return str;
     }
 
-    public static String getHourString(Context context, int hour) {
+    // night/am/mid/pm hour string
+    public static String getHour4String(Context context, int hour) {
         Resources res = context.getResources();
         Configuration conf = res.getConfiguration();
         Locale locale = conf.locale;
-        return getHourString(context, locale, hour);
+        return getHour4String(context, locale, hour);
     }
 
-    public static String getHourString(Context context, Locale locale, int hour) {
+    // night/am/mid/pm hour string
+    public static String getHour4String(Context context, Locale locale, int hour) {
         switch (hour) {
             case 0:
             case 1:
             case 2:
             case 3:
             case 4:
-                return getString(context, locale, R.string.day_night);
+                return getString(context, locale, R.string.day_4_night);
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+                return getString(context, locale, R.string.day_4_am);
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+            case 17:
+                return getString(context, locale, R.string.day_4_mid);
+            case 18:
+            case 19:
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+                return getString(context, locale, R.string.day_4_pm);
+        }
+        throw new RuntimeException("bad hour");
+    }
+
+    // am/pm hour string
+    public static String getHour2String(Context context, int hour) {
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        Locale locale = conf.locale;
+        return getHour2String(context, locale, hour);
+    }
+
+    // am/pm hour string
+    public static String getHour2String(Context context, Locale locale, int hour) {
+        switch (hour) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
             case 5:
             case 6:
             case 7:
@@ -503,7 +596,6 @@ public class HourlyApplication extends Application {
             case 15:
             case 16:
             case 17:
-                return getString(context, locale, R.string.day_mid);
             case 18:
             case 19:
             case 20:

@@ -45,8 +45,8 @@
     <string name="ToastTime">Текущее время %1$s</string>
     <string name="Today">Сегодня</string>
     <string name="Tomorrow">Завтра</string>
-    <string name="UpcomingAlarm">Будильник через...</string>
-    <string name="UpcomingChime">Оповещение через...</string>
+    <string name="UpcomingAlarm">Будильник готовиться...</string>
+    <string name="UpcomingChime">Оповещение готовиться...</string>
 
     <string-array name="weekdays_text">
         <item>Пн</item>
@@ -125,10 +125,16 @@
     <string name="wednesday">С</string>
     <string name="saturday">С</string>
 
-    <string name="day_night">ночи</string>
-    <string name="day_am">утра</string>
-    <string name="day_mid">дня</string>
-    <string name="day_pm">вечера</string>
+    <string name="day_am">дп</string>
+    <string name="day_pm">пп</string>
+
+    <string name="day_pm_full">после полудня</string>
+    <string name="day_am_full">до полудня</string>
+
+    <string name="day_4_night">ночи</string>
+    <string name="day_4_am">утра</string>
+    <string name="day_4_mid">дня</string>
+    <string name="day_4_pm">вечера</string>
 
     <string name="WaitTTS">Ждем TTS</string>
     <string name="Weekdays">Рабочие дни</string>
@@ -145,10 +151,11 @@
     <string name="system">Системный Язык</string>
 
     <string name="hour_symbol">ч</string>
+    <string name="min_symbol">м</string>
 
     <string name="dismiss">Отменить</string>
     <string name="dismiss_alarm">Отменить Будильник</string>
-    <string name="ringtone">Оповещение</string>
+    <string name="ringtone">Мелодия</string>
     <string name="speech">Голос</string>
     <string name="title_activity_alarm">Будильник</string>
     <string name="title_activity_main">Почасовое оповещение</string>
@@ -167,4 +174,5 @@
     <string name="play">Слушать</string>
     <string name="snoozed">Повтор</string>
     <string name="snooze">Отложить</string>
+    <string name="every">Периодичность</string>
 </resources>
