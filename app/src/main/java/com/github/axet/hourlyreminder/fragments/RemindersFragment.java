@@ -264,6 +264,8 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     public void onDismiss(DialogInterface dialogInterface) {
         if (dialogInterface instanceof HoursDialogFragment.Result) {
             HoursDialogFragment.Result r = (HoursDialogFragment.Result) dialogInterface;
+            if (!r.ok)
+                return;
             if (r.index == -1) {
                 ReminderSet rs = new ReminderSet(getActivity(), r.hours);
                 addAlarm(rs);
