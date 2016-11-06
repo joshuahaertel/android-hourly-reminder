@@ -20,7 +20,6 @@ import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.Week;
-import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.basics.WeekTime;
 import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
@@ -244,6 +243,7 @@ public class HourlyApplication extends Application {
             boolean enabled = shared.getBoolean(PREFERENCE_ENABLED, false);
             int repeat = Integer.parseInt(shared.getString(PREFERENCE_REPEAT, "60"));
             Set<String> hours = shared.getStringSet(PREFERENCE_HOURS, new HashSet<String>());
+            Set<String> days = shared.getStringSet(HourlyApplication.PREFERENCE_DAYS, new TreeSet<String>());
 
             boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
             boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
@@ -254,6 +254,8 @@ public class HourlyApplication extends Application {
             rs.speech = s;
             rs.beep = b;
             rs.ringtone = c;
+            rs.weekdaysCheck = true;
+            rs.setWeekDaysProperty(days);
 
             String custom = shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "");
             if (custom.equals("ringtone")) {

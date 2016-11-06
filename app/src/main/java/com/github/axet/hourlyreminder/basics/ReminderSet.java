@@ -61,7 +61,7 @@ public class ReminderSet extends WeekSet {
         for (int hour = 0; hour < 24; hour++) {
             String h = Reminder.format(hour);
 
-            Reminder r = new Reminder(context);
+            Reminder r = new Reminder(context, getWeekDaysProperty());
             r.enabled = hours.contains(h);
             r.setTime(hour, 0);
             list.add(r);
@@ -70,7 +70,7 @@ public class ReminderSet extends WeekSet {
 
             if (r.enabled && hours.contains(next)) {
                 for (int m = repeat; m < 60; m += repeat) {
-                    r = new Reminder(context);
+                    r = new Reminder(context, getWeekDaysProperty());
                     r.enabled = true;
                     r.setTime(hour, m);
                     list.add(r);

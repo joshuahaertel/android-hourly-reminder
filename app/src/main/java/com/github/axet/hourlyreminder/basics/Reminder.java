@@ -16,13 +16,6 @@ import java.util.TreeSet;
 public class Reminder extends WeekTime {
     public Reminder(Context context) {
         super(context);
-
-        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        // reminder days
-        Set<String> days = shared.getStringSet(HourlyApplication.PREFERENCE_DAYS, new TreeSet<String>());
-
-        weekdaysCheck = true;
-        setWeekDaysProperty(days);
     }
 
     public Reminder(Context context, Set days) {
