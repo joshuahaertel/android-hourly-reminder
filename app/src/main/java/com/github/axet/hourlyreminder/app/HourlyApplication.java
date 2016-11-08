@@ -317,7 +317,7 @@ public class HourlyApplication extends Application {
         Calendar cur = Calendar.getInstance();
 
         Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(a.time);
+        cal.setTimeInMillis(a.getTime());
 
         long diff = cal.getTimeInMillis() - cur.getTimeInMillis();
 
