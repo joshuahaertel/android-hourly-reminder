@@ -445,8 +445,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     alarmed = true;
                     FireAlarmService.activateAlarm(this, old);
                 }
-
-                registerNextAlarm();
             }
         }
 
@@ -454,11 +452,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
                     if (r.getTime() == time && r.enabled) {
-                        if (!alarmed) {
-                            alarmed = true;
-                            sound.soundReminder(rr, time);
-                        }
-
                         // calling setNext is more safe. if this alarm have to fire today we will reset it
                         // to the same time. if it is already past today's time (as we expect) then it will
                         // be set for tomorrow.
@@ -466,11 +459,19 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         // also safe if we moved to another timezone.
                         r.setNext();
 
-                        registerNextAlarm();
+                        HourlyApplication.saveReminders(this, reminders);
+
+                        if (!alarmed) {
+                            alarmed = true;
+                            sound.soundReminder(rr, time);
+                        }
                     }
                 }
             }
         }
+
+        if (alarmed)
+            registerNextAlarm();
     }
 
     @Override
