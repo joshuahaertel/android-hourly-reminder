@@ -63,7 +63,6 @@ public class WeekTime extends WeekSet {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, hour);
         cal.set(Calendar.MINUTE, min);
-        cal.getTimeInMillis();
 
         this.time = getAlarmTime(cal, cur);
     }

@@ -33,6 +33,7 @@ public class Sound extends TTS {
     MediaPlayer player;
     AudioTrack track;
     Runnable increaseVolume;
+    Runnable loop; // loop preventer
 
     public Sound(Context context) {
         super(context);
@@ -222,38 +223,31 @@ public class Sound extends TTS {
     }
 
     public void playCustom(final ReminderSet rr, final Runnable done) {
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-
         if (rr.ringtone) {
             String uri = rr.ringtoneValue;
-            playCustom(uri, done);
+            playerClose();
+
+            Sound.this.done.clear();
+            Sound.this.done.add(done);
+
+            if (uri.isEmpty()) {
+                if (done != null)
+                    done.run();
+            } else {
+                player = playOnce(Uri.parse(uri), new Runnable() {
+                    @Override
+                    public void run() {
+                        if (done != null && Sound.this.done.contains(done))
+                            done.run();
+                        playerClose();
+                    }
+                });
+            }
         } else {
             if (done != null)
                 done.run();
         }
     }
-
-    void playCustom(String uri, final Runnable done) {
-        playerClose();
-
-        Sound.this.done.clear();
-        Sound.this.done.add(done);
-
-        if (uri.isEmpty()) {
-            if (done != null)
-                done.run();
-        } else {
-            player = playOnce(Uri.parse(uri), new Runnable() {
-                @Override
-                public void run() {
-                    if (done != null && Sound.this.done.contains(done))
-                        done.run();
-                    playerClose();
-                }
-            });
-        }
-    }
-
 
     public void playBeep(final Runnable done) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
@@ -482,6 +476,23 @@ public class Sound extends TTS {
         // https://code.google.com/p/android/issues/detail?id=1314
         player.setLooping(false);
 
+        final MediaPlayer p = player;
+        loop = new Runnable() {
+            int last = 0;
+
+            @Override
+            public void run() {
+                int pos = p.getCurrentPosition();
+                if (pos < last) {
+                    playerClose();
+                    return;
+                }
+                last = pos;
+                handler.postDelayed(loop, 200);
+            }
+        };
+        loop.run();
+
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                                            @Override
                                            public void onCompletion(MediaPlayer mp) {
@@ -518,6 +529,11 @@ public class Sound extends TTS {
         if (increaseVolume != null) {
             handler.removeCallbacks(increaseVolume);
             increaseVolume = null;
+        }
+
+        if (loop != null) {
+            handler.removeCallbacks(loop);
+            loop = null;
         }
 
         if (player != null) {
