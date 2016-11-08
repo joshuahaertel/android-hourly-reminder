@@ -39,6 +39,7 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.animations.AlarmAnimation;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.app.Storage;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Week;
@@ -65,6 +66,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     Handler handler;
     // preview ringtone
     boolean preview;
+    View alarmRingtonePlay;
     Sound sound;
     Storage storage;
 
@@ -310,6 +312,20 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         save(a);
     }
 
+    void previewCancel() {
+        if (alarmRingtonePlay != null) {
+            alarmRingtonePlay.clearAnimation();
+            alarmRingtonePlay = null;
+        }
+        sound.vibrateStop();
+        sound.playerClose();
+        preview = false;
+    }
+
+    Sound.Silenced playPreview(WeekSet a) {
+        return SoundConfig.Silenced.NONE;
+    }
+
     public void fillDetailed(final View view, final WeekSet a, boolean animate) {
         final Switch enable = (Switch) view.findViewById(R.id.alarm_enable);
         enable.setOnClickListener(new View.OnClickListener() {
@@ -388,9 +404,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         final View alarmRingtonePlay = view.findViewById(R.id.alarm_ringtone_play);
 
         if (preview) {
-            alarmRingtonePlay.clearAnimation();
-            sound.playerClose();
-            preview = false;
+            previewCancel();
         }
 
         alarmRingtone.setOnClickListener(new View.OnClickListener() {
@@ -404,27 +418,26 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             @Override
             public void onClick(View v) {
                 if (preview) {
-                    alarmRingtonePlay.clearAnimation();
-                    sound.vibrateStop();
-                    sound.playerClose();
-                    preview = false;
+                    previewCancel();
                     return;
                 }
 
                 if (a.ringtoneValue.isEmpty())
                     return;
 
-                Sound.Silenced s = sound.playAlarm(a);
-                if (s == Sound.Silenced.VIBRATE) {
-                    preview = true;
+                Sound.Silenced s = playPreview(a);
+
+                if (s == Sound.Silenced.VIBRATE) { // we can stop vibrate by clicking on image
+                    WeekSetFragment.this.preview = true;
+                    WeekSetFragment.this.alarmRingtonePlay = alarmRingtonePlay;
                     return;
                 }
-                if (s != Sound.Silenced.NONE) {
-                    sound.silencedToast(s);
+                if (s != Sound.Silenced.NONE) { // if not vibrating exit
                     return;
                 }
 
-                preview = true;
+                WeekSetFragment.this.preview = true;
+                WeekSetFragment.this.alarmRingtonePlay = alarmRingtonePlay;
 
                 Animation a = AnimationUtils.loadAnimation(getActivity(), R.anim.shake);
                 alarmRingtonePlay.startAnimation(a);

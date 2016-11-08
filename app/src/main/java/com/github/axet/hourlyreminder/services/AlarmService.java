@@ -464,7 +464,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
                         if (!alarmed) {
                             alarmed = true;
-                            sound.soundReminder(rr, time);
+                            sound.playReminder(rr, time, null);
                         }
                     }
                 }

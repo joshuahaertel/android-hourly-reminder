@@ -22,6 +22,8 @@ import android.widget.Toast;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
@@ -286,5 +288,15 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         } else {
             return ReminderSet.DEFAULT_NOTIFICATION.toString();
         }
+    }
+
+    @Override
+    Sound.Silenced playPreview(WeekSet a) {
+        return sound.playReminder((ReminderSet) a, System.currentTimeMillis(), new Runnable() {
+            @Override
+            public void run() {
+                previewCancel();
+            }
+        });
     }
 }
