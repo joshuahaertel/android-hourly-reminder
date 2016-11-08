@@ -15,6 +15,7 @@ import android.widget.TimePicker;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.basics.WeekTime;
@@ -232,5 +233,12 @@ public class AlarmsFragment extends WeekSetFragment {
             am.setVisibility(a.getHour() >= 12 ? View.GONE : View.VISIBLE);
             pm.setVisibility(a.getHour() >= 12 ? View.VISIBLE : View.GONE);
         }
+    }
+
+    @Override
+    Sound.Silenced playPreview(WeekSet a) {
+        Sound.Silenced s = sound.playAlarm((Alarm) a);
+        sound.silencedToast(s, System.currentTimeMillis());
+        return s;
     }
 }

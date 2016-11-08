@@ -146,7 +146,7 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public void soundReminder(final ReminderSet rr, final long time) {
+    public Silenced playReminder(final ReminderSet rr, final long time, final Runnable done) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         Silenced s = silencedReminder(rr);
@@ -155,31 +155,8 @@ public class Sound extends TTS {
         if (s != Silenced.NONE) {
             if (s == Silenced.VIBRATE)
                 vibrate();
-
-            String text = "";
-            switch (s) {
-                case VIBRATE:
-                    text += context.getString(R.string.SoundSilencedVibrate);
-                    break;
-                case CALL:
-                    text += context.getString(R.string.SoundSilencedCall);
-                    break;
-                case MUSIC:
-                    text += context.getString(R.string.SoundSilencedMusic);
-                    break;
-                case SETTINGS:
-                    text += context.getString(R.string.SoundSilencedSettings);
-                    break;
-            }
-            text += "\n";
-            text += context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, time));
-
-            Toast t = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-            TextView v = (TextView) t.getView().findViewById(android.R.id.message);
-            if (v != null)
-                v.setGravity(Gravity.CENTER);
-            t.show();
-            return;
+            silencedToast(s, time);
+            return s;
         }
 
         if (shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false)) {
@@ -190,7 +167,11 @@ public class Sound extends TTS {
             @Override
             public void run() {
                 if (rr.ringtone) {
-                    playCustom(rr, null);
+                    playCustom(rr, done);
+                } else {
+                    if (done != null) {
+                        done.run();
+                    }
                 }
             }
         };
@@ -220,6 +201,7 @@ public class Sound extends TTS {
         timeToast(time);
 
         beep.run();
+        return s;
     }
 
     public void playCustom(final ReminderSet rr, final Runnable done) {
@@ -395,9 +377,12 @@ public class Sound extends TTS {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
     }
 
-    public void silencedToast(Silenced s) {
+    public void silencedToast(Silenced s, long time) {
         String text = "";
         switch (s) {
+            case VIBRATE:
+                text += context.getString(R.string.SoundSilencedVibrate);
+                break;
             case CALL:
                 text += context.getString(R.string.SoundSilencedCall);
                 break;
@@ -408,7 +393,14 @@ public class Sound extends TTS {
                 text += context.getString(R.string.SoundSilencedSettings);
                 break;
         }
-        Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+        text += "\n";
+        text += context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, time));
+
+        Toast t = Toast.makeText(context, text.trim(), Toast.LENGTH_SHORT);
+        TextView v = (TextView) t.getView().findViewById(android.R.id.message);
+        if (v != null)
+            v.setGravity(Gravity.CENTER);
+        t.show();
     }
 
     MediaPlayer create(Uri uri) {
@@ -486,7 +478,9 @@ public class Sound extends TTS {
             public void run() {
                 int pos = p.getCurrentPosition();
                 if (pos < last) {
-                    playerClose();
+                    if (done != null) // since we force close player, OnCompletionListener isnt called
+                        done.run();
+                    playerClose(); // playerClose clears done
                     return;
                 }
                 last = pos;
@@ -547,10 +541,15 @@ public class Sound extends TTS {
         return false;
     }
 
-    public Silenced playAlarm(final WeekSet a) {
+    public Silenced playAlarm(final Alarm a) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         Silenced s = silencedAlarm(a);
+
+        final long time = System.currentTimeMillis(); // show/speak current time
+
+        // do not show toast, sice we will fire Alarm Activity
+        // silencedToast(s, time);
 
         if (s == Silenced.VIBRATE) {
             vibrateStart();
@@ -563,8 +562,6 @@ public class Sound extends TTS {
         if (shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false)) {
             vibrateStart();
         }
-
-        final long time = System.currentTimeMillis();
 
         if (a.beep) {
             playBeep(new Runnable() {
