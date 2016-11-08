@@ -148,8 +148,17 @@ public class TTS extends SoundConfig {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(time);
         int hour = c.get(Calendar.HOUR_OF_DAY);
-        int h = DateFormat.is24HourFormat(context) ? hour : c.get(Calendar.HOUR);
         int min = c.get(Calendar.MINUTE);
+
+        int h;
+        if (DateFormat.is24HourFormat(context)) {
+            h = hour;
+        } else {
+            h = c.get(Calendar.HOUR);
+            if (h == 0) { // 12
+                h = 12;
+            }
+        }
 
         String speak = "";
 
