@@ -29,8 +29,6 @@ import java.util.Set;
 public class SoundConfig {
     public static final String TAG = SoundConfig.class.getSimpleName();
 
-    public final static Uri DEFAULT_ALARM = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-
     public enum Silenced {
         NONE,
         VIBRATE, // vibrate instead of sound

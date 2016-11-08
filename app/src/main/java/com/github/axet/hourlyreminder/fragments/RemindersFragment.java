@@ -44,6 +44,8 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
 
         context.startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, ReminderSet.DEFAULT_NOTIFICATION)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.Reminder))
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), 0);
     }
@@ -272,8 +274,17 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
             } else {
                 ReminderSet rs = reminders.get(r.index);
                 rs.load(r.hours);
+                save(rs);
             }
-            HourlyApplication.saveReminders(getActivity(), reminders);
+        }
+    }
+
+    @Override
+    String fallbackUri(Uri uri) {
+        if (uri != null) {
+            return uri.toString();
+        } else {
+            return ReminderSet.DEFAULT_NOTIFICATION.toString();
         }
     }
 }

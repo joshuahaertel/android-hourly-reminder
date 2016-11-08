@@ -1,6 +1,8 @@
 package com.github.axet.hourlyreminder.basics;
 
 import android.content.Context;
+import android.media.RingtoneManager;
+import android.net.Uri;
 
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 
@@ -15,6 +17,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class ReminderSet extends WeekSet {
+    public final static Uri DEFAULT_NOTIFICATION = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
     public Set<String> hours; // actual hours selected
     public List<Reminder> list; // generated reminders (depend on repeat)
     public int repeat; // minutes
@@ -33,6 +37,7 @@ public class ReminderSet extends WeekSet {
         this.repeat = 60;
         this.enabled = true;
         this.ringtone = false;
+        this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
 
         load(hours);
     }
@@ -42,6 +47,7 @@ public class ReminderSet extends WeekSet {
         this.beep = true;
         this.speech = true;
         this.ringtone = false;
+        this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
         this.repeat = 60;
         load(new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12"})));
     }

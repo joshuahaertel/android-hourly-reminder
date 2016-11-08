@@ -295,11 +295,12 @@ public class Sound extends TTS {
         track.play();
     }
 
+    // called from alarm
     public void playRingtone(Uri uri) {
         playerClose();
         player = create(uri);
         if (player == null) {
-            player = create(Alarm.DEFAULT_RING);
+            player = create(Alarm.DEFAULT_ALARM);
         }
         if (player == null) {
             if (tone != null) {
@@ -461,10 +462,11 @@ public class Sound extends TTS {
         }
     }
 
+    // called from reminder or test sound button
     public MediaPlayer playOnce(Uri uri, final Runnable done) {
         MediaPlayer player = create(uri);
         if (player == null) {
-            player = create(DEFAULT_ALARM);
+            player = create(ReminderSet.DEFAULT_NOTIFICATION);
         }
         if (player == null) {
             Toast.makeText(context, context.getString(R.string.NoDefaultRingtone), Toast.LENGTH_SHORT).show();

@@ -2,6 +2,8 @@ package com.github.axet.hourlyreminder.basics;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 
 import com.github.axet.hourlyreminder.app.HourlyApplication;
@@ -11,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class Alarm extends WeekTime {
+    public final static Uri DEFAULT_ALARM = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
 
     public Alarm(Alarm copy) {
         super(copy);
@@ -20,6 +23,7 @@ public class Alarm extends WeekTime {
         super(context);
 
         ringtone = false;
+        ringtoneValue = DEFAULT_ALARM.toString();
         beep = false;
 
         setTime(9, 0);
