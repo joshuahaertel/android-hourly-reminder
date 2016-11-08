@@ -96,9 +96,9 @@ public class AlarmActivity extends AppCompatActivity {
 
         List<Alarm> list = HourlyApplication.loadAlarms(this);
         for (Alarm a : list) {
-            if (a.time == time) { // conflicts are ok here
+            if (a.getTime() == time) { // conflicts are ok here
                 Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(a.time);
+                cal.setTimeInMillis(a.getTime());
                 cal.set(Calendar.HOUR_OF_DAY, a.getHour());
                 cal.set(Calendar.MINUTE, a.getMin());
                 updateTime(alarm, cal.getTimeInMillis());

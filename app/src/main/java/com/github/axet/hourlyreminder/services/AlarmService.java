@@ -142,7 +142,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
                     if (r.enabled)
-                        alarms.add(r.time);
+                        alarms.add(r.getTime());
                 }
             }
         }
@@ -156,7 +156,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         for (Alarm a : this.alarms) {
             if (a.enabled)
-                alarms.add(a.time);
+                alarms.add(a.getTime());
         }
 
         return alarms;
@@ -165,7 +165,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // cancel alarm 'time' by set it time for day+1 (same hour:min)
     public void tomorrow(long time) {
         for (Alarm a : alarms) {
-            if (a.time == time && a.enabled) {
+            if (a.getTime() == time && a.enabled) {
                 if (a.weekdaysCheck) {
                     // be safe for another timezone. if we moved we better call setNext().
                     // but here we have to jump over next alarm.
@@ -182,7 +182,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         for (ReminderSet rr : reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
-                    if (r.time == time && r.enabled) {
+                    if (r.getTime() == time && r.enabled) {
                         r.setTomorrow();
                     }
                 }
@@ -323,7 +323,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     boolean isAlarm(long time) {
         for (Alarm a : alarms) {
-            if (a.time == time && a.getEnable())
+            if (a.getTime() == time && a.getEnable())
                 return true;
         }
         return false;
@@ -333,7 +333,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         for (ReminderSet rr : reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
-                    if (r.time == time && r.enabled) {
+                    if (r.getTime() == time && r.enabled) {
                         return true;
                     }
                 }
@@ -348,7 +348,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         for (ReminderSet rr : reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
-                    if (r.time == time && r.enabled) {
+                    if (r.getTime() == time && r.enabled) {
                         rep.add(rr.repeat); // add 15 or 5 or 30
                     }
                 }
@@ -384,7 +384,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 subject = getString(R.string.UpcomingChime);
             String text = Alarm.format2412ap(this, time);
             for (Alarm a : alarms) {
-                if (a.time == time) {
+                if (a.getTime() == time) {
                     if (a.isSnoozed()) {
                         text += " (" + getString(R.string.snoozed) + ": " + a.format2412ap() + ")";
                     }
@@ -425,8 +425,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         // here can be two alarms with same time
         for (Alarm a : alarms) {
-            if (a.time == time && a.enabled) {
-                Log.d(TAG, "Sound Alarm " + Alarm.format24(a.time));
+            if (a.getTime() == time && a.enabled) {
+                Log.d(TAG, "Sound Alarm " + Alarm.format24(a.getTime()));
                 Alarm old = new Alarm(a);
                 if (!a.weekdaysCheck) {
                     // disable alarm after it goes off for non rcuring alarms (!a.weekdays)
@@ -441,19 +441,17 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
                 HourlyApplication.saveAlarms(this, alarms);
 
-                FireAlarmService.activateAlarm(this, old);
-                registerNextAlarm();
-                alarmed = true;
+                if (!alarmed) {
+                    alarmed = true;
+                    FireAlarmService.activateAlarm(this, old);
+                }
             }
         }
 
         for (ReminderSet rr : reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
-                    if (r.time == time && r.enabled) {
-                        if (!alarmed)
-                            sound.soundReminder(rr, time);
-
+                    if (r.getTime() == time && r.enabled) {
                         // calling setNext is more safe. if this alarm have to fire today we will reset it
                         // to the same time. if it is already past today's time (as we expect) then it will
                         // be set for tomorrow.
@@ -461,11 +459,19 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         // also safe if we moved to another timezone.
                         r.setNext();
 
-                        registerNextAlarm();
+                        HourlyApplication.saveReminders(this, reminders);
+
+                        if (!alarmed) {
+                            alarmed = true;
+                            sound.soundReminder(rr, time);
+                        }
                     }
                 }
             }
         }
+
+        if (alarmed)
+            registerNextAlarm();
     }
 
     @Override

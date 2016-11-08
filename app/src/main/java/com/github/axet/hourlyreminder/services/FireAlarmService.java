@@ -196,7 +196,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
             editor.commit();
         }
 
-        Log.d(TAG, "id=" + alarm.id + ", time=" + Alarm.format24(alarm.time));
+        Log.d(TAG, "id=" + alarm.id + ", time=" + Alarm.format24(alarm.getTime()));
 
         if (!alive(alarm)) {
             stopSelf();
@@ -211,12 +211,12 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 sm.registerListener(this, a, SensorManager.SENSOR_DELAY_GAME);
         }
 
-        showNotificationAlarm(alarm.time);
+        showNotificationAlarm(alarm.getTime());
 
         // do we have silence alarm?
         silenced = sound.playAlarm(alarm);
 
-        showAlarmActivity(alarm.time, silenced);
+        showAlarmActivity(alarm.getTime(), silenced);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -228,7 +228,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     static boolean dismiss(Context context, Calendar cur, final Alarm a) { // do we have to dismiss (due timeout) alarm?
         final Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(a.time); // dismiss checks for alarm scheduled time (original hour/min)
+        cal.setTimeInMillis(a.getTime()); // dismiss checks for alarm scheduled time (original hour/min)
         cal.set(Calendar.HOUR_OF_DAY, a.getHour());
         cal.set(Calendar.MINUTE, a.getMin());
         return dismiss(context, cur, cal.getTimeInMillis());
@@ -260,7 +260,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
             return false;
 
         final Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(a.time); // snooze check alarm fire time (not hours/mins)
+        cal.setTimeInMillis(a.getTime()); // snooze check alarm fire time (not hours/mins)
         cal.add(Calendar.MINUTE, m);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
@@ -274,7 +274,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 @Override
                 public void run() {
                     if (snooze(a)) {
-                        snooze(FireAlarmService.this, a.time);
+                        snooze(FireAlarmService.this, a.getTime());
                         stopSelf();
                         return;
                     }
@@ -446,20 +446,20 @@ public class FireAlarmService extends Service implements SensorEventListener {
         TreeSet<Long> alarms = new TreeSet<>();
         for (Alarm a : list) {
             if (a.enabled)
-                alarms.add(a.time);
+                alarms.add(a.getTime());
         }
 
         for (Alarm a : list) {
-            if (a.time == time) { // can be disabled
+            if (a.getTime() == time) { // can be disabled
                 boolean b = a.enabled;
                 a.snooze();
 
-                if (!alarms.isEmpty() && a.time >= alarms.first()) { // did we hit another enabled alarm? stop snooze
+                if (!alarms.isEmpty() && a.getTime() >= alarms.first()) { // did we hit another enabled alarm? stop snooze
                     FireAlarmService.showNotificationMissed(context, a);
                     a.setEnable(b); // enable && setNext
                 } else {
                     final Calendar cur = Calendar.getInstance();
-                    cur.setTimeInMillis(a.time);
+                    cur.setTimeInMillis(a.getTime());
                     if (dismiss(context, cur, a)) { // outdated by snooze timeout?
                         FireAlarmService.showNotificationMissed(context, a);
                         a.setEnable(b); // enable && setNext
@@ -487,7 +487,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                             Log.d(TAG, "now screen is facing up.");
                         } else if (gz < 0) {
                             Log.d(TAG, "now screen is facing down.");
-                            snooze(this, alarm.time);
+                            snooze(this, alarm.getTime());
                             dismissActiveAlarm(this);
                         }
                     }
