@@ -184,6 +184,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 for (Reminder r : rr.list) {
                     if (r.getTime() == time && r.enabled) {
                         r.setTomorrow();
+                        HourlyApplication.saveReminders(this, reminders);
                     }
                 }
             }
