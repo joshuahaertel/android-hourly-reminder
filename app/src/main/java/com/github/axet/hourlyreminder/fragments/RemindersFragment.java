@@ -272,8 +272,8 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
             } else {
                 ReminderSet rs = reminders.get(r.index);
                 rs.load(r.hours);
+                save(rs);
             }
-            HourlyApplication.saveReminders(getActivity(), reminders);
         }
     }
 }
