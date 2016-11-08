@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class WeekSet extends Week {
-    public final static Uri DEFAULT_RING = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-
     // unique id
     public long id;
     // alarm with ringtone?
@@ -45,7 +43,6 @@ public class WeekSet extends Week {
         ringtone = true;
         beep = true;
         speech = true;
-        ringtoneValue = DEFAULT_RING.toString();
     }
 
     public WeekSet(Context context, String json) {

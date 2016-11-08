@@ -46,7 +46,6 @@ import com.github.axet.hourlyreminder.basics.WeekSet;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 public class WeekSetFragment extends Fragment implements ListAdapter, AbsListView.OnScrollListener, SharedPreferences.OnSharedPreferenceChangeListener {
     static final int TYPE_COLLAPSED = 0;
@@ -124,6 +123,14 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         }
     }
 
+    String fallbackUri(Uri uri) {
+        if (uri != null) {
+            return uri.toString();
+        } else {
+            return Alarm.DEFAULT_ALARM.toString();
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -138,11 +145,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
 
         if (requestCode == 0) {
             Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-            if (uri != null) {
-                fragmentRequestRingtone.ringtoneValue = uri.toString();
-            } else {
-                fragmentRequestRingtone.ringtoneValue = Alarm.DEFAULT_RING.toString();
-            }
+            fragmentRequestRingtone.ringtoneValue = fallbackUri(uri);
             save(fragmentRequestRingtone);
             fragmentRequestRingtone = null;
             return;
@@ -331,7 +334,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 child.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        setWeek(a, week,child.isChecked());
+                        setWeek(a, week, child.isChecked());
                     }
                 });
                 child.setChecked(a.isWeek(week));
@@ -358,7 +361,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             TextView ringtoneValue = (TextView) view.findViewById(R.id.alarm_ringtone_value);
             String title = HourlyApplication.getTitle(getActivity(), a.ringtoneValue);
             if (title == null)
-                title = HourlyApplication.getTitle(getActivity(), Alarm.DEFAULT_RING.toString());
+                title = HourlyApplication.getTitle(getActivity(), fallbackUri(null));
             ringtoneValue.setText(title);
         }
 
@@ -465,6 +468,8 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 }
                 startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
                         .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+                        .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Alarm.DEFAULT_ALARM)
+                        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
                         .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.SelectAlarm)
                         .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), 0);
             }
