@@ -210,9 +210,15 @@ public class HourlyApplication extends Application {
         return alarms;
     }
 
-    public static void saveAlarms(Context context, List<Alarm> alarms) {
+    public static void save(Context context, List<Alarm> alarms, List<ReminderSet> reminders) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor edit = shared.edit();
+        saveAlarms(edit, alarms);
+        saveReminders(edit, reminders);
+        edit.commit();
+    }
+
+    public static void saveAlarms(SharedPreferences.Editor edit, List<Alarm> alarms) {
         edit.putInt(PREFERENCE_ALARMS_PREFIX + "count", alarms.size());
 
         Set<Long> ids = new TreeSet<>();
@@ -227,8 +233,30 @@ public class HourlyApplication extends Application {
 
             edit.putString(PREFERENCE_ALARMS_PREFIX + i, a.save().toString());
         }
-        edit.commit();
+    }
 
+    public static void saveReminders(SharedPreferences.Editor edit, List<ReminderSet> reminders) {
+        edit.putInt(PREFERENCE_REMINDERS_PREFIX + "count", reminders.size());
+
+        Set<Long> ids = new TreeSet<>();
+
+        for (int i = 0; i < reminders.size(); i++) {
+            ReminderSet a = reminders.get(i);
+
+            while (ids.contains(a.id)) {
+                a.id++;
+            }
+            ids.add(a.id);
+
+            edit.putString(PREFERENCE_REMINDERS_PREFIX + i, a.save().toString());
+        }
+    }
+
+    public static void saveAlarms(Context context, List<Alarm> alarms) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor edit = shared.edit();
+        saveAlarms(edit, alarms);
+        edit.commit();
         AlarmService.start(context);
     }
 
@@ -288,22 +316,8 @@ public class HourlyApplication extends Application {
     public static void saveReminders(Context context, List<ReminderSet> reminders) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor edit = shared.edit();
-        edit.putInt(PREFERENCE_REMINDERS_PREFIX + "count", reminders.size());
-
-        Set<Long> ids = new TreeSet<>();
-
-        for (int i = 0; i < reminders.size(); i++) {
-            ReminderSet a = reminders.get(i);
-
-            while (ids.contains(a.id)) {
-                a.id++;
-            }
-            ids.add(a.id);
-
-            edit.putString(PREFERENCE_REMINDERS_PREFIX + i, a.save().toString());
-        }
+        saveReminders(edit, reminders);
         edit.commit();
-
         AlarmService.start(context);
 
     }

@@ -126,7 +126,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             }
         } else {
-            Log.d(TAG, "onStartCommand restart");
+            Log.d(TAG, "onStartCommand restart"); // crash fail
             alarms = HourlyApplication.loadAlarms(this);
             reminders = HourlyApplication.loadReminders(this);
             registerNextAlarm();
@@ -175,8 +175,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     a.setEnable(false);
                 }
                 HourlyApplication.toastAlarmSet(this, a);
-
-                HourlyApplication.saveAlarms(this, alarms);
             }
         }
 
@@ -185,12 +183,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 for (Reminder r : rr.list) {
                     if (r.getTime() == time && r.enabled) {
                         r.setTomorrow();
-                        HourlyApplication.saveReminders(this, reminders);
                     }
                 }
             }
         }
 
+        HourlyApplication.save(this, alarms, reminders);
         registerNextAlarm();
     }
 
@@ -441,7 +439,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     // also safe if we moved to another timezone.
                     a.setNext();
                 }
-                HourlyApplication.saveAlarms(this, alarms);
 
                 if (!alarmed) {
                     alarmed = true;
@@ -461,8 +458,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         // also safe if we moved to another timezone.
                         r.setNext();
 
-                        HourlyApplication.saveReminders(this, reminders);
-
                         if (!alarmed) {
                             alarmed = true;
                             sound.playReminder(rr, time, null);
@@ -472,8 +467,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
 
-        if (alarmed)
+        if (alarmed) {
+            HourlyApplication.save(this, alarms, reminders);
             registerNextAlarm();
+        }
     }
 
     @Override
