@@ -128,6 +128,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         } else {
             Log.d(TAG, "onStartCommand restart");
             alarms = HourlyApplication.loadAlarms(this);
+            reminders = HourlyApplication.loadReminders(this);
             registerNextAlarm();
         }
 
