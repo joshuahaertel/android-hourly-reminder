@@ -275,22 +275,17 @@ public class Sound extends TTS {
     }
 
     public void playCustom(String uri, final Runnable done) {
-        if (!uri.isEmpty()) {
-            playerCl();
+        playerCl();
 
-            Sound.this.done.add(done);
+        Sound.this.done.add(done);
 
-            player = playOnce(Uri.parse(uri), new Runnable() {
-                @Override
-                public void run() {
-                    if (done != null && Sound.this.done.contains(done))
-                        done.run();
-                }
-            });
-        } else {
-            if (done != null)
-                done.run();
-        }
+        player = playOnce(Uri.parse(uri), new Runnable() {
+            @Override
+            public void run() {
+                if (done != null && Sound.this.done.contains(done))
+                    done.run();
+            }
+        });
     }
 
     public void playBeep(final Runnable done) {

@@ -422,9 +422,6 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                     return;
                 }
 
-                if (a.ringtoneValue.isEmpty())
-                    return;
-
                 Sound.Silenced s = playPreview(a);
 
                 if (s == Sound.Silenced.VIBRATE) { // we can stop vibrate by clicking on image
