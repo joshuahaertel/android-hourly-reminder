@@ -19,7 +19,6 @@ import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.basics.WeekTime;
-import com.github.axet.hourlyreminder.services.AlarmService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,9 +125,11 @@ public class AlarmsFragment extends WeekSetFragment {
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         super.onSharedPreferenceChanged(sharedPreferences, key);
-        alarms = HourlyApplication.loadAlarms(getActivity());
-        Collections.sort(alarms, new Alarm.CustomComparator());
-        changed();
+        if (key.startsWith(HourlyApplication.PREFERENCE_ALARMS_PREFIX)) {
+            alarms = HourlyApplication.loadAlarms(getActivity());
+            Collections.sort(alarms, new Alarm.CustomComparator());
+            changed();
+        }
     }
 
     @Override
