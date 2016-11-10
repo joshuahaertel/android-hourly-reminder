@@ -64,7 +64,7 @@ public class WeekSet extends Week {
         super.load(o);
         this.id = o.getLong("id");
         this.ringtone = o.getBoolean("ringtone");
-        this.ringtoneValue = o.optString("ringtone_value", null);
+        this.ringtoneValue = o.optString("ringtone_value", "");
         this.beep = o.getBoolean("beep");
         this.speech = o.getBoolean("speech");
     }
