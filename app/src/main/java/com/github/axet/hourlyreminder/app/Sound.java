@@ -58,6 +58,7 @@ public class Sound extends TTS {
                     if (!before.contains(rs.ringtoneValue)) // do not add after, if same sound already played "before"
                         add(after, rs.ringtoneValue);
                 } else {
+                    after.remove(rs.ringtoneValue); // do not add after, if same sound already played "before"
                     add(before, rs.ringtoneValue);
                 }
             }
