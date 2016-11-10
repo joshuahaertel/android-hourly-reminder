@@ -25,6 +25,8 @@ import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Sound extends TTS {
     public static final String TAG = Sound.class.getSimpleName();
@@ -34,6 +36,37 @@ public class Sound extends TTS {
     AudioTrack track;
     Runnable increaseVolume;
     Runnable loop; // loop preventer
+
+    public static class Playlist {
+        public List<String> before = new ArrayList<>();
+        public boolean beep;
+        public boolean speech;
+        public List<String> after = new ArrayList<>();
+
+        public Playlist() {
+        }
+
+        public Playlist(ReminderSet rs) {
+            merge(rs);
+        }
+
+        public void merge(ReminderSet rs) {
+            this.beep |= rs.beep;
+            this.speech |= rs.speech;
+            if (rs.ringtone) {
+                if (rs.beep || rs.speech)
+                    add(after, rs.ringtoneValue);
+                else
+                    add(before, rs.ringtoneValue);
+            }
+        }
+
+        void add(List<String> l, String s) {
+            if (l.contains(s))
+                return;
+            l.add(s);
+        }
+    }
 
     public Sound(Context context) {
         super(context);
@@ -82,7 +115,7 @@ public class Sound extends TTS {
         return track;
     }
 
-    public Silenced silencedReminder(ReminderSet rr) {
+    public Silenced silencedReminder(Playlist rr) {
         Silenced ss = silenced();
 
         if (ss != Silenced.NONE)
@@ -91,7 +124,7 @@ public class Sound extends TTS {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
-        boolean c = rr.ringtone;
+        boolean c = !rr.after.isEmpty() || !rr.before.isEmpty();
         boolean s = rr.speech;
         boolean b = rr.beep;
 
@@ -146,7 +179,9 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public Silenced playReminder(final ReminderSet rr, final long time, final Runnable done) {
+    public Silenced playList(final Playlist rr, final long time, final Runnable done) {
+        playerClose();
+
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         Silenced s = silencedReminder(rr);
@@ -163,11 +198,11 @@ public class Sound extends TTS {
             vibrate();
         }
 
-        final Runnable custom = new Runnable() {
+        final Runnable after = new Runnable() {
             @Override
             public void run() {
-                if (rr.ringtone) {
-                    playCustom(rr, done);
+                if (!rr.after.isEmpty()) {
+                    playCustom(rr.after, done);
                 } else {
                     if (done != null) {
                         done.run();
@@ -180,9 +215,9 @@ public class Sound extends TTS {
             @Override
             public void run() {
                 if (rr.speech) {
-                    playSpeech(time, custom);
+                    playSpeech(time, after);
                 } else {
-                    custom.run();
+                    after.run();
                 }
             }
         };
@@ -198,33 +233,57 @@ public class Sound extends TTS {
             }
         };
 
-        timeToast(time);
+        final Runnable before = new Runnable() {
+            @Override
+            public void run() {
+                if (!rr.before.isEmpty()) {
+                    playCustom(rr.before, beep);
+                } else {
+                    beep.run();
+                }
+            }
+        };
 
-        beep.run();
+        before.run();
         return s;
     }
 
-    public void playCustom(final ReminderSet rr, final Runnable done) {
-        if (rr.ringtone) {
-            String uri = rr.ringtoneValue;
-            playerClose();
+    public Silenced playReminder(final ReminderSet rs, final long time, final Runnable done) {
+        return playList(new Playlist(rs), time, done);
+    }
 
-            Sound.this.done.clear();
+    public void playCustom(List<String> uu, final Runnable done) {
+        playCustom(uu, 0, done);
+    }
+
+    public void playCustom(final List<String> uu, final int index, final Runnable done) {
+        if (index >= uu.size()) {
+            if (done != null)
+                done.run();
+            return;
+        }
+
+        playCustom(uu.get(index), new Runnable() {
+            @Override
+            public void run() {
+                playCustom(uu, index + 1, done);
+            }
+        });
+    }
+
+    public void playCustom(String uri, final Runnable done) {
+        if (!uri.isEmpty()) {
+            playerCl();
+
             Sound.this.done.add(done);
 
-            if (uri.isEmpty()) {
-                if (done != null)
-                    done.run();
-            } else {
-                player = playOnce(Uri.parse(uri), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (done != null && Sound.this.done.contains(done))
-                            done.run();
-                        playerClose();
-                    }
-                });
-            }
+            player = playOnce(Uri.parse(uri), new Runnable() {
+                @Override
+                public void run() {
+                    if (done != null && Sound.this.done.contains(done))
+                        done.run();
+                }
+            });
         } else {
             if (done != null)
                 done.run();
@@ -253,7 +312,6 @@ public class Sound extends TTS {
             track.setVolume(getVolume());
         }
 
-        Sound.this.done.clear();
         Sound.this.done.add(done);
 
         track.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
@@ -280,6 +338,7 @@ public class Sound extends TTS {
     // called from alarm
     public void playRingtone(Uri uri) {
         playerClose();
+
         player = create(uri);
         if (player == null) {
             player = create(Alarm.DEFAULT_ALARM);
@@ -478,9 +537,8 @@ public class Sound extends TTS {
             public void run() {
                 int pos = p.getCurrentPosition();
                 if (pos < last) {
-                    if (done != null) // since we force close player, OnCompletionListener isnt called
+                    if (done != null && Sound.this.done.contains(done))
                         done.run();
-                    playerClose(); // playerClose clears done
                     return;
                 }
                 last = pos;
@@ -519,9 +577,7 @@ public class Sound extends TTS {
         v.cancel();
     }
 
-    public boolean playerClose() {
-        done.clear();
-
+    void playerCl() {
         if (increaseVolume != null) {
             handler.removeCallbacks(increaseVolume);
             increaseVolume = null;
@@ -535,10 +591,12 @@ public class Sound extends TTS {
         if (player != null) {
             player.release();
             player = null;
-            return true;
         }
+    }
 
-        return false;
+    public void playerClose() {
+        playerCl();
+        done.clear();
     }
 
     public Silenced playAlarm(final Alarm a) {

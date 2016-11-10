@@ -19,6 +19,7 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.MainActivity;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
@@ -440,14 +441,15 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     a.setNext();
                 }
 
-                if (!alarmed) {
+                if (!alarmed) { // no cumulative alarms
                     alarmed = true;
                     FireAlarmService.activateAlarm(this, old);
                 }
             }
         }
 
-        for (ReminderSet rr : reminders) {
+        Sound.Playlist playlist = null;
+        for (final ReminderSet rr : reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
                     if (r.getTime() == time && r.enabled) {
@@ -458,16 +460,23 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         // also safe if we moved to another timezone.
                         r.setNext();
 
-                        if (!alarmed) {
-                            alarmed = true;
-                            sound.playReminder(rr, time, null);
+                        if (!alarmed) { // do not cross alarms
+                            if (playlist == null)
+                                playlist = new Sound.Playlist(rr);
+                            else
+                                playlist.merge(rr);
                         }
                     }
                 }
             }
         }
 
-        if (alarmed) {
+        if (playlist != null) {
+            SoundConfig.Silenced s = sound.playList(playlist, time, null);
+            sound.silencedToast(s, time);
+        }
+
+        if (alarmed || playlist != null) {
             HourlyApplication.save(this, alarms, reminders);
             registerNextAlarm();
         }

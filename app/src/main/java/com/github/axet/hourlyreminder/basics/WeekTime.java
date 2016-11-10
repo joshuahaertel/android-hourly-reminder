@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 
 public class WeekTime extends WeekSet {
     // (may be incorrect if user moved from one time zone to anoter)
@@ -147,5 +148,10 @@ public class WeekTime extends WeekSet {
 
     public int getMin() {
         return min;
+    }
+
+    public String toString() {
+        SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return "WeekTime: " + s.format(new Date(time));
     }
 }
