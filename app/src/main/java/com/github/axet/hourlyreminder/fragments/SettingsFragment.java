@@ -40,6 +40,7 @@ import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
@@ -464,7 +465,8 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    sound.playReminder(new ReminderSet(context), System.currentTimeMillis(), null);
+                    SoundConfig.Silenced s = sound.playReminder(new ReminderSet(context), System.currentTimeMillis(), null);
+                    sound.silencedToast(s, System.currentTimeMillis());
                 }
             });
         }
