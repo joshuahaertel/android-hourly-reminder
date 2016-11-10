@@ -83,7 +83,7 @@
     </string-array>
 
     <string-array name="snooze_after_text">
-        <item>Off</item>
+        <item>Выключено</item>
         <item>1 мин</item>
         <item>2 мин</item>
         <item>3 мин</item>

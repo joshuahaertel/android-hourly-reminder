@@ -131,8 +131,8 @@ public class HourlyApplication extends Application {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         int c = shared.getInt(PREFERENCE_ALARMS_PREFIX + "count", -1);
         if (c == -1) // <=1.4.4
-            c = shared.getInt("Alarm_" + "Count", 0);
-        if (c == 0) { // default alarms list
+            c = shared.getInt("Alarm_" + "Count", -1);
+        if (c == -1) { // default alarms list
             Set<Long> ids = new TreeSet<>();
 
             Alarm a;
