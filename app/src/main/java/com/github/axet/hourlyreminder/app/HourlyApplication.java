@@ -210,14 +210,6 @@ public class HourlyApplication extends Application {
         return alarms;
     }
 
-    public static void save(Context context, List<Alarm> alarms, List<ReminderSet> reminders) {
-        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor edit = shared.edit();
-        saveAlarms(edit, alarms);
-        saveReminders(edit, reminders);
-        edit.commit();
-    }
-
     public static void saveAlarms(SharedPreferences.Editor edit, List<Alarm> alarms) {
         edit.putInt(PREFERENCE_ALARMS_PREFIX + "count", alarms.size());
 
@@ -258,6 +250,23 @@ public class HourlyApplication extends Application {
         saveAlarms(edit, alarms);
         edit.commit();
         AlarmService.start(context);
+    }
+
+    public static void saveReminders(Context context, List<ReminderSet> reminders) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor edit = shared.edit();
+        saveReminders(edit, reminders);
+        edit.commit();
+        AlarmService.start(context);
+
+    }
+
+    public static void save(Context context, List<Alarm> alarms, List<ReminderSet> reminders) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor edit = shared.edit();
+        saveAlarms(edit, alarms);
+        saveReminders(edit, reminders);
+        edit.commit();
     }
 
     public static List<ReminderSet> loadReminders(Context context) {
@@ -311,15 +320,6 @@ public class HourlyApplication extends Application {
         }
 
         return list;
-    }
-
-    public static void saveReminders(Context context, List<ReminderSet> reminders) {
-        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor edit = shared.edit();
-        saveReminders(edit, reminders);
-        edit.commit();
-        AlarmService.start(context);
-
     }
 
     public static void toastAlarmSet(Context context, WeekTime a) {
