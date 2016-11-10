@@ -54,10 +54,12 @@ public class Sound extends TTS {
             this.beep |= rs.beep;
             this.speech |= rs.speech;
             if (rs.ringtone) {
-                if (rs.beep || rs.speech)
-                    add(after, rs.ringtoneValue);
-                else
+                if (rs.beep || rs.speech) {
+                    if (!before.contains(rs.ringtoneValue)) // do not add after, if same sound already played "before"
+                        add(after, rs.ringtoneValue);
+                } else {
                     add(before, rs.ringtoneValue);
+                }
             }
         }
 
