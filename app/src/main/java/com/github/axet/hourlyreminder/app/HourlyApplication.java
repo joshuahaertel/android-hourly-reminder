@@ -464,7 +464,7 @@ public class HourlyApplication extends Application {
     }
 
     public static String getTitle(Context context, String file) {
-        if (file == null || file.isEmpty())
+        if (file.isEmpty())
             return null;
 
         Uri uri = Uri.parse(file);
