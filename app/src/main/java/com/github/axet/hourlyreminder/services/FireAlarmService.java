@@ -116,10 +116,19 @@ public class FireAlarmService extends Service implements SensorEventListener {
             load(json);
         }
 
-        public FireAlarm(long old, Sound.Playlist p, List<Long> i) {
-            this.settime = old;
-            this.list = p;
-            this.ids = i;
+        public FireAlarm(Alarm a) {
+            settime = a.getSetTime();
+            list = new Sound.Playlist(a);
+            ids = new ArrayList<>();
+            ids.add(a.id);
+        }
+
+        public void merge(Alarm a) {
+            list.merge(a);
+            // snoozed alarms does not cross, getSetTime always the same/correct
+            // for all a.getTime() == time
+            settime = a.getSetTime();
+            ids.add(a.id);
         }
 
         public void load(String json) {
