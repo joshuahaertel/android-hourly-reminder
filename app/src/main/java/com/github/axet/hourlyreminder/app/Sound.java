@@ -591,6 +591,7 @@ public class Sound extends TTS {
             public void run() {
                 int pos = p.getCurrentPosition();
                 if (pos < last) {
+                    playerCl();
                     if (done != null && Sound.this.done.contains(done))
                         done.run();
                     return;
@@ -604,6 +605,7 @@ public class Sound extends TTS {
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                                            @Override
                                            public void onCompletion(MediaPlayer mp) {
+                                               playerCl();
                                                if (done != null)
                                                    done.run();
                                            }
