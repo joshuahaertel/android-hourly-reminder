@@ -23,6 +23,11 @@ import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
+import com.github.axet.hourlyreminder.services.FireAlarmService;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,11 +51,15 @@ public class Sound extends TTS {
         public Playlist() {
         }
 
-        public Playlist(ReminderSet rs) {
+        public Playlist(JSONObject o) {
+            load(o);
+        }
+
+        public Playlist(WeekSet rs) {
             merge(rs);
         }
 
-        public void merge(ReminderSet rs) {
+        public void merge(WeekSet rs) {
             this.beep |= rs.beep;
             this.speech |= rs.speech;
             if (rs.ringtone) {
@@ -68,6 +77,51 @@ public class Sound extends TTS {
             if (l.contains(s))
                 return;
             l.add(s);
+        }
+
+        ArrayList<String> load(JSONArray aa) {
+            ArrayList<String> l = new ArrayList<>();
+            try {
+                for (int i = 0; i < aa.length(); i++) {
+                    l.add(aa.getString(i));
+                }
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            return l;
+        }
+
+        public void load(String json) {
+            try {
+                JSONObject o = new JSONObject(json);
+                load(o);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void load(JSONObject o) {
+            try {
+                before = load(o.getJSONArray("before"));
+                beep = o.getBoolean("beep");
+                speech = o.getBoolean("speech");
+                after = load(o.getJSONArray("after"));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public JSONObject save() {
+            JSONObject o = new JSONObject();
+            try {
+                o.put("before", new JSONArray(before));
+                o.put("beep", beep);
+                o.put("speech", speech);
+                o.put("after", new JSONArray(after));
+                return o;
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -118,7 +172,7 @@ public class Sound extends TTS {
         return track;
     }
 
-    public Silenced silencedReminder(Playlist rr) {
+    public Silenced silencedPlaylist(Playlist rr) {
         Silenced ss = silenced();
 
         if (ss != Silenced.NONE)
@@ -187,7 +241,7 @@ public class Sound extends TTS {
 
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        Silenced s = silencedReminder(rr);
+        Silenced s = silencedPlaylist(rr);
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
@@ -513,6 +567,8 @@ public class Sound extends TTS {
 
     // called from reminder or test sound button
     public MediaPlayer playOnce(Uri uri, final Runnable done) {
+        Sound.this.done.add(done);
+
         MediaPlayer player = create(uri);
         if (player == null) {
             player = create(ReminderSet.DEFAULT_NOTIFICATION);
@@ -604,9 +660,6 @@ public class Sound extends TTS {
 
         final long time = System.currentTimeMillis(); // show/speak current time
 
-        // do not show toast, sice we will fire Alarm Activity
-        // silencedToast(s, time);
-
         if (s == Silenced.VIBRATE) {
             vibrateStart();
             return s;
@@ -651,4 +704,85 @@ public class Sound extends TTS {
 
         return s;
     }
+
+    public Silenced playAlarm(final FireAlarmService.FireAlarm alarm) {
+        final Playlist rr = alarm.list;
+
+        playerClose();
+
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+
+        Silenced s = silencedPlaylist(alarm.list);
+
+        // do we have slince alarm?
+        if (s != Silenced.NONE) {
+            if (s == Silenced.VIBRATE)
+                vibrate();
+            silencedToast(s, alarm.settime);
+            return s;
+        }
+
+        if (shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false)) {
+            vibrate();
+        }
+
+        final Runnable restart = new Runnable() {
+            @Override
+            public void run() {
+                playAlarm(alarm);
+            }
+        };
+
+        final Runnable after = new Runnable() {
+            @Override
+            public void run() {
+                if (!rr.after.isEmpty()) {
+                    if (rr.after.size() == 1) { // do not loop sounds
+                        playRingtone(Uri.parse(rr.after.get(0)));
+                    } else {
+                        playCustom(rr.after, restart);
+                    }
+                } else {
+                    restart.run();
+                }
+            }
+        };
+
+        final Runnable speech = new Runnable() {
+            @Override
+            public void run() {
+                if (rr.speech) {
+                    playSpeech(alarm.settime, after);
+                } else {
+                    after.run();
+                }
+            }
+        };
+
+        final Runnable beep = new Runnable() {
+            @Override
+            public void run() {
+                if (rr.beep) {
+                    playBeep(speech);
+                } else {
+                    speech.run();
+                }
+            }
+        };
+
+        Runnable before = new Runnable() {
+            @Override
+            public void run() {
+                if (!rr.before.isEmpty()) {
+                    playCustom(rr.before, beep);
+                } else {
+                    beep.run();
+                }
+            }
+        };
+
+        before.run();
+        return s;
+    }
+
 }

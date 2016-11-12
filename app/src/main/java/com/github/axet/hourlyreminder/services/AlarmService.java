@@ -1,6 +1,7 @@
 package com.github.axet.hourlyreminder.services;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -13,6 +14,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import com.github.axet.hourlyreminder.R;
@@ -25,6 +27,7 @@ import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +45,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     public static final String REGISTER = AlarmService.class.getCanonicalName() + ".REGISTER";
     // upcoming noticiation alarm action. triggers notification upcoming.
     public static final String NOTIFICATION = AlarmService.class.getCanonicalName() + ".NOTIFICATION";
+    // snooze
+    public static final String SNOOZE = AlarmService.class.getCanonicalName() + ".SNOOZE";
     // cancel alarm
     public static final String CANCEL = HourlyApplication.class.getCanonicalName() + ".CANCEL";
     // alarm broadcast, triggs sound
@@ -51,9 +56,20 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // dismiss current alarm action
     public static final String DISMISS = HourlyApplication.class.getCanonicalName() + ".DISMISS";
 
+    // minutes
+    public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
+    public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if no auto snooze enabled wait 45 min
+
     public static void start(Context context) {
         Intent intent = new Intent(context, AlarmService.class);
         intent.setAction(REGISTER);
+        context.startService(intent);
+    }
+
+    public static void snooze(Context context, FireAlarmService.FireAlarm a) {
+        Intent intent = new Intent(context, AlarmService.class);
+        intent.setAction(SNOOZE);
+        intent.putExtra("state", a.save().toString());
         context.startService(intent);
     }
 
@@ -109,21 +125,27 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             String action = intent.getAction();
             Log.d(TAG, "onStartCommand " + action);
             if (action != null) {
-                long time = intent.getLongExtra("time", 0);
                 if (action.equals(NOTIFICATION)) {
+                    long time = intent.getLongExtra("time", 0);
                     showNotificationUpcoming(time);
                 } else if (action.equals(CANCEL)) {
+                    long time = intent.getLongExtra("time", 0);
                     tomorrow(time);
                 } else if (action.equals(DISMISS)) {
                     FireAlarmService.dismissActiveAlarm(this);
                 } else if (action.equals(ALARM)) {
+                    long time = intent.getLongExtra("time", 0);
                     soundAlarm(time);
                 } else if (action.equals(REMINDER)) {
+                    long time = intent.getLongExtra("time", 0);
                     soundAlarm(time);
                 } else if (action.equals(REGISTER)) {
                     alarms = HourlyApplication.loadAlarms(this);
                     reminders = HourlyApplication.loadReminders(this);
                     registerNextAlarm();
+                } else if (action.equals(SNOOZE)) {
+                    FireAlarmService.FireAlarm a = new FireAlarmService.FireAlarm(intent.getStringExtra("state"));
+                    snooze(a.ids);
                 }
             }
         } else {
@@ -422,13 +444,21 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         //
         // then sound alarm or hourly reminder
 
-        boolean alarmed = false;
-
-        // here can be two alarms with same time
-        for (Alarm a : alarms) {
+        FireAlarmService.FireAlarm alarm = null;
+        for (Alarm a : alarms) { // here can be two alarms with same time
             if (a.getTime() == time && a.enabled) {
                 Log.d(TAG, "Sound Alarm " + Alarm.format24(a.getTime()));
-                Alarm old = new Alarm(a);
+                if (alarm == null) {
+                    alarm = new FireAlarmService.FireAlarm();
+                    alarm.ids = new ArrayList<>();
+                    alarm.list = new Sound.Playlist(a);
+                } else {
+                    alarm.list.merge(a);
+                }
+                // snoozed alarms does not cross, getSetTime always the same/correct
+                // for all a.getTime() == time
+                alarm.settime = a.getSetTime();
+                alarm.ids.add(a.id);
                 if (!a.weekdaysCheck) {
                     // disable alarm after it goes off for non rcuring alarms (!a.weekdays)
                     a.setEnable(false);
@@ -440,15 +470,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     // also safe if we moved to another timezone.
                     a.setNext();
                 }
-
-                if (!alarmed) { // no cumulative alarms
-                    alarmed = true;
-                    FireAlarmService.activateAlarm(this, old);
-                }
             }
         }
 
-        Sound.Playlist playlist = null;
+        Sound.Playlist rlist = null;
         for (final ReminderSet rr : reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
@@ -460,23 +485,28 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         // also safe if we moved to another timezone.
                         r.setNext();
 
-                        if (!alarmed) { // do not cross alarms
-                            if (playlist == null)
-                                playlist = new Sound.Playlist(rr);
-                            else
-                                playlist.merge(rr);
+                        if (alarm == null) { // do not cross alarms
+                            if (rlist == null) {
+                                rlist = new Sound.Playlist(rr);
+                            } else {
+                                rlist.merge(rr);
+                            }
                         }
                     }
                 }
             }
         }
 
-        if (playlist != null) {
-            SoundConfig.Silenced s = sound.playList(playlist, time, null);
+        if (alarm != null) {
+            FireAlarmService.activateAlarm(this, alarm);
+        }
+
+        if (rlist != null) {
+            SoundConfig.Silenced s = sound.playList(rlist, time, null);
             sound.silencedToast(s, time);
         }
 
-        if (alarmed || playlist != null) {
+        if (alarm != null || rlist != null) {
             HourlyApplication.save(this, alarms, reminders);
             registerNextAlarm();
         }
@@ -495,6 +525,97 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         // reset reminders on special events
         if (key.equals(HourlyApplication.PREFERENCE_ALARM)) {
             registerNextAlarm();
+        }
+    }
+
+    static boolean dismiss(Context context, long settime) { // do we have to dismiss (due timeout) alarm?
+        Calendar cur = Calendar.getInstance();
+        return dismiss(context, cur, settime);
+    }
+
+    static boolean dismiss(Context context, Calendar cur, long settime) { // do we have to dismiss (due timeout) alarm?
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+        int auto = ALARM_AUTO_OFF;
+        if (m > 0)
+            auto = ALARM_SNOOZE_AUTO_OFF;
+
+        final Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(settime);
+        cal.add(Calendar.MINUTE, auto);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        return cur.after(cal);
+    }
+
+    public void snooze(List<Long> ids) {
+        Context context = this;
+
+        // create old list, we need to check conflicts with old alarms only, not shifted
+        TreeSet<Long> old = new TreeSet<>();
+        for (Alarm a : alarms) {
+            if (a.enabled)
+                old.add(a.getTime());
+        }
+
+        for (Alarm a : alarms) {
+            if (ids.contains(a.id)) {
+                boolean b = a.enabled;
+                a.snooze(); // auto enable
+                if (!old.isEmpty() && a.getTime() >= old.first()) { // did we hit another enabled alarm? stop snooze
+                    showNotificationMissed(context, a.getSetTime());
+                    a.setEnable(b); // restore enable state && setNext
+                } else {
+                    final Calendar cur = Calendar.getInstance();
+                    cur.setTimeInMillis(a.getTime());
+                    if (dismiss(context, cur, a.getSetTime())) { // outdated by snooze timeout?
+                        showNotificationMissed(context, a.getSetTime());
+                        a.setEnable(b); // restore enable state && setNext
+                    }
+                }
+            }
+        }
+
+        HourlyApplication.save(this, alarms, reminders);
+        registerNextAlarm();
+    }
+
+    // show notification about missed alarm
+    public static void showNotificationMissed(Context context, long settime) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+
+        if (settime == 0) {
+            notificationManager.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
+        } else {
+            final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+            Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+            int auto = ALARM_AUTO_OFF;
+            if (m > 0)
+                auto = ALARM_SNOOZE_AUTO_OFF;
+
+            PendingIntent main = PendingIntent.getActivity(context, 0,
+                    new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", settime),
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            String text = context.getString(R.string.AlarmMissedAfter, Alarm.format2412ap(context, settime), auto);
+
+            RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            view.setOnClickPendingIntent(R.id.notification_base, main);
+            view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));
+            view.setTextViewText(R.id.notification_text, text);
+            view.setViewVisibility(R.id.notification_button, View.GONE);
+
+            Notification.Builder builder = new Notification.Builder(context)
+                    .setContentTitle(context.getString(R.string.Alarm))
+                    .setContentText(text)
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                    .setContent(view);
+
+            if (Build.VERSION.SDK_INT >= 21)
+                builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+
+            notificationManager.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
     }
 }
