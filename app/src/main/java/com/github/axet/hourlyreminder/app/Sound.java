@@ -654,55 +654,7 @@ public class Sound extends TTS {
     }
 
     public Silenced playAlarm(final Alarm a) {
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-
-        Silenced s = silencedAlarm(a);
-
-        final long time = System.currentTimeMillis(); // show/speak current time
-
-        if (s == Silenced.VIBRATE) {
-            vibrateStart();
-            return s;
-        }
-
-        if (s != Silenced.NONE)
-            return s;
-
-        if (shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false)) {
-            vibrateStart();
-        }
-
-        if (a.beep) {
-            playBeep(new Runnable() {
-                         @Override
-                         public void run() {
-                             if (a.speech) {
-                                 playSpeech(time, new Runnable() {
-                                     @Override
-                                     public void run() {
-                                         if (a.ringtone) {
-                                             playRingtone(Uri.parse(a.ringtoneValue));
-                                         }
-                                     }
-                                 });
-                             } else if (a.ringtone) {
-                                 playRingtone(Uri.parse(a.ringtoneValue));
-                             }
-                         }
-                     }
-            );
-        } else if (a.speech) {
-            playSpeech(time, new Runnable() {
-                @Override
-                public void run() {
-                    playRingtone(Uri.parse(a.ringtoneValue));
-                }
-            });
-        } else if (a.ringtone) {
-            playRingtone(Uri.parse(a.ringtoneValue));
-        }
-
-        return s;
+        return playAlarm(new FireAlarmService.FireAlarm(a));
     }
 
     public Silenced playAlarm(final FireAlarmService.FireAlarm alarm) {

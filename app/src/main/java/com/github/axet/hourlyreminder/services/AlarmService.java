@@ -449,16 +449,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (a.getTime() == time && a.enabled) {
                 Log.d(TAG, "Sound Alarm " + Alarm.format24(a.getTime()));
                 if (alarm == null) {
-                    alarm = new FireAlarmService.FireAlarm();
-                    alarm.ids = new ArrayList<>();
-                    alarm.list = new Sound.Playlist(a);
+                    alarm = new FireAlarmService.FireAlarm(a);
                 } else {
-                    alarm.list.merge(a);
+                    alarm.merge(a);
                 }
-                // snoozed alarms does not cross, getSetTime always the same/correct
-                // for all a.getTime() == time
-                alarm.settime = a.getSetTime();
-                alarm.ids.add(a.id);
                 if (!a.weekdaysCheck) {
                     // disable alarm after it goes off for non rcuring alarms (!a.weekdays)
                     a.setEnable(false);
