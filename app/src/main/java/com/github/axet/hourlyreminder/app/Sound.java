@@ -737,7 +737,7 @@ public class Sound extends TTS {
             @Override
             public void run() {
                 if (!rr.after.isEmpty()) {
-                    if (rr.before.isEmpty()) { // do not loop sounds
+                    if (rr.before.isEmpty() && rr.after.size() == 1) { // do not loop sounds
                         playRingtone(Uri.parse(rr.after.get(0)));
                     } else {
                         playCustom(rr.after, restart);
