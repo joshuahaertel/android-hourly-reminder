@@ -63,7 +63,7 @@ public class Alarm extends WeekTime {
         time = cal.getTimeInMillis();
     }
 
-    public boolean isSnoozed() {
+    public boolean isSnoozed() { // timezone shift not checked
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(time);
         int hour = cal.get(Calendar.HOUR_OF_DAY);

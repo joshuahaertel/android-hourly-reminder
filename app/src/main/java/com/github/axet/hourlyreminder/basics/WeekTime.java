@@ -11,7 +11,7 @@ import java.util.Comparator;
 import java.util.Date;
 
 public class WeekTime extends WeekSet {
-    // (may be incorrect if user moved from one time zone to anoter)
+    // may be incorrect if user moved from one time zone to another or snoozed
     long time;
     // we have to keep original hours/minutes to proper handle time zone shifts
     int hour;
@@ -44,6 +44,14 @@ public class WeekTime extends WeekSet {
 
     public long getTime() {
         return time;
+    }
+
+    public long getSetTime() {
+        final Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(time); // dismiss checks for alarm scheduled time (original hour/min)
+        cal.set(Calendar.HOUR_OF_DAY, getHour());
+        cal.set(Calendar.MINUTE, getMin());
+        return cal.getTimeInMillis();
     }
 
     public void setTime(long l) {

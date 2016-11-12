@@ -16,12 +16,10 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Alarm;
+import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -35,12 +33,11 @@ public class AlarmActivity extends AppCompatActivity {
 
     Handler handler = new Handler();
     Runnable updateClock;
-    long time;
 
-    public static void showAlarmActivity(Context context, long time, Sound.Silenced silenced) {
+    public static void showAlarmActivity(Context context, FireAlarmService.FireAlarm alarm, Sound.Silenced silenced) {
         Intent intent = new Intent(context, AlarmActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("time", time);
+        intent.putExtra("state", alarm.save().toString());
         intent.putExtra("silenced", silenced);
         context.startActivity(intent);
     }
@@ -59,13 +56,6 @@ public class AlarmActivity extends AppCompatActivity {
 
         setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight_NoActionBar, R.style.AppThemeDark_NoActionBar));
 
-        layoutInit();
-
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-
         Intent intent = getIntent();
 
         String action = intent.getAction();
@@ -73,6 +63,13 @@ public class AlarmActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        layoutInit();
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
     }
 
     @Override
@@ -90,20 +87,11 @@ public class AlarmActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        time = intent.getLongExtra("time", 0);
+        final FireAlarmService.FireAlarm a = new FireAlarmService.FireAlarm(intent.getStringExtra("state"));
 
         View alarm = findViewById(R.id.alarm);
 
-        List<Alarm> list = HourlyApplication.loadAlarms(this);
-        for (Alarm a : list) {
-            if (a.getTime() == time) { // conflicts are ok here
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(a.getTime());
-                cal.set(Calendar.HOUR_OF_DAY, a.getHour());
-                cal.set(Calendar.MINUTE, a.getMin());
-                updateTime(alarm, cal.getTimeInMillis());
-            }
-        }
+        updateTime(alarm, a.settime);
 
         updateClock();
 
@@ -119,7 +107,7 @@ public class AlarmActivity extends AppCompatActivity {
         snooze.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FireAlarmService.snooze(AlarmActivity.this, time);
+                AlarmService.snooze(AlarmActivity.this, a);
                 finish();
             }
         });
@@ -149,7 +137,6 @@ public class AlarmActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-
         // handing startActivity with Intent.FLAG_ACTIVITY_NEW_TASK
         String action = intent.getAction();
         if (action != null && action.equals(CLOSE_ACTIVITY))
@@ -189,7 +176,6 @@ public class AlarmActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         updateClock();
     }
 
