@@ -76,6 +76,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     Sound sound;
     List<Alarm> alarms;
     List<ReminderSet> reminders;
+    PowerManager.WakeLock wl;
+    PowerManager.WakeLock wlCpu;
 
     public AlarmService() {
         super();
@@ -117,6 +119,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             sound.close();
             sound = null;
         }
+
+        wakeClose();
     }
 
     @Override
@@ -497,7 +501,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         if (rlist != null) {
             wakeScreen();
-            SoundConfig.Silenced s = sound.playList(rlist, time, null);
+            SoundConfig.Silenced s = sound.playList(rlist, time, new Runnable() {
+                @Override
+                public void run() {
+                    wakeClose();
+                }
+            });
             sound.silencedToast(s, time);
         }
 
@@ -623,11 +632,23 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             isScreenOn = pm.isScreenOn();
         }
         if (isScreenOn == false) {
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "MyLock");
-            wl.acquire(1000);
+            wakeClose();
+            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "MyLock");
+            wl.acquire(10000);
 
-            PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyCpuLock");
-            wl_cpu.acquire(1000);
+            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyCpuLock");
+            wlCpu.acquire(10000);
+        }
+    }
+
+    void wakeClose() {
+        if (wl != null) {
+            wl.release();
+            wl = null;
+        }
+        if (wlCpu != null) {
+            wlCpu.release();
+            wlCpu = null;
         }
     }
 }
