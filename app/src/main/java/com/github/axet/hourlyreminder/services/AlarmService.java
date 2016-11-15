@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -27,7 +28,6 @@ import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -496,6 +496,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
 
         if (rlist != null) {
+            wakeScreen();
             SoundConfig.Silenced s = sound.playList(rlist, time, null);
             sound.silencedToast(s, time);
         }
@@ -610,6 +611,23 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 builder.setVisibility(Notification.VISIBILITY_PUBLIC);
 
             notificationManager.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
+        }
+    }
+
+    void wakeScreen() {
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOn;
+        if (Build.VERSION.SDK_INT >= 20) {
+            isScreenOn = pm.isInteractive();
+        } else {
+            isScreenOn = pm.isScreenOn();
+        }
+        if (isScreenOn == false) {
+            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "MyLock");
+            wl.acquire(1000);
+
+            PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyCpuLock");
+            wl_cpu.acquire(1000);
         }
     }
 }
