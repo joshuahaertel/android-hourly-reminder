@@ -297,12 +297,14 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
 
         sound = new Sound(getActivity());
 
+        Preference advanced = findPreference("advanced");
+        Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 23 SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 23) {
-            getPreferenceScreen().removePreference(findPreference(HourlyApplication.PREFERENCE_ALARM));
+            getPreferenceScreen().removePreference(advanced); // we have only one advanced option 'alarm', remove whole group
         } else {
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
-            findPreference(HourlyApplication.PREFERENCE_ALARM).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            alarm.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object o) {
                     boolean b = (Boolean) o;

@@ -1,109 +1,119 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <com.github.axet.androidlibrary.widgets.SeekBarPreference
-        android:defaultValue="1"
-        android:key="volume"
-        android:summary="Set text speech volume"
-        android:title="Volume" />
 
-    <ListPreference
-        android:defaultValue="0"
-        android:entries="@array/increasing_volume_text"
-        android:entryValues="@array/increasing_volume_values"
-        android:key="increasing_volume"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:summary="Set Increasing Alarm Volume"
-        android:title="Increasing Alarm Volume" />
+    <PreferenceCategory android:title="Sounds">
+        <com.github.axet.androidlibrary.widgets.SeekBarPreference
+            android:defaultValue="1"
+            android:key="volume"
+            android:summary="Set text speech volume"
+            android:title="Reduce volume" />
 
-    <ListPreference
-        android:defaultValue="0"
-        android:entries="@array/snooze_after_text"
-        android:entryValues="@array/snooze_after_values"
-        android:key="snooze_after"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:summary="Set snooze time after minutes"
-        android:title="Alarm Snooze after..." />
+        <com.github.axet.hourlyreminder.widgets.BeepPreference
+            android:defaultValue="1800:100"
+            android:key="beep_custom"
+            android:summary="Customize beep sound"
+            android:title="Custom Beep" />
 
-    <ListPreference
-        android:defaultValue="10"
-        android:entries="@array/snooze_text"
-        android:entryValues="@array/snooze_values"
-        android:key="snooze_time"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:summary="Set snooze time minutes"
-        android:title="Alarm Snooze minutes..." />
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="callsilence"
+            android:summary="Do not play sounds during calls"
+            android:title="Silence during calls" />
 
-    <ListPreference
-        android:defaultValue=""
-        android:entries="@array/languages_text"
-        android:entryValues="@array/languages_values"
-        android:key="language"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:summary="Set Text-To-Speech Language"
-        android:title="TTS language" />
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="musicsilence"
+            android:summary="Do not play sounds while listening music"
+            android:title="Silence during music" />
 
-    <com.github.axet.hourlyreminder.widgets.BeepPreference
-        android:defaultValue="1800:100"
-        android:key="beep_custom"
-        android:summary="Customize beep sound"
-        android:title="Custom Beep" />
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="vibrate"
+            android:summary="Vibrate while sounding an reminder / alarm"
+            android:title="Vibrate" />
+    </PreferenceCategory>
 
-    <SwitchPreferenceCompat
-        android:defaultValue="true"
-        android:key="alarm"
-        android:summary="Use 'alarm' event type for hourly chimes (wakeup phone from power saving mode)"
-        android:title="Exact Timing" />
+    <PreferenceCategory android:title="Alarms">
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/increasing_volume_text"
+            android:entryValues="@array/increasing_volume_values"
+            android:key="increasing_volume"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:summary="Set Increasing Alarm Volume"
+            android:title="Increasing Alarm Volume" />
 
-    <SwitchPreferenceCompat
-        android:defaultValue="true"
-        android:key="speak_ampm"
-        android:summary="Will speak time including AM/PM suffix"
-        android:title="Speak AM/PM" />
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/snooze_after_text"
+            android:entryValues="@array/snooze_after_values"
+            android:key="snooze_after"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:summary="Set snooze time after minutes"
+            android:title="Alarm Snooze after..." />
 
-    <SwitchPreferenceCompat
-        android:defaultValue="false"
-        android:key="callsilence"
-        android:summary="Do not play sounds during calls"
-        android:title="Silence during calls" />
+        <ListPreference
+            android:defaultValue="10"
+            android:entries="@array/snooze_text"
+            android:entryValues="@array/snooze_values"
+            android:key="snooze_time"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:summary="Set snooze time minutes"
+            android:title="Alarm Snooze minutes..." />
+    </PreferenceCategory>
 
-    <SwitchPreferenceCompat
-        android:defaultValue="false"
-        android:key="musicsilence"
-        android:summary="Do not play sounds while listening music"
-        android:title="Silence during music" />
+    <PreferenceCategory android:title="Speak">
+        <ListPreference
+            android:defaultValue=""
+            android:entries="@array/languages_text"
+            android:entryValues="@array/languages_values"
+            android:key="language"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:summary="Set Text-To-Speech Language"
+            android:title="TTS language" />
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="speak_ampm"
+            android:summary="Will speak time including AM/PM suffix"
+            android:title="Speak AM/PM" />
+    </PreferenceCategory>
 
-    <SwitchPreferenceCompat
-        android:defaultValue="false"
-        android:key="vibrate"
-        android:summary="Vibrate while sounding an reminder / alarm"
-        android:title="Vibrate" />
+    <PreferenceCategory android:title="Advanced" android:key="advanced">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="alarm"
+            android:summary="Use 'alarm' event type for hourly chimes (wakeup phone from power saving mode)"
+            android:title="Exact Timing" />
+    </PreferenceCategory>
 
-    <SwitchPreferenceCompat
-        android:defaultValue="true"
-        android:key="notifications"
-        android:summary="Show notifications"
-        android:title="Notifications" />
+    <PreferenceCategory android:title="Application">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="notifications"
+            android:summary="Show notifications"
+            android:title="Notifications" />
 
-    <ListPreference
-        android:defaultValue="Theme_White"
-        android:entries="@array/themes_text"
-        android:entryValues="@array/themes_values"
-        android:key="theme"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:summary="Set application theme (dark / light)"
-        android:title="Application Theme" />
+        <ListPreference
+            android:defaultValue="Theme_White"
+            android:entries="@array/themes_text"
+            android:entryValues="@array/themes_values"
+            android:key="theme"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:summary="Set application theme (dark / light)"
+            android:title="Application Theme" />
 
-    <ListPreference
-        android:defaultValue="Mon"
-        android:entries="@array/weekstart_text"
-        android:entryValues="@array/weekstart_values"
-        android:key="weekstart"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:summary="Start week on specified day"
-        android:title="Start week on" />
+        <ListPreference
+            android:defaultValue="Mon"
+            android:entries="@array/weekstart_text"
+            android:entryValues="@array/weekstart_values"
+            android:key="weekstart"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:summary="Start week on specified day"
+            android:title="Start week on" />
+    </PreferenceCategory>
 </PreferenceScreen>
