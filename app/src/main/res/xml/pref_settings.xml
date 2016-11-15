@@ -1,6 +1,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="Sounds">
+    <PreferenceCategory android:title="Sounds" android:key="sounds">
         <com.github.axet.androidlibrary.widgets.SeekBarPreference
             android:defaultValue="1"
             android:key="volume"
@@ -64,7 +64,7 @@
             android:title="Alarm Snooze minutes..." />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Speak">
+    <PreferenceCategory android:title="Speak" android:key="speak">
         <ListPreference
             android:defaultValue=""
             android:entries="@array/languages_text"

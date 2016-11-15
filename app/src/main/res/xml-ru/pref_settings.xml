@@ -1,5 +1,5 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="Звуки">
+    <PreferenceCategory android:title="Звуки" android:key="sounds">
         <com.github.axet.androidlibrary.widgets.SeekBarPreference
             android:defaultValue="1"
             android:key="volume"
@@ -63,7 +63,7 @@
             android:title="Отложить Будильник на..." />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Голос">
+    <PreferenceCategory android:title="Голос" android:key="speak">
         <ListPreference
             android:defaultValue=""
             android:entries="@array/languages_text"
@@ -81,7 +81,7 @@
             android:title="Произносить время дня" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Расширенные настройки">
+    <PreferenceCategory android:title="Расширенные настройки" android:key="advanced">
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="alarm"
