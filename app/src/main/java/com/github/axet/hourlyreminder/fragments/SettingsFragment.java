@@ -331,8 +331,9 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
 
         bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_INCREASE_VOLUME));
 
+        PreferenceGroup speak = (PreferenceGroup) findPreference("speak");
         if (DateFormat.is24HourFormat(getActivity())) {
-            getPreferenceScreen().removePreference(findPreference(HourlyApplication.PREFERENCE_SPEAK_AMPM));
+            speak.removePreference(findPreference(HourlyApplication.PREFERENCE_SPEAK_AMPM));
         }
 
         bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_THEME));
@@ -352,11 +353,12 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             }
         });
 
+        PreferenceGroup sounds = (PreferenceGroup) findPreference("sounds");
         Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
         Preference vp = findPreference(HourlyApplication.PREFERENCE_VIBRATE);
 
         if (!v.hasVibrator()) {
-            getPreferenceScreen().removePreference(vp);
+            sounds.removePreference(vp);
         } else {
             vp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
