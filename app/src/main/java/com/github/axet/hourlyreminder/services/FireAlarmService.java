@@ -52,6 +52,8 @@ public class FireAlarmService extends Service implements SensorEventListener {
     boolean alarmActivity = false; // if service crashed, activity willbe closed. ok to have var.
     Sound.Silenced silenced = Sound.Silenced.NONE;
     float mGZ;
+    float maxy;
+    float maxz;
     int mEventCountSinceGZChanged;
     SensorManager sm;
 
@@ -414,7 +416,12 @@ public class FireAlarmService extends Service implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         int type = event.sensor.getType();
         if (type == Sensor.TYPE_ACCELEROMETER) {
+            float gy = event.values[1];
             float gz = event.values[2];
+
+            maxy = Math.max(maxy, Math.abs(gy));
+            maxz = Math.max(maxz, Math.abs(gz));
+
             if (mGZ == 0) {
                 mGZ = gz;
             } else {
@@ -423,22 +430,26 @@ public class FireAlarmService extends Service implements SensorEventListener {
                     if (mEventCountSinceGZChanged >= 10) {
                         mGZ = gz;
                         mEventCountSinceGZChanged = 0;
-                        if (gz > 0) {
-                            Log.d(TAG, "now screen is facing up.");
-                        } else if (gz < 0) {
-                            Log.d(TAG, "now screen is facing down.");
-                            final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-                            String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
-                            if (!json.isEmpty()) {
-                                FireAlarm alarm = new FireAlarm(json);
-                                AlarmService.snooze(this, alarm);
-                                dismissActiveAlarm(this);
+                        if (maxy * 0.5 < maxz) { // ignore state when phone is not laying down
+                            if (gz > 0) {
+                                Log.d(TAG, "now screen is facing up.");
+                            } else if (gz < 0) {
+                                Log.d(TAG, "now screen is facing down.");
+                                final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+                                String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
+                                if (!json.isEmpty()) {
+                                    FireAlarm alarm = new FireAlarm(json);
+                                    AlarmService.snooze(this, alarm);
+                                    dismissActiveAlarm(this);
+                                }
                             }
                         }
                     }
                 } else {
                     if (mEventCountSinceGZChanged > 0) {
                         mGZ = gz;
+                        maxy = 0;
+                        maxz = 0;
                         mEventCountSinceGZChanged = 0;
                     }
                 }
