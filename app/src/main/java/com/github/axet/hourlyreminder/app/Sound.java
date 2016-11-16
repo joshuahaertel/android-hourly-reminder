@@ -119,9 +119,11 @@ public class Sound extends TTS {
 
         public void load(JSONObject o) {
             try {
+                beforeOnce = load(o.getJSONArray("beforeOnce"));
                 before = load(o.getJSONArray("before"));
                 beep = o.getBoolean("beep");
                 speech = o.getBoolean("speech");
+                afterOnce = load(o.getJSONArray("afterOnce"));
                 after = load(o.getJSONArray("after"));
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -131,9 +133,11 @@ public class Sound extends TTS {
         public JSONObject save() {
             JSONObject o = new JSONObject();
             try {
+                o.put("beforeOnce", new JSONArray(beforeOnce));
                 o.put("before", new JSONArray(before));
                 o.put("beep", beep);
                 o.put("speech", speech);
+                o.put("afterOnce", new JSONArray(afterOnce));
                 o.put("after", new JSONArray(after));
                 return o;
             } catch (JSONException e) {
