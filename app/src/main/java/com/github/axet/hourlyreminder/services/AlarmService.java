@@ -58,7 +58,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     // minutes
     public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
-    public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if no auto snooze enabled wait 45 min
+    public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
 
     public static void start(Context context) {
         Intent intent = new Intent(context, AlarmService.class);
@@ -406,9 +406,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", time),
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
-            String subject = getString(R.string.UpcomingAlarm);
-            if (isReminder(time))
-                subject = getString(R.string.UpcomingChime);
+            String subject = getString(R.string.UpcomingChime);
+            if (isAlarm(time))
+                subject = getString(R.string.UpcomingAlarm);
             String text = Alarm.format2412ap(this, time);
             for (Alarm a : alarms) {
                 if (a.getTime() == time) {
@@ -482,13 +482,14 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         //
                         // also safe if we moved to another timezone.
                         r.setNext();
-
                         if (alarm == null) { // do not cross alarms
                             if (rlist == null) {
                                 rlist = new Sound.Playlist(rr);
                             } else {
                                 rlist.merge(rr);
                             }
+                        } else { // merge reminder with alarm
+                            alarm.merge(rr);
                         }
                     }
                 }
@@ -532,16 +533,16 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
     }
 
-    static boolean dismiss(Context context, long settime) { // do we have to dismiss (due timeout) alarm?
+    static boolean dismiss(Context context, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
         Calendar cur = Calendar.getInstance();
-        return dismiss(context, cur, settime);
+        return dismiss(context, cur, settime, snoozed);
     }
 
-    static boolean dismiss(Context context, Calendar cur, long settime) { // do we have to dismiss (due timeout) alarm?
+    static boolean dismiss(Context context, Calendar cur, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
         int auto = ALARM_AUTO_OFF;
-        if (m > 0)
+        if (m > 0 || snoozed)
             auto = ALARM_SNOOZE_AUTO_OFF;
 
         final Calendar cal = Calendar.getInstance();
@@ -568,13 +569,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 boolean b = a.enabled;
                 a.snooze(); // auto enable
                 if (!old.isEmpty() && a.getTime() >= old.first()) { // did we hit another enabled alarm? stop snooze
-                    showNotificationMissed(context, a.getSetTime());
+                    showNotificationMissed(context, a.getSetTime(), a.isSnoozed());
                     a.setEnable(b); // restore enable state && setNext
                 } else {
                     final Calendar cur = Calendar.getInstance();
                     cur.setTimeInMillis(a.getTime());
-                    if (dismiss(context, cur, a.getSetTime())) { // outdated by snooze timeout?
-                        showNotificationMissed(context, a.getSetTime());
+                    if (dismiss(context, cur, a.getSetTime(), a.isSnoozed())) { // outdated by snooze timeout?
+                        showNotificationMissed(context, a.getSetTime(), a.isSnoozed());
                         a.setEnable(b); // restore enable state && setNext
                     }
                 }
@@ -586,16 +587,16 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     // show notification about missed alarm
-    public static void showNotificationMissed(Context context, long settime) {
+    public static void showNotificationMissed(Context context, long settime, boolean snoozed) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
 
         if (settime == 0) {
             notificationManager.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
         } else {
             final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-            Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+            Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
             int auto = ALARM_AUTO_OFF;
-            if (m > 0)
+            if (m > 0 || snoozed)
                 auto = ALARM_SNOOZE_AUTO_OFF;
 
             PendingIntent main = PendingIntent.getActivity(context, 0,

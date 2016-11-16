@@ -28,6 +28,7 @@ import com.github.axet.hourlyreminder.activities.AlarmActivity;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Alarm;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,16 +46,23 @@ public class FireAlarmService extends Service implements SensorEventListener {
     // notification click -> show activity broadcast
     public static final String SHOW_ACTIVITY = FireAlarmService.class.getCanonicalName() + ".SHOW_ACTIVITY";
 
+    public static final int STATE_INIT = 0;
+    public static final int STATE_UP = 1;
+    public static final int STATE_SIDE = 2;
+    public static final int STATE_DOWN = 3;
+
     FireAlarmReceiver receiver = new FireAlarmReceiver();
     Sound sound;
     Handler handle = new Handler();
     Runnable alive;
     boolean alarmActivity = false; // if service crashed, activity willbe closed. ok to have var.
     Sound.Silenced silenced = Sound.Silenced.NONE;
+
+    int state = STATE_INIT;
     float mGZ;
     float maxy;
     float maxz;
-    int mEventCountSinceGZChanged;
+    int mGZcount;
     SensorManager sm;
 
     PhoneStateChangeListener pscl;
@@ -133,6 +141,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
             ids.add(a.id);
         }
 
+        public void merge(ReminderSet rs) {
+            list.withAlarm(rs);
+        }
+
         public void load(String json) {
             try {
                 JSONObject o = new JSONObject(json);
@@ -157,6 +169,19 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 throw new RuntimeException(e);
             }
         }
+
+        public boolean isSnoozed(long fire) { // not checking timezone shifts
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(settime);
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+            int min = cal.get(Calendar.MINUTE);
+
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTimeInMillis(fire);
+            int hour2 = cal2.get(Calendar.HOUR_OF_DAY);
+            int min2 = cal2.get(Calendar.MINUTE);
+            return hour != hour2 || min != min2;
+        }
     }
 
     public static void activateAlarm(Context context, FireAlarm a) {
@@ -179,6 +204,16 @@ public class FireAlarmService extends Service implements SensorEventListener {
         SharedPreferences.Editor edit = shared.edit();
         edit.remove(HourlyApplication.PREFERENCE_ACTIVE_ALARM);
         edit.commit();
+    }
+
+    public static void snoozeActiveAlarm(Context context) {
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
+        if (!json.isEmpty()) {
+            FireAlarm alarm = new FireAlarm(json);
+            AlarmService.snooze(context, alarm);
+            dismissActiveAlarm(context);
+        }
     }
 
     public FireAlarmService() {
@@ -239,7 +274,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
             } else { // alarm loaded, does it interference with current running alarm?
                 if (!json.isEmpty()) { // yep, we already firering alarm, show missed
                     FireAlarm a = new FireAlarm(json);
-                    AlarmService.showNotificationMissed(this, a.settime);
+                    AlarmService.showNotificationMissed(this, a.settime, false); // dismiss after conflict, not time based; snooze = off
                 }
             }
 
@@ -250,9 +285,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
         Log.d(TAG, "time=" + Alarm.format24(alarm.settime));
 
-        if (!alive(alarm, System.currentTimeMillis())) {
+        long fire = System.currentTimeMillis();
+        if (!alive(alarm, fire)) {
             stopSelf();
-            AlarmService.showNotificationMissed(this, alarm.settime);
+            AlarmService.showNotificationMissed(this, alarm.settime, alarm.isSnoozed(fire));
             return START_NOT_STICKY;
         }
 
@@ -293,7 +329,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     }
 
     boolean alive(final FireAlarm alarm, final long fire) {
-        if (!AlarmService.dismiss(this, alarm.settime)) { // do not check snooze on first run
+        if (!AlarmService.dismiss(this, alarm.settime, alarm.isSnoozed(fire))) { // do not check snooze on first run
             alive = new Runnable() {
                 @Override
                 public void run() {
@@ -303,7 +339,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                         return;
                     }
                     if (!alive(alarm, fire)) {
-                        AlarmService.showNotificationMissed(FireAlarmService.this, alarm.settime);
+                        AlarmService.showNotificationMissed(FireAlarmService.this, alarm.settime, alarm.isSnoozed(fire));
                         stopSelf();
                         return;
                     }
@@ -416,43 +452,54 @@ public class FireAlarmService extends Service implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         int type = event.sensor.getType();
         if (type == Sensor.TYPE_ACCELEROMETER) {
-            float gy = event.values[1];
-            float gz = event.values[2];
+            float gx = event.values[0]; // max value (9.8) - on side
+            float gy = event.values[1]; // max value (9.8) - vertical position, min value (0.0) - horizontal position
+            float gz = event.values[2]; // max value (9.8) - face up, min value - face down
 
-            maxy = Math.max(maxy, Math.abs(gy));
-            maxz = Math.max(maxz, Math.abs(gz));
+            float ax = Math.abs(gx);
+            float ay = Math.abs(gy);
+            float az = Math.abs(gz);
 
-            if (mGZ == 0) {
-                mGZ = gz;
-            } else {
-                if ((mGZ * gz) < 0) {
-                    mEventCountSinceGZChanged++;
-                    if (mEventCountSinceGZChanged >= 10) {
-                        mGZ = gz;
-                        mEventCountSinceGZChanged = 0;
-                        if (maxy * 0.5 < maxz) { // ignore state when phone is not laying down
-                            if (gz > 0) {
-                                Log.d(TAG, "now screen is facing up.");
-                            } else if (gz < 0) {
-                                Log.d(TAG, "now screen is facing down.");
-                                final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-                                String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
-                                if (!json.isEmpty()) {
-                                    FireAlarm alarm = new FireAlarm(json);
-                                    AlarmService.snooze(this, alarm);
-                                    dismissActiveAlarm(this);
-                                }
-                            }
-                        }
+            // face up - 0.0, 0.0, 9.8
+            // side - 9.8, 0.0, 0.0
+            // face down - 0.0, 0.0, -9.8
+            // portrait - 0.0, 9.8, 0.0
+
+            switch (state) {
+                case STATE_INIT:
+                    mGZcount = 0;
+                    if (ax > az || ay > az) { // phone not on horizontal table
+                        state = STATE_INIT;
+                    } else {
+                        if (ax < az * 0.5 && ay < az * 0.5 && gz > 0)
+                            state = STATE_UP;
                     }
-                } else {
-                    if (mEventCountSinceGZChanged > 0) {
-                        mGZ = gz;
-                        maxy = 0;
-                        maxz = 0;
-                        mEventCountSinceGZChanged = 0;
+                    break;
+                case STATE_UP:
+                    if (ay > az * 0.5) {
+                        state = STATE_INIT;
+                    } else {
+                        if (ay < ax * 0.5 && az < ax * 0.5)
+                            state = STATE_SIDE;
                     }
-                }
+                    break;
+                case STATE_SIDE:
+                    if (ay > (ax + az) * 0.5 || (az > ax && gz > 0)) {
+                        state = STATE_INIT;
+                    } else {
+                        if (ax < az * 0.5 && ay < az * 0.5 && gz < 0)
+                            state = STATE_DOWN;
+                    }
+                    break;
+                case STATE_DOWN:
+                    if (ax > az || ay > az) { // phone not on horizontal table
+                        state = STATE_INIT;
+                    } else {
+                        mGZcount++;
+                        if (mGZcount >= 10)
+                            snoozeActiveAlarm(this);
+                    }
+                    break;
             }
         }
     }

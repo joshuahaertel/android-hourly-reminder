@@ -43,9 +43,11 @@ public class Sound extends TTS {
     Runnable loop; // loop preventer
 
     public static class Playlist {
+        public List<String> beforeOnce = new ArrayList<>();
         public List<String> before = new ArrayList<>();
         public boolean beep;
         public boolean speech;
+        public List<String> afterOnce = new ArrayList<>();
         public List<String> after = new ArrayList<>();
 
         public Playlist() {
@@ -69,6 +71,21 @@ public class Sound extends TTS {
                 } else {
                     after.remove(rs.ringtoneValue); // do not add after, if same sound already played "before"
                     add(before, rs.ringtoneValue);
+                }
+            }
+        }
+
+        // merge alarm with reminder
+        public void withAlarm(ReminderSet rs) {
+            this.beep |= rs.beep;
+            this.speech |= rs.speech;
+            if (rs.ringtone) {
+                if (rs.beep || rs.speech) {
+                    if (!beforeOnce.contains(rs.ringtoneValue)) // do not add after, if same sound already played "before"
+                        add(afterOnce, rs.ringtoneValue);
+                } else {
+                    afterOnce.remove(rs.ringtoneValue); // do not add after, if same sound already played "before"
+                    add(beforeOnce, rs.ringtoneValue);
                 }
             }
         }
@@ -702,13 +719,24 @@ public class Sound extends TTS {
             }
         };
 
+        final Runnable afterOnce = new Runnable() {
+            @Override
+            public void run() {
+                if (!rr.afterOnce.isEmpty()) {
+                    playCustom(rr.afterOnce, after);
+                } else {
+                    after.run();
+                }
+            }
+        };
+
         final Runnable speech = new Runnable() {
             @Override
             public void run() {
                 if (rr.speech) {
-                    playSpeech(alarm.settime, after);
+                    playSpeech(alarm.settime, afterOnce);
                 } else {
-                    after.run();
+                    afterOnce.run();
                 }
             }
         };
@@ -724,7 +752,7 @@ public class Sound extends TTS {
             }
         };
 
-        Runnable before = new Runnable() {
+        final Runnable before = new Runnable() {
             @Override
             public void run() {
                 if (!rr.before.isEmpty()) {
@@ -735,7 +763,18 @@ public class Sound extends TTS {
             }
         };
 
-        before.run();
+        final Runnable beforeOnce = new Runnable() {
+            @Override
+            public void run() {
+                if (!rr.beforeOnce.isEmpty()) {
+                    playCustom(rr.beforeOnce, before);
+                } else {
+                    before.run();
+                }
+            }
+        };
+
+        beforeOnce.run();
         return s;
     }
 
