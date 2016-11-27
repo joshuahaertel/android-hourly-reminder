@@ -99,8 +99,10 @@ public class Sound extends TTS {
         ArrayList<String> load(JSONArray aa) {
             ArrayList<String> l = new ArrayList<>();
             try {
-                for (int i = 0; i < aa.length(); i++) {
-                    l.add(aa.getString(i));
+                if (aa != null) {
+                    for (int i = 0; i < aa.length(); i++) {
+                        l.add(aa.getString(i));
+                    }
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -119,11 +121,11 @@ public class Sound extends TTS {
 
         public void load(JSONObject o) {
             try {
-                beforeOnce = load(o.getJSONArray("beforeOnce"));
+                beforeOnce = load(o.optJSONArray("beforeOnce"));
                 before = load(o.getJSONArray("before"));
                 beep = o.getBoolean("beep");
                 speech = o.getBoolean("speech");
-                afterOnce = load(o.getJSONArray("afterOnce"));
+                afterOnce = load(o.optJSONArray("afterOnce"));
                 after = load(o.getJSONArray("after"));
             } catch (JSONException e) {
                 throw new RuntimeException(e);
