@@ -121,11 +121,11 @@ public class Sound extends TTS {
 
         public void load(JSONObject o) {
             try {
-                beforeOnce = load(o.optJSONArray("beforeOnce"));
+                beforeOnce = load(o.optJSONArray("beforeOnce")); // opt for <= 2.1.4
                 before = load(o.getJSONArray("before"));
                 beep = o.getBoolean("beep");
                 speech = o.getBoolean("speech");
-                afterOnce = load(o.optJSONArray("afterOnce"));
+                afterOnce = load(o.optJSONArray("afterOnce")); // opt for <= 2.1.4
                 after = load(o.getJSONArray("after"));
             } catch (JSONException e) {
                 throw new RuntimeException(e);
