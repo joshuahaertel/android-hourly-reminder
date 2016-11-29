@@ -1,6 +1,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="Sounds" android:key="sounds">
+    <PreferenceCategory
+        android:key="sounds"
+        android:title="Sounds">
         <com.github.axet.androidlibrary.widgets.SeekBarPreference
             android:defaultValue="1"
             android:key="volume"
@@ -30,6 +32,22 @@
             android:key="vibrate"
             android:summary="Vibrate while sounding an reminder / alarm"
             android:title="Vibrate" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="advanced"
+        android:title="Reminders">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="wakeup"
+            android:summary="Wake up screen on reminders"
+            android:title="Wake Up Screen" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="alarm"
+            android:summary="Use 'alarm' event type for hourly chimes (wakeup phone from power saving mode)"
+            android:title="Exact Timing" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Alarms">
@@ -64,7 +82,9 @@
             android:title="Alarm Snooze minutes..." />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Speak" android:key="speak">
+    <PreferenceCategory
+        android:key="speak"
+        android:title="Speak">
         <ListPreference
             android:defaultValue=""
             android:entries="@array/languages_text"
@@ -79,14 +99,6 @@
             android:key="speak_ampm"
             android:summary="Will speak time including AM/PM suffix"
             android:title="Speak AM/PM" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Advanced" android:key="advanced">
-        <SwitchPreferenceCompat
-            android:defaultValue="true"
-            android:key="alarm"
-            android:summary="Use 'alarm' event type for hourly chimes (wakeup phone from power saving mode)"
-            android:title="Exact Timing" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Application">

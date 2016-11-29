@@ -1,5 +1,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="Звуки" android:key="sounds">
+    <PreferenceCategory
+        android:key="sounds"
+        android:title="Звуки">
         <com.github.axet.androidlibrary.widgets.SeekBarPreference
             android:defaultValue="1"
             android:key="volume"
@@ -29,6 +31,22 @@
             android:key="vibrate"
             android:summary="Использовать вибратор для будильника и оповещений"
             android:title="Вибратор" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="advanced"
+        android:title="Оповещения">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="wakeup"
+            android:summary="Включать экран во время оповещений"
+            android:title="Включать экран" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="alarm"
+            android:summary="Использовать тип для оповещений 'alarm' (более точное срабатывание)"
+            android:title="Точное время" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Будильник">
@@ -63,7 +81,9 @@
             android:title="Отложить Будильник на..." />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Голос" android:key="speak">
+    <PreferenceCategory
+        android:key="speak"
+        android:title="Голос">
         <ListPreference
             android:defaultValue=""
             android:entries="@array/languages_text"
@@ -79,14 +99,6 @@
             android:key="speak_ampm"
             android:summary="Произность время дня и ночи (утро, вечер, день, ночь)"
             android:title="Произносить время дня" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Расширенные настройки" android:key="advanced">
-        <SwitchPreferenceCompat
-            android:defaultValue="true"
-            android:key="alarm"
-            android:summary="Использовать тип для оповещений 'alarm' (более точное срабатывание)"
-            android:title="Точное время" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Приложение">

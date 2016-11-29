@@ -501,7 +501,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
 
         if (rlist != null) {
-            wakeScreen();
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            if (prefs.getBoolean(HourlyApplication.PREFERENCE_WAKEUP, true))
+                wakeScreen();
             SoundConfig.Silenced s = sound.playList(rlist, time, new Runnable() {
                 @Override
                 public void run() {
