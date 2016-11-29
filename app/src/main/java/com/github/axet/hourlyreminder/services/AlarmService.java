@@ -644,11 +644,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     void wakeClose() {
         if (wl != null) {
-            wl.release();
+            if (wl.isHeld())
+                wl.release();
             wl = null;
         }
         if (wlCpu != null) {
-            wlCpu.release();
+            if (wlCpu.isHeld())
+                wlCpu.release();
             wlCpu = null;
         }
     }
