@@ -87,6 +87,8 @@ public class HourlyApplication extends Application {
     public static final String PREFERENCE_SNOOZE_AFTER = "snooze_after";
     public static final String PREFERENCE_SNOOZE_DELAY = "snooze_time";
 
+    public static final String PREFERENCE_WAKEUP = "wakeup";
+
     static HashMap<Uri, String> titles = new HashMap<>();
 
     public static final int VERSION = 1;
