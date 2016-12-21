@@ -1,8 +1,6 @@
 package com.github.axet.hourlyreminder.fragments;
 
 import android.Manifest;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,15 +9,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v13.app.FragmentCompat;
-import android.support.v14.preference.PreferenceFragment;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceGroup;
 import android.support.v7.preference.PreferenceGroupAdapter;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.ContentFrameLayout;
@@ -44,15 +43,13 @@ import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.basics.Reminder;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
-import com.github.axet.hourlyreminder.dialogs.HoursPrefDialogFragment;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class SettingsFragment extends PreferenceFragment implements PreferenceFragment.OnPreferenceDisplayDialogCallback, SharedPreferences.OnSharedPreferenceChangeListener {
+public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     Sound sound;
     Handler handler = new Handler();
 
@@ -102,10 +99,6 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
             if (preference instanceof SeekBarPreference) {
                 float f = (Float) value;
                 preference.setSummary((int) (f * 100) + "%");
-            } else if (preference instanceof android.support.v14.preference.MultiSelectListPreference) {
-                List sortedList = new ArrayList((Set) value);
-                Collections.sort(sortedList);
-                preference.setSummary(sortedList.toString());
             } else if (preference instanceof ListPreference) {
                 // For list preferences, look up the correct display value in
                 // the preference's 'entries' list.
@@ -261,32 +254,22 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
     }
 
     @Override
-    public boolean onPreferenceDisplayDialog(PreferenceFragment preferenceFragment, Preference preference) {
+    public void onDisplayPreferenceDialog(Preference preference) {
         if (preference instanceof SeekBarPreference) {
             AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
             am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamVolume(AudioManager.STREAM_ALARM), AudioManager.FLAG_SHOW_UI);
-
             SeekBarPreferenceDialogFragment f = SeekBarPreferenceDialogFragment.newInstance(preference.getKey());
             ((DialogFragment) f).setTargetFragment(this, 0);
             ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
-            return true;
+            return;
         }
-
-        if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
-            HoursPrefDialogFragment f = HoursPrefDialogFragment.newInstance(preference.getKey());
-            ((DialogFragment) f).setTargetFragment(this, 0);
-            ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
-            return true;
-        }
-
         if (preference.getKey().equals(HourlyApplication.PREFERENCE_BEEP_CUSTOM)) {
             BeepPrefDialogFragment f = BeepPrefDialogFragment.newInstance(preference.getKey());
             ((DialogFragment) f).setTargetFragment(this, 0);
             ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
-            return true;
+            return;
         }
-
-        return false;
+        super.onDisplayPreferenceDialog(preference);
     }
 
     @Override
@@ -354,10 +337,9 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
         });
 
         PreferenceGroup sounds = (PreferenceGroup) findPreference("sounds");
-        Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
         Preference vp = findPreference(HourlyApplication.PREFERENCE_VIBRATE);
 
-        if (!v.hasVibrator()) {
+        if (!hasVibrator()) {
             sounds.removePreference(vp);
         } else {
             vp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -374,6 +356,13 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    boolean hasVibrator() {
+        Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+        if (Build.VERSION.SDK_INT < 11)
+            return true;
+        return v.hasVibrator();
     }
 
     void setPhone() {
@@ -422,7 +411,7 @@ public class SettingsFragment extends PreferenceFragment implements PreferenceFr
     boolean permitted(String[] p, int c) {
         for (String s : p) {
             if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                FragmentCompat.requestPermissions(this, p, c);
+                requestPermissions(p, c);
                 return false;
             }
         }

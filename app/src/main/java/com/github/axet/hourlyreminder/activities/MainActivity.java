@@ -1,7 +1,5 @@
 package com.github.axet.hourlyreminder.activities;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,11 +9,14 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
-import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -128,10 +129,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         AppBarLayout appbar = (AppBarLayout) findViewById(R.id.appbar);
-        appbar.setBackground(new ColorDrawable(HourlyApplication.getActionbarColor(this)));
+        if (Build.VERSION.SDK_INT < 16)
+            appbar.setBackgroundDrawable(new ColorDrawable(HourlyApplication.getActionbarColor(this)));
+        else
+            appbar.setBackground(new ColorDrawable(HourlyApplication.getActionbarColor(this)));
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);

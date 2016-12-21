@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -101,7 +100,6 @@ public class HourlyApplication extends Application {
 
         SharedPreferences defaultValueSp = getSharedPreferences("_has_set_default_values", 0);
         if (!defaultValueSp.getBoolean("_has_set_default_values", false)) {
-            PreferenceManager.setDefaultValues(this, R.xml.pref_reminders, true);
             PreferenceManager.setDefaultValues(this, R.xml.pref_settings, true);
             SharedPreferences.Editor editor = defaultValueSp.edit().putBoolean("_has_set_default_values", true);
             SharedPreferencesCompat.EditorCompat.getInstance().apply(editor);
@@ -189,7 +187,7 @@ public class HourlyApplication extends Application {
                     o.put("time", shared.getLong(prefix + "Time", 0));
                     o.put("enable", shared.getBoolean(prefix + "Enable", false));
                     o.put("weekdays", shared.getBoolean(prefix + "WeekDays", false));
-                    o.put("weekdays_values", new JSONArray(shared.getStringSet(prefix + "WeekDays_Values", null)));
+                    o.put("weekdays_values", new JSONArray(getStringSet(shared, prefix + "WeekDays_Values", null)));
                     o.put("ringtone", shared.getBoolean(prefix + "Ringtone", false));
                     o.put("ringtone_value", shared.getString(prefix + "Ringtone_Value", ""));
                     o.put("beep", shared.getBoolean(prefix + "Beep", false));
@@ -278,11 +276,11 @@ public class HourlyApplication extends Application {
 
         int count = shared.getInt(PREFERENCE_REMINDERS_PREFIX + "count", -1);
 
-        if (count == -1) { // <=1.5.9
+        if (count == -1) { // <=1.5.9 or new installed app
             boolean enabled = shared.getBoolean(PREFERENCE_ENABLED, false);
             int repeat = Integer.parseInt(shared.getString(PREFERENCE_REPEAT, "60"));
-            Set<String> hours = shared.getStringSet(PREFERENCE_HOURS, new HashSet<String>());
-            Set<String> days = shared.getStringSet(HourlyApplication.PREFERENCE_DAYS, new TreeSet<String>());
+            Set<String> hours = getStringSet(shared, PREFERENCE_HOURS, ReminderSet.DEF_HOURS);
+            Set<String> days = getStringSet(shared, HourlyApplication.PREFERENCE_DAYS, ReminderSet.getWeekDaysProperty(ReminderSet.DEF_DAYS));
 
             boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
             boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
@@ -620,7 +618,13 @@ public class HourlyApplication extends Application {
             case 23:
                 return getString(context, locale, R.string.day_pm);
         }
-
         throw new RuntimeException("bad hour");
+    }
+
+    public static Set<String> getStringSet(SharedPreferences shared, String name, Set<String> def) {
+        if (Build.VERSION.SDK_INT < 11)
+            return def; // ignore this app no longer uses StringSets
+        else
+            return shared.getStringSet(name, def);
     }
 }

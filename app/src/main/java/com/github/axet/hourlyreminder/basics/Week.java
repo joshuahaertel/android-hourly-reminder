@@ -90,6 +90,14 @@ public class Week {
         throw new RuntimeException("wrong day");
     }
 
+    public static Set<String> getWeekDaysProperty(List<Integer> ww) {
+        TreeSet<String> set = new TreeSet<>();
+        for (Integer w : ww) {
+            set.add(w.toString());
+        }
+        return set;
+    }
+
     public int parseTag(Object o) {
         Integer s = (Integer) o;
         for (int i = 0; i < DAYS.length; i++) {
@@ -101,11 +109,7 @@ public class Week {
     }
 
     public Set<String> getWeekDaysProperty() {
-        TreeSet<String> set = new TreeSet<>();
-        for (Integer w : weekDaysValues) {
-            set.add(w.toString());
-        }
-        return set;
+        return getWeekDaysProperty(weekDaysValues);
     }
 
     // "Thu" -> (int)Calendar.Thursday

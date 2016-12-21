@@ -1,12 +1,12 @@
 package com.github.axet.hourlyreminder.dialogs;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v14.preference.PreferenceDialogFragment;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.PreferenceDialogFragmentCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -20,7 +20,7 @@ import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.BeepView;
 
-public class BeepPrefDialogFragment extends PreferenceDialogFragment {
+public class BeepPrefDialogFragment extends PreferenceDialogFragmentCompat {
     private boolean mPreferenceChanged;
 
     Sound sound;

@@ -91,21 +91,30 @@ public class TTS extends SoundConfig {
             ttsCreate();
         }
 
-        tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-            @Override
-            public void onStart(String utteranceId) {
-            }
+        if (Build.VERSION.SDK_INT < 15) {
+            tts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
+                @Override
+                public void onUtteranceCompleted(String s) {
+                    clear.run();
+                }
+            });
+        } else {
+            tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override
+                public void onStart(String utteranceId) {
+                }
 
-            @Override
-            public void onDone(String utteranceId) {
-                clear.run();
-            }
+                @Override
+                public void onDone(String utteranceId) {
+                    clear.run();
+                }
 
-            @Override
-            public void onError(String utteranceId) {
-                clear.run();
-            }
-        });
+                @Override
+                public void onError(String utteranceId) {
+                    clear.run();
+                }
+            });
+        }
 
         // TTS may say failed, but play sounds successfuly. we need regardless or failed do not
         // play speech twice if clear.run() was called.

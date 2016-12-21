@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.github.axet.hourlyreminder"
-        minSdkVersion 16
+        minSdkVersion 9
         targetSdkVersion 25
         versionCode 186
         versionName "2.1.9"
@@ -38,7 +38,6 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:design:25.0.0'
-    compile 'com.android.support:support-v13:25.0.0'
-    compile 'com.github.axet:android-library:1.6.5' // project(':android-library')
+    compile 'com.android.support:design:25.1.0'
+    compile 'com.github.axet:android-library:1.6.8' // compile project(':android-library')
 }

@@ -1,7 +1,6 @@
 package com.github.axet.hourlyreminder.fragments;
 
 import android.app.Dialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +42,10 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         // requires android.permission.READ_EXTERNAL_STORAGE, or grantUriPermission()
         //
         // context.grantUriPermission("com.android.providers.media.MediaProvider", Uri.parse("content://media/external/images/media"), Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        if (uri == null) {
+            uri = ReminderSet.DEFAULT_NOTIFICATION;
+        }
 
         context.startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)

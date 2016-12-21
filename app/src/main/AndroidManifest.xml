@@ -40,10 +40,11 @@
             </intent-filter>
         </receiver>
 
+        <!--singleTop instead of singleInstance http://stackoverflow.com/questions/3354955/onactivityresult-called-prematurely-->
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/title_activity_main"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTop"
             android:theme="@style/AppThemeLight.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -55,7 +56,7 @@
             android:name=".activities.AlarmActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_alarm"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTop"
             android:showOnLockScreen="true"
             android:theme="@style/AppThemeLight.NoActionBar" />
     </application>

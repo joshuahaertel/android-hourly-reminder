@@ -1,24 +1,14 @@
 package com.github.axet.hourlyreminder.animations;
 
 import android.annotation.TargetApi;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.Interpolator;
 import android.view.animation.Transformation;
-import android.widget.AbsListView;
 import android.widget.ListView;
 
 import com.github.axet.androidlibrary.animations.MarginAnimation;
 import com.github.axet.hourlyreminder.R;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AlarmAnimation extends MarginAnimation {
     ListView list;
@@ -95,10 +85,12 @@ public class AlarmAnimation extends MarginAnimation {
 
         float ii = expand ? i : 1 - i;
 
-        compact_f.setAlpha(1 - ii);
-        compact_s.setRotation(180 * ii);
-        bottom_f.setAlpha(ii);
-        bottom_s.setRotation(-180 + 180 * ii);
+        if (Build.VERSION.SDK_INT >= 11) {
+            compact_f.setAlpha(1 - ii);
+            compact_s.setRotation(180 * ii);
+            bottom_f.setAlpha(ii);
+            bottom_s.setRotation(-180 + 180 * ii);
+        }
 
         // ViewGroup will crash on null pointer without this post pone.
         // seems like some views are removed by RecyvingView when they
@@ -142,10 +134,12 @@ public class AlarmAnimation extends MarginAnimation {
     public void restore() {
         super.restore();
 
-        bottom_f.setAlpha(1);
-        bottom_s.setRotation(0);
-        compact_f.setAlpha(1);
-        compact_s.setRotation(0);
+        if (Build.VERSION.SDK_INT >= 11) {
+            bottom_f.setAlpha(1);
+            bottom_s.setRotation(0);
+            compact_f.setAlpha(1);
+            compact_s.setRotation(0);
+        }
     }
 
     @Override
