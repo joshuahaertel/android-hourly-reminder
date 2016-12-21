@@ -3,7 +3,6 @@ package com.github.axet.hourlyreminder.fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,8 +15,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v13.app.FragmentCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -327,7 +327,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     }
 
     public void fillDetailed(final View view, final WeekSet a, boolean animate) {
-        final Switch enable = (Switch) view.findViewById(R.id.alarm_enable);
+        final SwitchCompat enable = (SwitchCompat) view.findViewById(R.id.alarm_enable);
         enable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -568,7 +568,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     boolean permitted() {
         for (String s : PERMISSIONS) {
             if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                FragmentCompat.requestPermissions(this, PERMISSIONS, 1);
+                requestPermissions(PERMISSIONS, 1);
                 return false;
             }
         }
@@ -584,7 +584,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         TextView time = (TextView) view.findViewById(R.id.alarm_time);
         time.setClickable(false);
 
-        final Switch enable = (Switch) view.findViewById(R.id.alarm_enable);
+        final SwitchCompat enable = (SwitchCompat) view.findViewById(R.id.alarm_enable);
         enable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

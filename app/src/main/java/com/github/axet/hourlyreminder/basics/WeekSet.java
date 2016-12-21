@@ -1,16 +1,17 @@
 package com.github.axet.hourlyreminder.basics;
 
 import android.content.Context;
-import android.media.RingtoneManager;
-import android.net.Uri;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class WeekSet extends Week {
+    public static final List<Integer> DEF_DAYS = new ArrayList<>(Arrays.asList(Week.EVERYDAY));
+
     // unique id
     public long id;
     // alarm with ringtone?
@@ -39,7 +40,7 @@ public class WeekSet extends Week {
 
         enabled = false;
         weekdaysCheck = true;
-        weekDaysValues = new ArrayList<>(Arrays.asList(Week.EVERYDAY));
+        weekDaysValues = DEF_DAYS;
         ringtone = true;
         beep = true;
         speech = true;

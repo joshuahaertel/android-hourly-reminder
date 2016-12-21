@@ -14,7 +14,6 @@ import android.support.v7.widget.AppCompatCheckBox;
 import android.util.AttributeSet;
 import android.util.Property;
 import android.view.Gravity;
-import android.widget.CheckBox;
 
 import com.github.axet.androidlibrary.R;
 import com.github.axet.androidlibrary.widgets.StateDrawable;
@@ -32,18 +31,7 @@ public class RoundCheckbox extends AppCompatCheckBox {
 
     float stateAnimator;
 
-    Property<RoundCheckbox, Float> STATE_ANIMATOR = new Property<RoundCheckbox, Float>(Float.class, "stateAnimator") {
-        @Override
-        public Float get(RoundCheckbox object) {
-            return object.stateAnimator;
-        }
-
-        @Override
-        public void set(RoundCheckbox object, Float value) {
-            object.stateAnimator = value;
-            object.invalidate();
-        }
-    };
+    Property<RoundCheckbox, Float> STATE_ANIMATOR = null;
 
     public RoundCheckbox(Context context) {
         super(context);
@@ -101,6 +89,21 @@ public class RoundCheckbox extends AppCompatCheckBox {
         </shape>
         */
 
+        if (Build.VERSION.SDK_INT >= 14) {
+            STATE_ANIMATOR = new Property<RoundCheckbox, Float>(Float.class, "stateAnimator") {
+                @Override
+                public Float get(RoundCheckbox object) {
+                    return object.stateAnimator;
+                }
+
+                @Override
+                public void set(RoundCheckbox object, Float value) {
+                    object.stateAnimator = value;
+                    object.invalidate();
+                }
+            };
+        }
+
         ShapeDrawable checkbox_on = new ShapeDrawable(new OvalShape());
         PorterDuffColorFilter checkbox_on_filter = new PorterDuffColorFilter(ThemeUtils.getThemeColor(getContext(), R.attr.colorAccent), PorterDuff.Mode.SRC_ATOP);
         checkbox_on.setColorFilter(checkbox_on_filter);
@@ -112,13 +115,15 @@ public class RoundCheckbox extends AppCompatCheckBox {
         background.addState(new int[]{android.R.attr.state_checked}, checkbox_on, checkbox_on_filter);
         background.addState(new int[]{-android.R.attr.state_checked}, checkbox_off, checkbox_off_filter);
 
-        background.setExitFadeDuration(500);
-        background.setEnterFadeDuration(500);
+        if (Build.VERSION.SDK_INT >= 11) {
+            background.setExitFadeDuration(500);
+            background.setEnterFadeDuration(500);
+        }
 
-        if (Build.VERSION.SDK_INT >= 16)
-            setBackground(background);
-        else
+        if (Build.VERSION.SDK_INT < 16)
             setBackgroundDrawable(background);
+        else
+            setBackground(background);
 
         // reset padding set by previous background from constructor
         setPadding(0, 0, 0, 0);
@@ -146,11 +151,12 @@ public class RoundCheckbox extends AppCompatCheckBox {
     public void setChecked(boolean checked) {
         super.setChecked(checked);
 
-        animator = ObjectAnimator.ofFloat(this, STATE_ANIMATOR, 1f);
-        animator.setDuration(500);
-        if (Build.VERSION.SDK_INT >= 18)
-            animator.setAutoCancel(true);
-        animator.start();
+        if (Build.VERSION.SDK_INT >= 14) {
+            animator = ObjectAnimator.ofFloat(this, STATE_ANIMATOR, 1f);
+            animator.setDuration(500);
+            if (Build.VERSION.SDK_INT >= 18)
+                animator.setAutoCancel(true);
+            animator.start();
+        }
     }
-
 }

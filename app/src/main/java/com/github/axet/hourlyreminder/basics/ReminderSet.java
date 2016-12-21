@@ -23,10 +23,13 @@ public class ReminderSet extends WeekSet {
     public List<Reminder> list; // generated reminders (depend on repeat)
     public int repeat; // minutes
 
+    public static final Set<String> DEF_HOURS = new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12"}));
+
     public ReminderSet(Context context, Set<String> hours, int repeat) {
         super(context);
 
         this.repeat = repeat;
+        this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
 
         load(hours);
     }
@@ -49,7 +52,7 @@ public class ReminderSet extends WeekSet {
         this.ringtone = false;
         this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
         this.repeat = 60;
-        load(new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12"})));
+        load(DEF_HOURS);
     }
 
     public ReminderSet(Context context, String json) {
