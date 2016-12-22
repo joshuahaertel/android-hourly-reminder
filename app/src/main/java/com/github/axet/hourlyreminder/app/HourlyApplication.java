@@ -282,9 +282,9 @@ public class HourlyApplication extends Application {
             Set<String> hours = getStringSet(shared, PREFERENCE_HOURS, ReminderSet.DEF_HOURS);
             Set<String> days = getStringSet(shared, HourlyApplication.PREFERENCE_DAYS, ReminderSet.getWeekDaysProperty(ReminderSet.DEF_DAYS));
 
-            boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "").equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
-            boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, false);
-            boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, false);
+            boolean c = !shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF).equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND_OFF);
+            boolean s = shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK, true);
+            boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_BEEP, true);
 
             ReminderSet rs = new ReminderSet(context, hours, repeat);
             rs.enabled = enabled;
