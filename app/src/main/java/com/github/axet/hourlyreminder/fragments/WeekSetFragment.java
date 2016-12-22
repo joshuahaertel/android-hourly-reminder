@@ -49,11 +49,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class WeekSetFragment extends Fragment implements ListAdapter, AbsListView.OnScrollListener, SharedPreferences.OnSharedPreferenceChangeListener {
-    static final int TYPE_COLLAPSED = 0;
-    static final int TYPE_EXPANDED = 1;
-    static final int TYPE_DELETED = 2;
+    public static final int TYPE_COLLAPSED = 0;
+    public static final int TYPE_EXPANDED = 1;
+    public static final int TYPE_DELETED = 2;
 
-    final int[] ALL = {TYPE_COLLAPSED, TYPE_EXPANDED};
+    public static final int[] ALL = {TYPE_COLLAPSED, TYPE_EXPANDED};
 
     WeekSet fragmentRequestRingtone;
 

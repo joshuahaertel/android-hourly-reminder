@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -434,12 +435,15 @@ public class FireAlarmService extends Service implements SensorEventListener {
             view.setOnClickPendingIntent(R.id.notification_button, button);
             view.setTextViewText(R.id.notification_text, text);
 
-            Notification.Builder builder = new Notification.Builder(this)
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                     .setOngoing(true)
                     .setContentTitle(getString(R.string.Alarm))
                     .setContentText(text)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                     .setContent(view);
+
+            if (Build.VERSION.SDK_INT < 11)
+                builder.setContentIntent(main);
 
             if (Build.VERSION.SDK_INT >= 21)
                 builder.setVisibility(Notification.VISIBILITY_PUBLIC);

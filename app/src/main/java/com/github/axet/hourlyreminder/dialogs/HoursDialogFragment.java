@@ -153,12 +153,12 @@ public class HoursDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return v;
+        return null; // must be null or Illigal state exception
     }
 
     View createView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Context context = inflater.getContext();
-        final View view = inflater.inflate(R.layout.hours, null, false);
+        final View view = inflater.inflate(R.layout.hours, container, false);
         v = view;
 
         for (int i = 0; i < ids.length; i++) {

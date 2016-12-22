@@ -6,18 +6,21 @@
         <item quantity="one">%d час</item>
         <item quantity="few">%d часа</item>
         <item quantity="many">%d часов</item>
+        <item quantity="other">%d часов</item>
     </plurals>
 
     <plurals name="minutes">
         <item quantity="one">%d минута</item>
         <item quantity="few">%d минуты</item>
         <item quantity="many">%d минут</item>
+        <item quantity="other">%d минут</item>
     </plurals>
 
     <plurals name="seconds">
         <item quantity="one">%d секунда</item>
         <item quantity="few">%d секунды</item>
         <item quantity="many">%d секунд</item>
+        <item quantity="other">%d секунд</item>
     </plurals>
 
     <string name="Alarm">Будильник</string>
