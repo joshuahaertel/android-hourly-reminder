@@ -536,7 +536,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 if (!ff.isFile())
                     return;
 
-                fragmentRequestRingtone.ringtoneValue = ff.getAbsolutePath();
+                fragmentRequestRingtone.ringtoneValue = Uri.fromFile(ff).toString();
                 save(fragmentRequestRingtone);
                 fragmentRequestRingtone = null;
             }
