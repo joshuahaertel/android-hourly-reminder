@@ -400,6 +400,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public static final String[] PERMISSIONS_V = new String[]{Manifest.permission.VIBRATE};
 
     boolean permitted(String[] ss) {
+        if (Build.VERSION.SDK_INT < 11)
+            return true;
         for (String s : ss) {
             if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
                 return false;
@@ -409,6 +411,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     boolean permitted(String[] p, int c) {
+        if (Build.VERSION.SDK_INT < 11)
+            return true;
         for (String s : p) {
             if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(p, c);

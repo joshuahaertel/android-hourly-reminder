@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -28,7 +29,6 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -533,7 +533,10 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
                 shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, ff.getParent()).commit();
 
-                fragmentRequestRingtone.ringtoneValue = ff.getAbsolutePath();
+                if (!ff.isFile())
+                    return;
+
+                fragmentRequestRingtone.ringtoneValue = Uri.fromFile(ff).toString();
                 save(fragmentRequestRingtone);
                 fragmentRequestRingtone = null;
             }
@@ -557,6 +560,8 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
 
     boolean permitted(String[] ss) {
+        if (Build.VERSION.SDK_INT < 11)
+            return true;
         for (String s : ss) {
             if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
                 return false;
@@ -566,6 +571,8 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     }
 
     boolean permitted() {
+        if (Build.VERSION.SDK_INT < 11)
+            return true;
         for (String s : PERMISSIONS) {
             if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(PERMISSIONS, 1);
