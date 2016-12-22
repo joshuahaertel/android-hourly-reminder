@@ -432,6 +432,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                     .setContent(view);
 
+            if (Build.VERSION.SDK_INT < 11)
+                builder.setContentIntent(main);
+
             if (Build.VERSION.SDK_INT >= 21)
                 builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
@@ -613,11 +616,14 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             view.setTextViewText(R.id.notification_text, text);
             view.setViewVisibility(R.id.notification_button, View.GONE);
 
-            Notification.Builder builder = new Notification.Builder(context)
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                     .setContentTitle(context.getString(R.string.Alarm))
                     .setContentText(text)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                     .setContent(view);
+
+            if (Build.VERSION.SDK_INT < 11)
+                builder.setContentIntent(main);
 
             if (Build.VERSION.SDK_INT >= 21)
                 builder.setVisibility(Notification.VISIBILITY_PUBLIC);
