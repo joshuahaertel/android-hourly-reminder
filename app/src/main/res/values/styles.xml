@@ -21,19 +21,21 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppThemeLight.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppThemeLight.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:textColorPrimary">@android:color/white</item>
+    </style>
 
     <style name="AppThemeLight.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="AppThemeDark" parent="Theme.AppCompat">
-        <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
-        <item name="colorPrimary">@color/primary_material_dark</item>
+        <item name="colorPrimary">@color/darkPrimary</item>
+        <item name="colorPrimaryDark">@color/darkPrimaryDark</item>
         <item name="colorAccent">@color/colorAccentDark</item>
         <item name="alarmBackground">@color/actionBarBackgroundDark</item>
         <item name="alarmRing">@drawable/round_circle_dark</item>
         <item name="alarmDismiss">@drawable/round_dismiss_dark</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="dialogTheme">@style/AppThemeDialogLight</item>
+        <item name="dialogTheme">@style/AppThemeDialogDark</item>
         <item name="alertDialogTheme">@style/AppThemeDialogDark</item>
     </style>
 
