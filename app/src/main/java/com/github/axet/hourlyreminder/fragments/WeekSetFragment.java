@@ -524,6 +524,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         }
 
         f.setReadonly(true);
+        f.setSelectFiles(true);
         f.setCurrentPath(sound);
         f.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
