@@ -33,6 +33,23 @@ public class RoundCheckbox extends AppCompatCheckBox {
 
     Property<RoundCheckbox, Float> STATE_ANIMATOR = null;
 
+    {
+        if (Build.VERSION.SDK_INT >= 14) {
+            STATE_ANIMATOR = new Property<RoundCheckbox, Float>(Float.class, "stateAnimator") {
+                @Override
+                public Float get(RoundCheckbox object) {
+                    return object.stateAnimator;
+                }
+
+                @Override
+                public void set(RoundCheckbox object, Float value) {
+                    object.stateAnimator = value;
+                    object.invalidate();
+                }
+            };
+        }
+    }
+
     public RoundCheckbox(Context context) {
         super(context);
 
@@ -88,21 +105,6 @@ public class RoundCheckbox extends AppCompatCheckBox {
                 android:top="0dip" />
         </shape>
         */
-
-        if (Build.VERSION.SDK_INT >= 14) {
-            STATE_ANIMATOR = new Property<RoundCheckbox, Float>(Float.class, "stateAnimator") {
-                @Override
-                public Float get(RoundCheckbox object) {
-                    return object.stateAnimator;
-                }
-
-                @Override
-                public void set(RoundCheckbox object, Float value) {
-                    object.stateAnimator = value;
-                    object.invalidate();
-                }
-            };
-        }
 
         ShapeDrawable checkbox_on = new ShapeDrawable(new OvalShape());
         PorterDuffColorFilter checkbox_on_filter = new PorterDuffColorFilter(ThemeUtils.getThemeColor(getContext(), R.attr.colorAccent), PorterDuff.Mode.SRC_ATOP);
