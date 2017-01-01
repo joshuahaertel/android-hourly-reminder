@@ -171,7 +171,7 @@ public class Sound extends TTS {
     public static AudioTrack generateTone(double freqHz, int durationMs) {
         int sampleRate = 44100;
         int count = sampleRate * durationMs / 1000;
-        int end = count;
+        int last = count - 1;
         int stereo = count * 2;
         short[] samples = new short[stereo];
         for (int i = 0; i < stereo; i += 2) {
@@ -190,7 +190,7 @@ public class Sound extends TTS {
                 AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT,
                 stereo * (Short.SIZE / 8), AudioTrack.MODE_STREAM);
         track.write(samples, 0, stereo);
-        if (track.setNotificationMarkerPosition(end) != AudioTrack.SUCCESS)
+        if (track.setNotificationMarkerPosition(last) != AudioTrack.SUCCESS)
             throw new RuntimeException("unable to set marker");
         return track;
     }
