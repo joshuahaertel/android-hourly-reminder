@@ -270,7 +270,6 @@ public class Sound extends TTS {
         if (s != Silenced.NONE) {
             if (s == Silenced.VIBRATE)
                 vibrate();
-            silencedToast(s, time);
             if (done != null) {
                 done.run();
             }
@@ -698,7 +697,6 @@ public class Sound extends TTS {
         if (s != Silenced.NONE) {
             if (s == Silenced.VIBRATE)
                 vibrate();
-            silencedToast(s, alarm.settime);
             return s;
         }
 

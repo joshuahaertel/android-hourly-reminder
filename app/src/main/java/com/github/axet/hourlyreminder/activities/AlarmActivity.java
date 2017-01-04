@@ -52,7 +52,7 @@ public class AlarmActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
-        setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight_NoActionBar, R.style.AppThemeDark_NoActionBar));
+        setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight_FullScreen, R.style.AppThemeDark_FullScreen));
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();

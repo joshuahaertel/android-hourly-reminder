@@ -304,6 +304,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
         // do we have silence alarm?
         silenced = sound.playAlarm(alarm);
+        sound.silencedToast(silenced, alarm.settime);
 
         showAlarmActivity(alarm, silenced);
 
