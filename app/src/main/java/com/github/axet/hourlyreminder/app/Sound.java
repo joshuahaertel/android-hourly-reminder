@@ -271,6 +271,9 @@ public class Sound extends TTS {
             if (s == Silenced.VIBRATE)
                 vibrate();
             silencedToast(s, time);
+            if (done != null) {
+                done.run();
+            }
             return s;
         }
 
@@ -683,9 +686,9 @@ public class Sound extends TTS {
     }
 
     public Silenced playAlarm(final FireAlarmService.FireAlarm alarm) {
-        final Playlist rr = alarm.list;
-
         playerClose();
+
+        final Playlist rr = alarm.list;
 
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
