@@ -23,7 +23,7 @@ public class ReminderSet extends WeekSet {
     public List<Reminder> list; // generated reminders (depend on repeat)
     public int repeat; // minutes
 
-    public static final Set<String> DEF_HOURS = new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12"}));
+    public static final Set<String> DEF_HOURS = new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"}));
 
     public ReminderSet(Context context, Set<String> hours, int repeat) {
         super(context);
