@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,11 +123,11 @@ public class Sound extends TTS {
         public void load(JSONObject o) {
             try {
                 beforeOnce = load(o.optJSONArray("beforeOnce")); // opt for <= 2.1.4
-                before = load(o.getJSONArray("before"));
+                before = load(o.optJSONArray("before")); // opt for unknown old version
                 beep = o.getBoolean("beep");
                 speech = o.getBoolean("speech");
                 afterOnce = load(o.optJSONArray("afterOnce")); // opt for <= 2.1.4
-                after = load(o.getJSONArray("after"));
+                after = load(o.optJSONArray("after")); // opt for unknown old version
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
@@ -190,8 +191,7 @@ public class Sound extends TTS {
                 AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT,
                 stereo * (Short.SIZE / 8), AudioTrack.MODE_STREAM);
         track.write(samples, 0, stereo);
-        if (track.setNotificationMarkerPosition(last) != AudioTrack.SUCCESS)
-            throw new RuntimeException("unable to set marker");
+        //track.setNotificationMarkerPosition(last); // do not throw exception on != AudioTrack.SUCCESS
         return track;
     }
 
@@ -391,9 +391,9 @@ public class Sound extends TTS {
 
         Sound.this.done.add(done);
 
-        track.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
+        final Runnable end = new Runnable() {
             @Override
-            public void onMarkerReached(AudioTrack t) {
+            public void run() {
                 // prevent strange android bug, with second beep when connecting android to external usb audio source.
                 // seems like this beep pushed to external audio source from sound cache.
                 if (track != null) {
@@ -403,11 +403,29 @@ public class Sound extends TTS {
                 if (done != null && Sound.this.done.contains(done))
                     done.run();
             }
+        };
 
-            @Override
-            public void onPeriodicNotification(AudioTrack track) {
+        if (track.getNotificationMarkerPosition() <= 0) { // some old bugged phones unable to set markers
+            try {
+                Method m = track.getClass().getDeclaredMethod("getNativeFrameCount");
+                m.setAccessible(true);
+                int len = (int) m.invoke(track) * 1000 / track.getSampleRate();
+                handler.postDelayed(end, len * 2);
+            } catch (Exception e) { // use 1 sec delay
+                handler.postDelayed(end, 1000);
             }
-        });
+        } else {
+            track.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
+                @Override
+                public void onMarkerReached(AudioTrack t) {
+                    end.run();
+                }
+
+                @Override
+                public void onPeriodicNotification(AudioTrack track) {
+                }
+            });
+        }
 
         track.play();
     }

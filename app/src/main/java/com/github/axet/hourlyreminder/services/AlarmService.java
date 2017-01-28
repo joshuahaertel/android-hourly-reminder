@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
@@ -78,6 +79,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     List<ReminderSet> reminders;
     PowerManager.WakeLock wl;
     PowerManager.WakeLock wlCpu;
+    Handler handler = new Handler();
 
     public AlarmService() {
         super();
@@ -642,11 +644,18 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
         if (isScreenOn == false) {
             wakeClose();
-            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "MyLock");
-            wl.acquire(10000);
+            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, getString(R.string.app_name) + "_wakelock");
+            wl.acquire();
 
-            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyCpuLock");
-            wlCpu.acquire(10000);
+            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock");
+            wlCpu.acquire();
+
+            handler.postDelayed(new Runnable() { // old phones crash on handle wl.acquire(10000)
+                @Override
+                public void run() {
+                    wakeClose();
+                }
+            }, 10000);
         }
     }
 
