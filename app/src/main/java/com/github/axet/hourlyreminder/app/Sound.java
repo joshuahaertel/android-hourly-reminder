@@ -191,7 +191,7 @@ public class Sound extends TTS {
                 AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT,
                 stereo * (Short.SIZE / 8), AudioTrack.MODE_STREAM);
         track.write(samples, 0, stereo);
-        //track.setNotificationMarkerPosition(last); // do not throw exception on != AudioTrack.SUCCESS
+        track.setNotificationMarkerPosition(last); // do not throw exception on != AudioTrack.SUCCESS
         return track;
     }
 
