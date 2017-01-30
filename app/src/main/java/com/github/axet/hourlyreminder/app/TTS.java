@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
@@ -27,6 +26,8 @@ public class TTS extends SoundConfig {
 
     public static final int DELAYED_DELAY = 5000;
 
+    public static final String KEY_PARAM_VOLUME = "volume"; // TextToSpeech.Engine.KEY_PARAM_VOLUME
+
     TextToSpeech tts;
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
     boolean restart; // restart tts once if failed. on apk upgrade tts failed connection.
@@ -34,27 +35,34 @@ public class TTS extends SoundConfig {
 
     public TTS(Context context) {
         super(context);
-
         ttsCreate();
     }
 
     void ttsCreate() {
+        final Runnable create = new Runnable() {
+            @Override
+            public void run() {
+                tts.setLanguage(Locale.US);
+
+                if (Build.VERSION.SDK_INT >= 21) {
+                    tts.setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(SOUND_CHANNEL)
+                            .setContentType(SOUND_TYPE)
+                            .build());
+                }
+
+                if (delayed != null) {
+                    delayed.run();
+                    handler.removeCallbacks(delayed);
+                    delayed = null;
+                }
+            }
+        };
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
                 if (status != TextToSpeech.ERROR) {
-                    tts.setLanguage(Locale.US);
-
-                    if (Build.VERSION.SDK_INT >= 21) {
-                        tts.setAudioAttributes(new AudioAttributes.Builder()
-                                .setUsage(SOUND_CHANNEL)
-                                .setContentType(SOUND_TYPE)
-                                .build());
-                    }
-
-                    if (delayed != null) {
-                        delayed.run();
-                    }
+                    handler.post(create); // some unknown manufacturer phones can be called before tts = new ... initialized
                 }
             }
         });
@@ -259,7 +267,7 @@ public class TTS extends SoundConfig {
         } else {
             HashMap<String, String> params = new HashMap<>();
             params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(SOUND_STREAM));
-            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(getVolume()));
+            params.put(KEY_PARAM_VOLUME, Float.toString(getVolume()));
             params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params) != TextToSpeech.SUCCESS) {
                 return false;
@@ -268,5 +276,4 @@ public class TTS extends SoundConfig {
         restart = false;
         return true;
     }
-
 }
