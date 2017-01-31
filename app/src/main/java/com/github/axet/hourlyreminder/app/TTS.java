@@ -1,6 +1,9 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.os.Build;
@@ -28,20 +31,19 @@ public class TTS extends SoundConfig {
 
     public static final String KEY_PARAM_VOLUME = "volume"; // TextToSpeech.Engine.KEY_PARAM_VOLUME
 
+    public static final String TTS_INIT = SoundConfig.class.getCanonicalName() + "_TTS_INIT";
+
     TextToSpeech tts;
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
     boolean restart; // restart tts once if failed. on apk upgrade tts failed connection.
     Set<Runnable> done = new HashSet<>(); // in case sound was canceled during play
+    BroadcastReceiver init; // StrongPhoneQ4 crashes with null pointers, use broadcast receiver
 
     public TTS(Context context) {
         super(context);
-        ttsCreate();
-    }
-
-    void ttsCreate() {
-        final Runnable create = new Runnable() {
+        init = new BroadcastReceiver() {
             @Override
-            public void run() {
+            public void onReceive(Context context, Intent intent) {
                 tts.setLanguage(Locale.US);
 
                 if (Build.VERSION.SDK_INT >= 21) {
@@ -58,11 +60,20 @@ public class TTS extends SoundConfig {
                 }
             }
         };
+        IntentFilter ff = new IntentFilter();
+        ff.addAction(TTS_INIT);
+        context.registerReceiver(init, ff);
+        ttsCreate();
+    }
+
+    void ttsCreate() {
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+            Context c = context;
+
             @Override
             public void onInit(int status) {
                 if (status != TextToSpeech.ERROR) {
-                    handler.post(create); // some unknown manufacturer phones can be called before tts = new ... initialized
+                    c.sendBroadcast(new Intent(TTS_INIT));
                 }
             }
         });
@@ -72,6 +83,10 @@ public class TTS extends SoundConfig {
         if (tts != null) {
             tts.shutdown();
             tts = null;
+        }
+        if (init != null) {
+            context.unregisterReceiver(init);
+            init = null;
         }
         if (delayed != null) {
             handler.removeCallbacks(delayed);
