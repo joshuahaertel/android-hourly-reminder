@@ -1,9 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.os.Build;
@@ -37,63 +34,43 @@ public class TTS extends SoundConfig {
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
     boolean restart; // restart tts once if failed. on apk upgrade tts failed connection.
     Set<Runnable> done = new HashSet<>(); // in case sound was canceled during play
-    BroadcastReceiver init; // StrongPhoneQ4 crashes with ZygoteInit callstack, use broadcast receiver
-
-    public static class TTSInit implements TextToSpeech.OnInitListener {
-        Context context;
-
-        public TTSInit(Context c) {
-            context = c;
-        }
-
-        @Override
-        public void onInit(int status) {
-            context.sendBroadcast(new Intent(TTS_INIT).putExtra("status", status));
-        }
-    }
 
     public TTS(Context context) {
         super(context);
-        init = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                int status = intent.getIntExtra("status", TextToSpeech.ERROR);
-                if (status != TextToSpeech.ERROR) {
-                    tts.setLanguage(Locale.US);
-
-                    if (Build.VERSION.SDK_INT >= 21) {
-                        tts.setAudioAttributes(new AudioAttributes.Builder()
-                                .setUsage(SOUND_CHANNEL)
-                                .setContentType(SOUND_TYPE)
-                                .build());
-                    }
-
-                    if (delayed != null) {
-                        delayed.run();
-                        handler.removeCallbacks(delayed);
-                        delayed = null;
-                    }
-                }
-            }
-        };
-        IntentFilter ff = new IntentFilter();
-        ff.addAction(TTS_INIT);
-        context.registerReceiver(init, ff);
         ttsCreate();
     }
 
     void ttsCreate() {
-        tts = new TextToSpeech(context, new TTSInit(context));
+        tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (tts == null)
+                    return; // already been closed. happens on StrongPhoneQ4 crashes with ZygoteInit callstack
+                if (status != TextToSpeech.SUCCESS)
+                    return;
+
+                tts.setLanguage(Locale.US);
+
+                if (Build.VERSION.SDK_INT >= 21) {
+                    tts.setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(SOUND_CHANNEL)
+                            .setContentType(SOUND_TYPE)
+                            .build());
+                }
+
+                if (delayed != null) {
+                    delayed.run();
+                    handler.removeCallbacks(delayed);
+                    delayed = null;
+                }
+            }
+        });
     }
 
     public void close() {
         if (tts != null) {
             tts.shutdown();
             tts = null;
-        }
-        if (init != null) {
-            context.unregisterReceiver(init);
-            init = null;
         }
         if (delayed != null) {
             handler.removeCallbacks(delayed);
