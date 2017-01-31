@@ -44,10 +44,10 @@ public class TTS extends SoundConfig {
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if (tts == null)
-                    return; // already been closed. happens on StrongPhoneQ4 crashes with ZygoteInit callstack
                 if (status != TextToSpeech.SUCCESS)
                     return;
+                if (tts == null)
+                    return; // already been closed. happens on StrongPhoneQ4 crashes with ZygoteInit callstack
 
                 tts.setLanguage(Locale.US);
 
