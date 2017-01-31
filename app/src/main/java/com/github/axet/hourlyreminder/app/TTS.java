@@ -37,26 +37,42 @@ public class TTS extends SoundConfig {
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
     boolean restart; // restart tts once if failed. on apk upgrade tts failed connection.
     Set<Runnable> done = new HashSet<>(); // in case sound was canceled during play
-    BroadcastReceiver init; // StrongPhoneQ4 crashes with null pointers, use broadcast receiver
+    BroadcastReceiver init; // StrongPhoneQ4 crashes with ZygoteInit callstack, use broadcast receiver
+
+    public static class TTSInit implements TextToSpeech.OnInitListener {
+        Context context;
+
+        public TTSInit(Context c) {
+            context = c;
+        }
+
+        @Override
+        public void onInit(int status) {
+            context.sendBroadcast(new Intent(TTS_INIT).putExtra("status", status));
+        }
+    }
 
     public TTS(Context context) {
         super(context);
         init = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                tts.setLanguage(Locale.US);
+                int status = intent.getIntExtra("status", TextToSpeech.ERROR);
+                if (status != TextToSpeech.ERROR) {
+                    tts.setLanguage(Locale.US);
 
-                if (Build.VERSION.SDK_INT >= 21) {
-                    tts.setAudioAttributes(new AudioAttributes.Builder()
-                            .setUsage(SOUND_CHANNEL)
-                            .setContentType(SOUND_TYPE)
-                            .build());
-                }
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        tts.setAudioAttributes(new AudioAttributes.Builder()
+                                .setUsage(SOUND_CHANNEL)
+                                .setContentType(SOUND_TYPE)
+                                .build());
+                    }
 
-                if (delayed != null) {
-                    delayed.run();
-                    handler.removeCallbacks(delayed);
-                    delayed = null;
+                    if (delayed != null) {
+                        delayed.run();
+                        handler.removeCallbacks(delayed);
+                        delayed = null;
+                    }
                 }
             }
         };
@@ -67,16 +83,7 @@ public class TTS extends SoundConfig {
     }
 
     void ttsCreate() {
-        tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
-            Context c = context;
-
-            @Override
-            public void onInit(int status) {
-                if (status != TextToSpeech.ERROR) {
-                    c.sendBroadcast(new Intent(TTS_INIT));
-                }
-            }
-        });
+        tts = new TextToSpeech(context, new TTSInit(context));
     }
 
     public void close() {
