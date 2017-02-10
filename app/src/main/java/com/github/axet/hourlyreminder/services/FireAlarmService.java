@@ -199,6 +199,20 @@ public class FireAlarmService extends Service implements SensorEventListener {
         }
     }
 
+    public static void dismissIfActiveAlarm(Context context, long settime) {
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
+        if (json.isEmpty())
+            return;
+        FireAlarm alarm = new FireAlarm(json);
+        if (alarm.settime == settime) { // same alarm, dismiss
+            context.stopService(new Intent(context, FireAlarmService.class));
+            SharedPreferences.Editor edit = shared.edit();
+            edit.remove(HourlyApplication.PREFERENCE_ACTIVE_ALARM);
+            edit.commit();
+        }
+    }
+
     public static void dismissActiveAlarm(Context context) {
         context.stopService(new Intent(context, FireAlarmService.class));
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);

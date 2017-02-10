@@ -138,7 +138,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     long time = intent.getLongExtra("time", 0);
                     tomorrow(time);
                 } else if (action.equals(DISMISS)) {
-                    FireAlarmService.dismissActiveAlarm(this);
+                    String json = intent.getStringExtra("alarm");
+                    if (json != null) { // dismiss active alarm
+                        FireAlarmService.dismissActiveAlarm(this);
+                    } else { // dismiss missed alarm (can interferance with current active alarm
+                        long time = intent.getLongExtra("time", 0);
+                        FireAlarmService.dismissIfActiveAlarm(this, time);
+                    }
                 } else if (action.equals(ALARM)) {
                     long time = intent.getLongExtra("time", 0);
                     soundAlarm(time);
@@ -607,7 +613,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 auto = ALARM_SNOOZE_AUTO_OFF;
 
             PendingIntent button = PendingIntent.getService(context, 0,
-                    new Intent(context, AlarmService.class).setAction(AlarmService.DISMISS),
+                    new Intent(context, AlarmService.class).setAction(AlarmService.DISMISS).putExtra("time", settime),
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
 
             PendingIntent main = PendingIntent.getActivity(context, 0,
