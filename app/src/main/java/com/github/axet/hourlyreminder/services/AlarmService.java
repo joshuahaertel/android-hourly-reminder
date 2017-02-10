@@ -139,12 +139,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     tomorrow(time);
                 } else if (action.equals(DISMISS)) {
                     String json = intent.getStringExtra("alarm");
-                    if (json != null) { // dismiss active alarm
-                        FireAlarmService.dismissActiveAlarm(this);
-                    } else { // dismiss missed alarm (can interferance with current active alarm
-                        long time = intent.getLongExtra("time", 0);
-                        FireAlarmService.dismissIfActiveAlarm(this, time);
-                    }
+                    FireAlarmService.dismissActiveAlarm(this);
                 } else if (action.equals(ALARM)) {
                     long time = intent.getLongExtra("time", 0);
                     soundAlarm(time);
@@ -612,10 +607,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (m > 0 || snoozed)
                 auto = ALARM_SNOOZE_AUTO_OFF;
 
-            PendingIntent button = PendingIntent.getService(context, 0,
-                    new Intent(context, AlarmService.class).setAction(AlarmService.DISMISS).putExtra("time", settime),
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-
             PendingIntent main = PendingIntent.getActivity(context, 0,
                     new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", settime),
                     PendingIntent.FLAG_UPDATE_CURRENT);
@@ -632,7 +623,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     .setContentTitle(context.getString(R.string.Alarm))
                     .setContentText(text)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-                    .setDeleteIntent(button)
                     .setContent(view);
 
             if (Build.VERSION.SDK_INT < 11)
