@@ -606,6 +606,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (m > 0 || snoozed)
                 auto = ALARM_SNOOZE_AUTO_OFF;
 
+            PendingIntent button = PendingIntent.getService(context, 0,
+                    new Intent(context, AlarmService.class).setAction(AlarmService.DISMISS),
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+
             PendingIntent main = PendingIntent.getActivity(context, 0,
                     new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", settime),
                     PendingIntent.FLAG_UPDATE_CURRENT);
@@ -622,6 +626,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     .setContentTitle(context.getString(R.string.Alarm))
                     .setContentText(text)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                    .setDeleteIntent(button)
                     .setContent(view);
 
             if (Build.VERSION.SDK_INT < 11)
