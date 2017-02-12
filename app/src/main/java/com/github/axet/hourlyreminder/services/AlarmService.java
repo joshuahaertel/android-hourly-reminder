@@ -513,10 +513,16 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             SoundConfig.Silenced s = sound.playList(rlist, time, new Runnable() {
                 @Override
                 public void run() {
-                    wakeClose();
+                    ; // do nothing
                 }
             });
             sound.silencedToast(s, time);
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    wakeClose();
+                }
+            }, 3000); // screen off after 3 seconds, even if playlist keep playing
         }
 
         if (alarm != null || rlist != null) {
