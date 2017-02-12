@@ -280,11 +280,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         sound = new Sound(getActivity());
 
-        Preference advanced = findPreference("advanced");
+        PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 23 SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 23) {
-            getPreferenceScreen().removePreference(advanced); // we have only one advanced option 'alarm', remove whole group
+            advanced.removePreference(alarm);
         } else {
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
             alarm.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
