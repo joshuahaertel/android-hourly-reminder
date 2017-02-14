@@ -69,7 +69,10 @@ public class ReminderSet extends WeekSet {
         for (int hour = 0; hour < 24; hour++) {
             String h = Reminder.format(hour);
             if (hours.contains(h)) {
-                String next = Reminder.format(hour + 1);
+                int hh = hour + 1;
+                if (hh > 23)
+                    hh = 0;
+                String next = Reminder.format(hh);
 
                 int max = repeat;
 
