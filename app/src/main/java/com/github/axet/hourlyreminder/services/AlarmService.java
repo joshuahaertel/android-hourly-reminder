@@ -80,6 +80,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     PowerManager.WakeLock wl;
     PowerManager.WakeLock wlCpu;
     Handler handler = new Handler();
+    Runnable wakeClose = new Runnable() {
+        @Override
+        public void run() {
+            wakeClose();
+        }
+    };
 
     public AlarmService() {
         super();
@@ -517,12 +523,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             });
             sound.silencedToast(s, time);
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    wakeClose();
-                }
-            }, 3000); // screen off after 3 seconds, even if playlist keep playing
+            handler.removeCallbacks(wakeClose); // remove previous close
+            handler.postDelayed(wakeClose, 3000); // screen off after 3 seconds, even if playlist keep playing
         }
 
         if (alarm != null || rlist != null) {
@@ -657,16 +659,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock");
             wlCpu.acquire();
 
-            handler.postDelayed(new Runnable() { // old phones crash on handle wl.acquire(10000)
-                @Override
-                public void run() {
-                    wakeClose();
-                }
-            }, 10000);
+            handler.postDelayed(wakeClose, 10000); // old phones crash on handle wl.acquire(10000)
         }
     }
 
     void wakeClose() {
+        handler.removeCallbacks(wakeClose);
         if (wl != null) {
             if (wl.isHeld())
                 wl.release();
