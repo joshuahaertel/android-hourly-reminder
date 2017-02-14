@@ -476,7 +476,7 @@ public class Sound extends TTS {
 
         if (increaseVolume != null)
             increaseVolume.stop();
-        increaseVolume = new FadeVolume(inc, 1) {
+        increaseVolume = new FadeVolume(startVolume, inc, 1) {
             @Override
             public void step(float vol) {
                 try {
@@ -486,8 +486,6 @@ public class Sound extends TTS {
                 }
             }
         };
-        increaseVolume.startVolume = startVolume;
-        increaseVolume.rest = 1 - startVolume;
         increaseVolume.run();
 
         player.start();

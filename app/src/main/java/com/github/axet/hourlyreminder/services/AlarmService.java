@@ -523,7 +523,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             });
             sound.silencedToast(s, time);
-            handler.removeCallbacks(wakeClose); // remove previous close
+            handler.removeCallbacks(wakeClose); // remove previous wakeClose actions
             handler.postDelayed(wakeClose, 3000); // screen off after 3 seconds, even if playlist keep playing
         }
 
