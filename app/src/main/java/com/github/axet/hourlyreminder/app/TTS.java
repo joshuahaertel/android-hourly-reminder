@@ -114,7 +114,7 @@ public class TTS extends SoundConfig {
 
                 @Override
                 public void onDone(String utteranceId) {
-                    clear.run();
+                    handler.post(clear); // from different thread
                 }
 
                 @Override

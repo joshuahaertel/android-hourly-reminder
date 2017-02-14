@@ -18,6 +18,7 @@ import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.sound.FadeVolume;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.basics.Alarm;
 import com.github.axet.hourlyreminder.basics.ReminderSet;
@@ -40,7 +41,7 @@ public class Sound extends TTS {
     ToneGenerator tone;
     MediaPlayer player;
     AudioTrack track;
-    Runnable increaseVolume;
+    FadeVolume increaseVolume;
     Runnable loop; // loop preventer
 
     public static class Playlist {
@@ -458,7 +459,6 @@ public class Sound extends TTS {
         if (inc == 0) {
             player.setVolume(getVolume(), getVolume());
             player.start();
-
             return;
         }
 
@@ -475,54 +475,21 @@ public class Sound extends TTS {
             startVolume = 0;
 
         if (increaseVolume != null)
-            handler.removeCallbacks(increaseVolume);
-
-        increaseVolume = new Runnable() {
-            int step = 0;
-            int steps = 50;
-            int delay = 100;
-            // we start from startVolume, rest - how much we should increase
-            float rest = 0;
-
-            {
-                steps = (inc / delay);
-                rest = 1f - startVolume;
-            }
-
+            increaseVolume.stop();
+        increaseVolume = new FadeVolume(inc, 1) {
             @Override
-            public void run() {
-                if (player == null)
-                    return;
-
-                float log1 = (float) (Math.log(steps - step) / Math.log(steps));
-                // volume 0..1
-                float vol = 1 - log1;
-
-                // actual volume
-                float restvol = startVolume + rest * vol;
-
+            public void step(float vol) {
                 try {
-                    player.setVolume(restvol, restvol);
-                } catch (IllegalStateException e) {
+                    player.setVolume(vol, vol);
+                } catch (IllegalStateException ignore) {
                     // ignore. player probably already closed
-                    return;
                 }
-
-                step++;
-
-                if (step >= steps) {
-                    // should be clear anyway
-                    handler.removeCallbacks(increaseVolume);
-                    increaseVolume = null;
-                    Log.d(TAG, "increaseVolume done");
-                    return;
-                }
-
-                handler.postDelayed(increaseVolume, delay);
             }
         };
-
+        increaseVolume.startVolume = startVolume;
+        increaseVolume.rest = 1 - startVolume;
         increaseVolume.run();
+
         player.start();
     }
 
@@ -678,7 +645,7 @@ public class Sound extends TTS {
 
     void playerCl() {
         if (increaseVolume != null) {
-            handler.removeCallbacks(increaseVolume);
+            increaseVolume.stop();
             increaseVolume = null;
         }
 
@@ -759,7 +726,7 @@ public class Sound extends TTS {
             @Override
             public void run() {
                 if (rr.speech) {
-                    playSpeech(alarm.settime, afterOnce);
+                    playSpeech(System.currentTimeMillis(), afterOnce);
                 } else {
                     afterOnce.run();
                 }
