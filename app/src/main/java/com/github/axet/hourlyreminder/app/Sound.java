@@ -406,7 +406,12 @@ public class Sound extends TTS {
             }
         };
 
-        if (track.getNotificationMarkerPosition() <= 0) { // some old bugged phones unable to set markers
+        int mark = 0;
+        try {
+            mark = track.getNotificationMarkerPosition();
+        } catch (IllegalStateException ignore) { // Unable to retrieve AudioTrack pointer for getMarkerPosition()
+        }
+        if (mark <= 0) { // some old bugged phones unable to set markers
             try {
                 Method m = track.getClass().getDeclaredMethod("getNativeFrameCount");
                 m.setAccessible(true);
@@ -478,6 +483,7 @@ public class Sound extends TTS {
             increaseVolume.stop();
         increaseVolume = new FadeVolume(inc) {
             float rest = 1f - startVolume;
+
             @Override
             public boolean step(float vol) {
                 try {
