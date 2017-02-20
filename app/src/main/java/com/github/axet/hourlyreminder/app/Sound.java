@@ -406,7 +406,12 @@ public class Sound extends TTS {
             }
         };
 
-        if (track.getNotificationMarkerPosition() <= 0) { // some old bugged phones unable to set markers
+        int mark = 0;
+        try {
+            mark = track.getNotificationMarkerPosition();
+        } catch (IllegalStateException ignore) { // Unable to retrieve AudioTrack pointer for getMarkerPosition()
+        }
+        if (mark <= 0) { // some old bugged phones unable to set markers
             try {
                 Method m = track.getClass().getDeclaredMethod("getNativeFrameCount");
                 m.setAccessible(true);
@@ -476,13 +481,17 @@ public class Sound extends TTS {
 
         if (increaseVolume != null)
             increaseVolume.stop();
-        increaseVolume = new FadeVolume(startVolume, inc, 1) {
+        increaseVolume = new FadeVolume(inc) {
+            float rest = 1f - startVolume;
+
             @Override
-            public void step(float vol) {
+            public boolean step(float vol) {
                 try {
+                    vol = startVolume + rest * vol;
                     player.setVolume(vol, vol);
+                    return true;
                 } catch (IllegalStateException ignore) {
-                    // ignore. player probably already closed
+                    return false; // ignore. player probably already closed
                 }
             }
         };
