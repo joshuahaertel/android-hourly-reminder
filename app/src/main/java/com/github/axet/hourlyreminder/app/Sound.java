@@ -481,7 +481,7 @@ public class Sound extends TTS {
 
         if (increaseVolume != null)
             increaseVolume.stop();
-        increaseVolume = new FadeVolume(inc) {
+        increaseVolume = new FadeVolume(handler, inc) {
             float rest = 1f - startVolume;
 
             @Override
