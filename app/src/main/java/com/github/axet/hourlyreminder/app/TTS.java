@@ -41,11 +41,9 @@ public class TTS extends SoundConfig {
     }
 
     void ttsCreate() {
-        tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+        final Runnable create = new Runnable() {
             @Override
-            public void onInit(int status) {
-                if (status != TextToSpeech.SUCCESS)
-                    return;
+            public void run() {
                 if (tts == null)
                     return; // already been closed. happens on StrongPhoneQ4 crashes with ZygoteInit callstack
 
@@ -63,6 +61,14 @@ public class TTS extends SoundConfig {
                     handler.removeCallbacks(delayed);
                     delayed = null;
                 }
+            }
+        };
+        tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(final int status) {
+                if (status != TextToSpeech.SUCCESS)
+                    return;
+                handler.post(create);
             }
         });
     }
