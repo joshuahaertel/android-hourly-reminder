@@ -48,7 +48,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         }
 
         context.startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, ReminderSet.TYPE_NOTIFICATION)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, ReminderSet.DEFAULT_NOTIFICATION)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.Reminder))

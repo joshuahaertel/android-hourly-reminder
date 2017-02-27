@@ -17,7 +17,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class ReminderSet extends WeekSet {
-    public final static Uri DEFAULT_NOTIFICATION = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+    public static final int TYPE_NOTIFICATION = RingtoneManager.TYPE_NOTIFICATION;
+    public static final Uri DEFAULT_NOTIFICATION = RingtoneManager.getDefaultUri(TYPE_NOTIFICATION);
 
     public Set<String> hours; // actual hours selected
     public List<Reminder> list; // generated reminders (depend on repeat)
