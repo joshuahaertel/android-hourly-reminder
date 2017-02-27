@@ -378,6 +378,8 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             String title = HourlyApplication.getTitle(getActivity(), a.ringtoneValue);
             if (title == null)
                 title = HourlyApplication.getTitle(getActivity(), fallbackUri(null));
+            if (title == null)
+                title = "Built-in Tone Alarm"; // fall back, when here is no ringtones installed
             ringtoneValue.setText(title);
         }
 
@@ -477,7 +479,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                     uri = Uri.parse(a.ringtoneValue);
                 }
                 startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+                        .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, Alarm.TYPE_ALARM)
                         .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Alarm.DEFAULT_ALARM)
                         .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
                         .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.SelectAlarm)

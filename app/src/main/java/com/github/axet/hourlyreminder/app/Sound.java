@@ -39,6 +39,7 @@ public class Sound extends TTS {
     public static final String TAG = Sound.class.getSimpleName();
 
     ToneGenerator tone;
+    Runnable toneLoop;
     MediaPlayer player;
     AudioTrack track;
     FadeVolume increaseVolume;
@@ -159,10 +160,6 @@ public class Sound extends TTS {
 
         playerClose();
 
-        if (tone != null) {
-            tone.release();
-            tone = null;
-        }
         if (track != null) {
             track.release();
             track = null;
@@ -444,17 +441,28 @@ public class Sound extends TTS {
         if (player == null) {
             player = create(Alarm.DEFAULT_ALARM);
         }
-        if (player == null) {
-            if (tone != null) {
-                tone.release();
-            }
-            tone = new ToneGenerator(SOUND_STREAM, 100);
-            tone.startTone(ToneGenerator.TONE_CDMA_CALL_SIGNAL_ISDN_NORMAL);
+        if (player == null) { // last resort fallback
+            toneLoop = new Runnable() {
+                @Override
+                public void run() {
+                    long dur = tonePlay();
+                    handler.postDelayed(toneLoop, dur); // length of tone
+                }
+            };
+            toneLoop.run();
             return;
         }
         player.setLooping(true);
 
         startPlayer(player);
+    }
+
+    long tonePlay() {
+        if (tone != null)
+            tone.release();
+        tone = new ToneGenerator(SOUND_STREAM, 100);
+        tone.startTone(ToneGenerator.TONE_CDMA_CALL_SIGNAL_ISDN_NORMAL);
+        return 4000;
     }
 
     public void startPlayer(final MediaPlayer player) {
@@ -591,9 +599,9 @@ public class Sound extends TTS {
             player = create(ReminderSet.DEFAULT_NOTIFICATION);
         }
         if (player == null) {
-            Toast.makeText(context, context.getString(R.string.NoDefaultRingtone), Toast.LENGTH_SHORT).show();
+            long dur = tonePlay();
             if (done != null)
-                done.run();
+                handler.postDelayed(done, dur);
             return null;
         }
 
@@ -659,6 +667,17 @@ public class Sound extends TTS {
         if (loop != null) {
             handler.removeCallbacks(loop);
             loop = null;
+        }
+
+        if (toneLoop != null) {
+            handler.removeCallbacks(toneLoop);
+            toneLoop = null;
+        }
+
+        if (tone != null) {
+            tone.stopTone();
+            tone.release();
+            tone = null;
         }
 
         if (player != null) {

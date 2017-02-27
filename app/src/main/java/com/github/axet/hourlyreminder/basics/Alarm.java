@@ -13,7 +13,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class Alarm extends WeekTime {
-    public final static Uri DEFAULT_ALARM = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+    public static final int TYPE_ALARM = RingtoneManager.TYPE_ALARM;
+    public static final Uri DEFAULT_ALARM = RingtoneManager.getDefaultUri(TYPE_ALARM);
 
     public Alarm(Alarm copy) {
         super(copy);
