@@ -125,12 +125,11 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         }
     }
 
+    void selectRingtone(Uri uri) {
+    }
+
     String fallbackUri(Uri uri) {
-        if (uri != null) {
-            return uri.toString();
-        } else {
-            return Alarm.DEFAULT_ALARM.toString();
-        }
+        return null;
     }
 
     @Override
@@ -478,14 +477,10 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 if (!a.ringtoneValue.isEmpty()) {
                     uri = Uri.parse(a.ringtoneValue);
                 }
-                startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, Alarm.TYPE_ALARM)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Alarm.DEFAULT_ALARM)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.SelectAlarm)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), 0);
+                selectRingtone(uri);
             }
         });
+
         View ringtoneBrowse = view.findViewById(R.id.alarm_ringtone_browse);
         ringtoneBrowse.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -2,9 +2,13 @@ package com.github.axet.hourlyreminder.fragments;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +21,7 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.basics.Alarm;
+import com.github.axet.hourlyreminder.basics.ReminderSet;
 import com.github.axet.hourlyreminder.basics.WeekSet;
 import com.github.axet.hourlyreminder.basics.WeekTime;
 
@@ -25,6 +30,26 @@ import java.util.Collections;
 import java.util.List;
 
 public class AlarmsFragment extends WeekSetFragment {
+
+    public static void selectRingtone(Fragment context, Uri uri) {
+        // W/MediaPlayer: Couldn't open file on client side; trying server side:
+        // java.lang.SecurityException: Permission Denial: reading com.android.providers.media.MediaProvider uri content://media/external/audio/media/17722
+        // from pid=697, uid=10204
+        // requires android.permission.READ_EXTERNAL_STORAGE, or grantUriPermission()
+        //
+        // context.grantUriPermission("com.android.providers.media.MediaProvider", Uri.parse("content://media/external/images/media"), Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        if (uri == null) {
+            uri = ReminderSet.DEFAULT_NOTIFICATION;
+        }
+
+        context.startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, Alarm.TYPE_ALARM)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Alarm.DEFAULT_ALARM)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.SelectAlarm)
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), 0);
+    }
 
     List<Alarm> alarms = new ArrayList<>();
 
@@ -242,5 +267,19 @@ public class AlarmsFragment extends WeekSetFragment {
         Sound.Silenced s = sound.playAlarm((Alarm) a);
         sound.silencedToast(s, System.currentTimeMillis());
         return s;
+    }
+
+    @Override
+    String fallbackUri(Uri uri) {
+        if (uri != null) {
+            return uri.toString();
+        } else {
+            return Alarm.DEFAULT_ALARM.toString();
+        }
+    }
+
+    @Override
+    void selectRingtone(Uri uri) {
+        selectRingtone(this, uri);
     }
 }
