@@ -719,6 +719,7 @@ public class Sound extends TTS {
             @Override
             public void run() {
                 final Runnable restart = this;
+                done.add(restart);
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -729,7 +730,6 @@ public class Sound extends TTS {
                 }, 1000);
             }
         };
-        done.add(restart);
 
         final Runnable after = new Runnable() {
             @Override
