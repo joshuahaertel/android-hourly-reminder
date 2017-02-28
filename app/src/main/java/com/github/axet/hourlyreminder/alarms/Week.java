@@ -1,4 +1,4 @@
-package com.github.axet.hourlyreminder.basics;
+package com.github.axet.hourlyreminder.alarms;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -210,7 +210,10 @@ public class Week {
         return true;
     }
 
-    public String getDays() {
+    public String getDaysText() {
+        if (!weekdaysCheck) {
+            return context.getString(R.string.once);
+        }
         if (isEveryday(weekDaysValues)) {
             return context.getString(R.string.Everyday);
         }

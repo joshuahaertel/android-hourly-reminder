@@ -24,9 +24,9 @@ import com.github.axet.hourlyreminder.activities.MainActivity;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
-import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.basics.Reminder;
-import com.github.axet.hourlyreminder.basics.ReminderSet;
+import com.github.axet.hourlyreminder.alarms.Alarm;
+import com.github.axet.hourlyreminder.alarms.Reminder;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

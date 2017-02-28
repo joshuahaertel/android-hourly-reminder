@@ -172,6 +172,7 @@
     <string name="ToastTime">Time is %1$s</string>
 
     <!--Alarm-->
+    <string name="once">Once</string>
     <string name="Everyday">Everyday</string>
     <string name="Weekdays">Weekdays</string>
     <string name="DaysOfWeek">Weekdays</string>

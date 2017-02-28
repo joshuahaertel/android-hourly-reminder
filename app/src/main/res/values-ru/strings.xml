@@ -23,6 +23,9 @@
         <item quantity="other">%d секунд</item>
     </plurals>
 
+    <string name="once">Единожды</string>
+    <string name="Everyday">Каждый день</string>
+
     <string name="Alarm">Будильник</string>
     <string name="AlarmMissed">Будильник пропущен</string>
     <string name="AlarmMissedAfter">Будильник пропущен %1$s после %2$d минут</string>
@@ -30,7 +33,6 @@
     <string name="Cancel">Отмена</string>
     <string name="CustomAlarms">Будильник</string>
     <string name="DefaultRingtone">Оповещение по умолчанию</string>
-    <string name="Everyday">Каждый день</string>
     <string name="FailedTTS">Ошибка TTS повторно, пропускаем</string>
     <string name="FailedTTSRestar">Ошибка TTS повторно, перезапускаем</string>
     <string name="HourlyReminders">Оповещения</string>

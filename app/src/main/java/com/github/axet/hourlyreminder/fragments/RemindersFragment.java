@@ -23,8 +23,8 @@ import android.widget.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.basics.ReminderSet;
-import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
+import com.github.axet.hourlyreminder.alarms.WeekSet;
 import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
 
 import java.util.ArrayList;
@@ -186,19 +186,6 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
             }
         });
 
-        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
-        ringtoneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fragmentRequestRingtone = a;
-                Uri uri = null;
-                if (!a.ringtoneValue.isEmpty()) {
-                    uri = Uri.parse(a.ringtoneValue);
-                }
-                selectRingtone(RemindersFragment.this, uri);
-            }
-        });
-
         TextView every = (TextView) view.findViewById(R.id.alarm_every);
         every.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -293,6 +280,11 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         } else {
             return ReminderSet.DEFAULT_NOTIFICATION.toString();
         }
+    }
+
+    @Override
+    void selectRingtone(Uri uri) {
+        selectRingtone(RemindersFragment.this, uri);
     }
 
     @Override
