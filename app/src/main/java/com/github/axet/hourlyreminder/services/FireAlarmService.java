@@ -28,8 +28,8 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.AlarmActivity;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.basics.ReminderSet;
+import com.github.axet.hourlyreminder.alarms.Alarm;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;

@@ -20,9 +20,9 @@ import android.widget.Toast;
 
 import com.github.axet.androidlibrary.sound.FadeVolume;
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.basics.ReminderSet;
-import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.alarms.Alarm;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
+import com.github.axet.hourlyreminder.alarms.WeekSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
@@ -718,9 +718,18 @@ public class Sound extends TTS {
         final Runnable restart = new Runnable() {
             @Override
             public void run() {
-                playAlarm(alarm);
+                final Runnable restart = this;
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (done.contains(restart)) {
+                            playAlarm(alarm);
+                        }
+                    }
+                }, 1000);
             }
         };
+        done.add(restart);
 
         final Runnable after = new Runnable() {
             @Override

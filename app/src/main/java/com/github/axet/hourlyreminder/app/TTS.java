@@ -33,7 +33,7 @@ public class TTS extends SoundConfig {
     TextToSpeech tts;
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
     boolean restart; // restart tts once if failed. on apk upgrade tts failed connection.
-    Set<Runnable> done = new HashSet<>(); // in case sound was canceled during play
+    Set<Runnable> done = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
 
     public TTS(Context context) {
         super(context);

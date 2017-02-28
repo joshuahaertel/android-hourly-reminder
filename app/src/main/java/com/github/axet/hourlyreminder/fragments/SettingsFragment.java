@@ -40,8 +40,8 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
-import com.github.axet.hourlyreminder.basics.Reminder;
-import com.github.axet.hourlyreminder.basics.ReminderSet;
+import com.github.axet.hourlyreminder.alarms.Reminder;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
 
@@ -85,7 +85,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             if (preference.getKey().equals(HourlyApplication.PREFERENCE_DAYS)) {
                 Reminder r = new Reminder(preference.getContext(), (Set) value);
-                preference.setSummary(r.getDays());
+                preference.setSummary(r.getDaysText());
                 return true;
             }
 

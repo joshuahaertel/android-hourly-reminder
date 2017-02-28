@@ -16,11 +16,11 @@ import android.widget.Toast;
 
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.basics.Reminder;
-import com.github.axet.hourlyreminder.basics.ReminderSet;
-import com.github.axet.hourlyreminder.basics.Week;
-import com.github.axet.hourlyreminder.basics.WeekTime;
+import com.github.axet.hourlyreminder.alarms.Alarm;
+import com.github.axet.hourlyreminder.alarms.Reminder;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
+import com.github.axet.hourlyreminder.alarms.Week;
+import com.github.axet.hourlyreminder.alarms.WeekTime;
 import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 

@@ -16,7 +16,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.basics.Reminder;
+import com.github.axet.hourlyreminder.alarms.Reminder;
 
 import java.util.Arrays;
 import java.util.Set;

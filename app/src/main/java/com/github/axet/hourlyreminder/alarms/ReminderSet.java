@@ -1,4 +1,4 @@
-package com.github.axet.hourlyreminder.basics;
+package com.github.axet.hourlyreminder.alarms;
 
 import android.content.Context;
 import android.media.RingtoneManager;

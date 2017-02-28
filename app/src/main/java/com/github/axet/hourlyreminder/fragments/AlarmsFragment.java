@@ -20,10 +20,10 @@ import android.widget.TimePicker;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.basics.ReminderSet;
-import com.github.axet.hourlyreminder.basics.WeekSet;
-import com.github.axet.hourlyreminder.basics.WeekTime;
+import com.github.axet.hourlyreminder.alarms.Alarm;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
+import com.github.axet.hourlyreminder.alarms.WeekSet;
+import com.github.axet.hourlyreminder.alarms.WeekTime;
 
 import java.util.ArrayList;
 import java.util.Collections;

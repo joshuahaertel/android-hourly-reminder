@@ -41,9 +41,8 @@ import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.app.Storage;
-import com.github.axet.hourlyreminder.basics.Alarm;
-import com.github.axet.hourlyreminder.basics.Week;
-import com.github.axet.hourlyreminder.basics.WeekSet;
+import com.github.axet.hourlyreminder.alarms.Week;
+import com.github.axet.hourlyreminder.alarms.WeekSet;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -401,17 +400,16 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         });
         speech.setChecked(a.speech);
 
-        final CheckBox alarmRingtone = (CheckBox) view.findViewById(R.id.alarm_ringtone);
         final View alarmRingtonePlay = view.findViewById(R.id.alarm_ringtone_play);
 
         if (preview) {
             previewCancel();
         }
 
-        alarmRingtone.setOnClickListener(new View.OnClickListener() {
+        ringtone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.ringtone = alarmRingtone.isChecked();
+                a.ringtone = ringtone.isChecked();
                 save(a);
             }
         });
@@ -601,7 +599,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             enable.jumpDrawablesToCurrentState();
 
         TextView days = (TextView) view.findViewById(R.id.alarm_compact_first);
-        days.setText(a.getDays());
+        days.setText(a.getDaysText());
 
         view.setOnClickListener(new View.OnClickListener() {
             @Override
