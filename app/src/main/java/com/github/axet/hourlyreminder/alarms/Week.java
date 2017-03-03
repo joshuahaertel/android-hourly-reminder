@@ -210,7 +210,7 @@ public class Week {
         return true;
     }
 
-    public String getDaysText() {
+    public String formatDays() {
         if (!weekdaysCheck) {
             return context.getString(R.string.once);
         }

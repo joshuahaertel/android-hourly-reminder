@@ -85,7 +85,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             if (preference.getKey().equals(HourlyApplication.PREFERENCE_DAYS)) {
                 Reminder r = new Reminder(preference.getContext(), (Set) value);
-                preference.setSummary(r.getDaysText());
+                preference.setSummary(r.formatDays());
                 return true;
             }
 
