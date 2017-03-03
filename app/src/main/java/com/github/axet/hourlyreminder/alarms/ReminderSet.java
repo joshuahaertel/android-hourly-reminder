@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.RingtoneManager;
 import android.net.Uri;
 
+import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 
 import org.json.JSONArray;
@@ -62,6 +63,14 @@ public class ReminderSet extends WeekSet {
 
     public String format() {
         return HourlyApplication.getHours2String(context, new ArrayList<>(hours));
+    }
+
+    @Override
+    public String formatDays() {
+        if (!weekdaysCheck) {
+            return context.getString(R.string.Everyday);
+        }
+        return super.formatDays();
     }
 
     public void load(Set<String> hours) {

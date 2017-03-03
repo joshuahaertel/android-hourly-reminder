@@ -599,7 +599,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             enable.jumpDrawablesToCurrentState();
 
         TextView days = (TextView) view.findViewById(R.id.alarm_compact_first);
-        days.setText(a.getDaysText());
+        days.setText(a.formatDays());
 
         view.setOnClickListener(new View.OnClickListener() {
             @Override
