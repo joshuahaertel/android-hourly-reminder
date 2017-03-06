@@ -233,7 +233,7 @@ public class TTS extends SoundConfig {
 
         // english requres zero minutes
         Locale en = new Locale("en");
-        if (locale.toString().startsWith(en.toString()) || speak.isEmpty()) {
+        if (locale.toString().startsWith(en.toString())) {
             if (speakAMPMFlag) {
                 speakAMPM = HourlyApplication.getHour4String(context, en, hour);
             }
@@ -257,6 +257,13 @@ public class TTS extends SoundConfig {
                 }
             }
             tts.setLanguage(en);
+        }
+
+        if (speak.isEmpty()) { // no adopted translation
+            speakHour = String.format("%d", h);
+            speakMinute = String.format("%d", min);
+            speak = speakHour + " " + speakMinute;
+            tts.setLanguage(locale);
         }
 
         Log.d(TAG, speak);
