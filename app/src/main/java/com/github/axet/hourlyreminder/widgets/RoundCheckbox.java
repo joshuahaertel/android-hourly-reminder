@@ -33,38 +33,18 @@ public class RoundCheckbox extends AppCompatCheckBox {
 
     Property<RoundCheckbox, Float> STATE_ANIMATOR = null;
 
-    {
-        if (Build.VERSION.SDK_INT >= 14) {
-            STATE_ANIMATOR = new Property<RoundCheckbox, Float>(Float.class, "stateAnimator") {
-                @Override
-                public Float get(RoundCheckbox object) {
-                    return object.stateAnimator;
-                }
-
-                @Override
-                public void set(RoundCheckbox object, Float value) {
-                    object.stateAnimator = value;
-                    object.invalidate();
-                }
-            };
-        }
-    }
-
     public RoundCheckbox(Context context) {
         super(context);
-
         create();
     }
 
     public RoundCheckbox(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-
         create();
     }
 
     public RoundCheckbox(Context context, AttributeSet attrs) {
         super(context, attrs);
-
         create();
     }
 
@@ -152,8 +132,19 @@ public class RoundCheckbox extends AppCompatCheckBox {
     @Override
     public void setChecked(boolean checked) {
         super.setChecked(checked);
-
         if (Build.VERSION.SDK_INT >= 14) {
+            STATE_ANIMATOR = new Property<RoundCheckbox, Float>(Float.class, "stateAnimator") {
+                @Override
+                public Float get(RoundCheckbox object) {
+                    return object.stateAnimator;
+                }
+
+                @Override
+                public void set(RoundCheckbox object, Float value) {
+                    object.stateAnimator = value;
+                    object.invalidate();
+                }
+            };
             animator = ObjectAnimator.ofFloat(this, STATE_ANIMATOR, 1f);
             animator.setDuration(500);
             if (Build.VERSION.SDK_INT >= 18)
