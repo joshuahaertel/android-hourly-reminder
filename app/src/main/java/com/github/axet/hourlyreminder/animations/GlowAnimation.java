@@ -44,7 +44,7 @@ public class GlowAnimation extends StepAnimation {
         } else {
             k = i * 2;
         }
-        text.setShadowLayer(40 * k, 0, 0, ((int) (k * 0xff) << 24 | accent));
+        text.setShadowLayer(25 * k, 0, 0, ((int) (k * 0xff) << 24 | accent)); // Blur radius out of 0-25 pixel bound
     }
 
     @Override
