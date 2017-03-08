@@ -5,10 +5,15 @@ import android.os.Build;
 import android.os.Handler;
 import android.view.View;
 import android.view.animation.Transformation;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.github.axet.androidlibrary.animations.MarginAnimation;
+import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
+
+import org.w3c.dom.Text;
 
 public class AlarmAnimation extends MarginAnimation {
     ListView list;
@@ -151,5 +156,45 @@ public class AlarmAnimation extends MarginAnimation {
         view.setVisibility(expand ? View.VISIBLE : View.GONE);
         compact.setVisibility(expand ? View.GONE : View.VISIBLE);
         bottom.setVisibility(expand ? View.VISIBLE : View.GONE);
+
+        if (expand) {
+            final int accent = ThemeUtils.getThemeColor(convertView.getContext(), R.attr.colorAccent);
+
+            final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
+            GlowAnimation a = new GlowAnimation(time) {
+                @Override
+                public void end() {
+                    super.end();
+                    time.setTextColor(0xff000000 | accent);
+                }
+            };
+            a.startAnimation(time);
+
+            final ImageView everyT = (ImageView) convertView.findViewById(R.id.alarm_every_image);
+            final TextView every = (TextView) convertView.findViewById(R.id.alarm_every);
+            if (every != null) {
+                GlowAnimation aa = new GlowAnimation(every) {
+                    @Override
+                    public void end() {
+                        super.end();
+                        every.setTextColor(0xff000000 | accent);
+                        everyT.setColorFilter(0xff000000| accent);
+                    }
+                };
+                aa.startAnimation(every);
+            }
+
+            TextView browse = (TextView) convertView.findViewById(R.id.alarm_ringtone_browse);
+            if (browse != null) {
+                GlowAnimation aa = new GlowAnimation(browse);
+                aa.startAnimation(browse);
+            }
+
+            TextView ring = (TextView) convertView.findViewById(R.id.alarm_ringtone_value);
+            if (ring != null) {
+                GlowAnimation aa = new GlowAnimation(ring);
+                aa.startAnimation(ring);
+            }
+        }
     }
 }
