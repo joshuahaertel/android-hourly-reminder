@@ -8,7 +8,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
 import android.database.DataSetObserver;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -19,6 +22,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.SwitchCompat;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -588,16 +592,6 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     public void fillCompact(final View view, final WeekSet a, boolean animate) {
         TextView time = (TextView) view.findViewById(R.id.alarm_time);
         time.setClickable(false);
-        time.setTextColor(ThemeUtils.getThemeColor(getContext(), android.R.attr.textColorSecondary));
-
-        TextView everyT = (TextView) view.findViewById(R.id.alarm_every);
-        if (everyT != null) {
-            everyT.setTextColor(ThemeUtils.getThemeColor(getContext(), android.R.attr.textColorSecondary));
-        }
-        ImageView every = (ImageView) view.findViewById(R.id.alarm_every_image);
-        if (every != null) {
-            every.setColorFilter(0x9b9b9b9b);
-        }
 
         final SwitchCompat enable = (SwitchCompat) view.findViewById(R.id.alarm_enable);
         enable.setOnClickListener(new View.OnClickListener() {

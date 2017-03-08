@@ -1,6 +1,7 @@
 package com.github.axet.hourlyreminder.animations;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.view.View;
@@ -82,6 +83,10 @@ public class AlarmAnimation extends MarginAnimation {
             partial |= convertView.getTop() < paddedTop;
             partial |= convertView.getBottom() > paddedBottom;
         }
+
+        if (!expand) {
+            colorOff();
+        }
     }
 
     @Override
@@ -138,7 +143,6 @@ public class AlarmAnimation extends MarginAnimation {
     @Override
     public void restore() {
         super.restore();
-
         if (Build.VERSION.SDK_INT >= 11) {
             bottom_f.setAlpha(1);
             bottom_s.setRotation(0);
@@ -158,43 +162,74 @@ public class AlarmAnimation extends MarginAnimation {
         bottom.setVisibility(expand ? View.VISIBLE : View.GONE);
 
         if (expand) {
-            final int accent = ThemeUtils.getThemeColor(convertView.getContext(), R.attr.colorAccent);
+            colorOn();
+        }
+    }
 
-            final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
-            GlowAnimation a = new GlowAnimation(time) {
+    void colorOff() {
+        Context context = convertView.getContext();
+        TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
+        time.setClickable(false);
+        time.setTextColor(ThemeUtils.getThemeColor(context, android.R.attr.textColorSecondary));
+        GlowAnimation.restore(time);
+
+        TextView everyT = (TextView) convertView.findViewById(R.id.alarm_every);
+        if (everyT != null) {
+            GlowAnimation.restore(everyT);
+            everyT.setTextColor(ThemeUtils.getThemeColor(context, android.R.attr.textColorSecondary));
+        }
+        ImageView every = (ImageView) convertView.findViewById(R.id.alarm_every_image);
+        if (every != null) {
+            every.clearAnimation();
+            every.setColorFilter(0xaaaaaaaa);
+        }
+
+        TextView browse = (TextView) convertView.findViewById(R.id.alarm_ringtone_browse);
+        if (browse != null)
+            GlowAnimation.restore(browse);
+
+        TextView ring = (TextView) convertView.findViewById(R.id.alarm_ringtone_value);
+        if (ring != null)
+            GlowAnimation.restore(ring);
+    }
+
+    void colorOn() {
+        final int acc = ThemeUtils.getThemeColor(convertView.getContext(), R.attr.colorAccent);
+
+        final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
+        GlowAnimation a = new GlowAnimation(time) {
+            @Override
+            public void end() {
+                super.end();
+                time.setTextColor(acc);
+            }
+        };
+        a.startAnimation(time);
+
+        final ImageView everyT = (ImageView) convertView.findViewById(R.id.alarm_every_image);
+        final TextView every = (TextView) convertView.findViewById(R.id.alarm_every);
+        if (every != null) {
+            GlowAnimation aa = new GlowAnimation(every) {
                 @Override
                 public void end() {
                     super.end();
-                    time.setTextColor(0xff000000 | accent);
+                    every.setTextColor(acc);
+                    everyT.setColorFilter(acc);
                 }
             };
-            a.startAnimation(time);
+            aa.startAnimation(every);
+        }
 
-            final ImageView everyT = (ImageView) convertView.findViewById(R.id.alarm_every_image);
-            final TextView every = (TextView) convertView.findViewById(R.id.alarm_every);
-            if (every != null) {
-                GlowAnimation aa = new GlowAnimation(every) {
-                    @Override
-                    public void end() {
-                        super.end();
-                        every.setTextColor(0xff000000 | accent);
-                        everyT.setColorFilter(0xff000000| accent);
-                    }
-                };
-                aa.startAnimation(every);
-            }
+        TextView browse = (TextView) convertView.findViewById(R.id.alarm_ringtone_browse);
+        if (browse != null) {
+            GlowAnimation aa = new GlowAnimation(browse);
+            aa.startAnimation(browse);
+        }
 
-            TextView browse = (TextView) convertView.findViewById(R.id.alarm_ringtone_browse);
-            if (browse != null) {
-                GlowAnimation aa = new GlowAnimation(browse);
-                aa.startAnimation(browse);
-            }
-
-            TextView ring = (TextView) convertView.findViewById(R.id.alarm_ringtone_value);
-            if (ring != null) {
-                GlowAnimation aa = new GlowAnimation(ring);
-                aa.startAnimation(ring);
-            }
+        TextView ring = (TextView) convertView.findViewById(R.id.alarm_ringtone_value);
+        if (ring != null) {
+            GlowAnimation aa = new GlowAnimation(ring);
+            aa.startAnimation(ring);
         }
     }
 }

@@ -44,7 +44,7 @@
                         android:layout_height="40dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_rotation_black_24dp"
-                        android:tint="#9b9b9b" />
+                        android:tint="@android:color/darker_gray" />
 
                     <TextView
                         android:id="@+id/alarm_every"
