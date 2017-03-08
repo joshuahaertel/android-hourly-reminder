@@ -26,6 +26,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AbsListView;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -35,14 +36,18 @@ import android.widget.Toast;
 import com.github.axet.androidlibrary.animations.MarginAnimation;
 import com.github.axet.androidlibrary.animations.RemoveItemAnimation;
 import com.github.axet.androidlibrary.widgets.OpenFileDialog;
+import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.animations.AlarmAnimation;
+import com.github.axet.hourlyreminder.animations.GlowAnimation;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.app.Storage;
 import com.github.axet.hourlyreminder.alarms.Week;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -246,12 +251,10 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             AlarmAnimation.apply(list, convertView, true, scrollState == SCROLL_STATE_IDLE && (int) convertView.getTag() == TYPE_COLLAPSED);
 
             MarginAnimation.apply(weekdaysValues, weekdays.isChecked(), scrollState == SCROLL_STATE_IDLE &&
-                    (int) convertView.getTag() == TYPE_EXPANDED &&
-                    checkboxAnimate(weekdays, weekdaysValues));
+                    (int) convertView.getTag() == TYPE_EXPANDED && checkboxAnimate(weekdays, weekdaysValues));
 
             MarginAnimation.apply(alarmRingtoneLayout, alarmRingtone.isChecked(), scrollState == SCROLL_STATE_IDLE &&
-                    (int) convertView.getTag() == TYPE_EXPANDED &&
-                    checkboxAnimate(alarmRingtone, alarmRingtoneLayout));
+                    (int) convertView.getTag() == TYPE_EXPANDED && checkboxAnimate(alarmRingtone, alarmRingtoneLayout));
 
             convertView.setTag(TYPE_EXPANDED);
 
@@ -585,6 +588,16 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     public void fillCompact(final View view, final WeekSet a, boolean animate) {
         TextView time = (TextView) view.findViewById(R.id.alarm_time);
         time.setClickable(false);
+        time.setTextColor(ThemeUtils.getThemeColor(getContext(), android.R.attr.textColorSecondary));
+
+        TextView everyT = (TextView) view.findViewById(R.id.alarm_every);
+        if (everyT != null) {
+            everyT.setTextColor(ThemeUtils.getThemeColor(getContext(), android.R.attr.textColorSecondary));
+        }
+        ImageView every = (ImageView) view.findViewById(R.id.alarm_every_image);
+        if (every != null) {
+            every.setColorFilter(0x9b9b9b9b);
+        }
 
         final SwitchCompat enable = (SwitchCompat) view.findViewById(R.id.alarm_enable);
         enable.setOnClickListener(new View.OnClickListener() {

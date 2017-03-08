@@ -39,6 +39,7 @@
                     android:layout_marginRight="15dp">
 
                     <ImageView
+                        android:id="@+id/alarm_every_image"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_gravity="center"
@@ -191,7 +192,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginRight="10dp"
                                 android:layout_weight="1"
-                                android:background="@drawable/round_corners"
+                                android:background="?attr/round_corners"
                                 android:orientation="horizontal">
 
                                 <ImageView
@@ -221,7 +222,7 @@
                                 android:id="@+id/alarm_ringtone_browse"
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
-                                android:background="@drawable/round_corners"
+                                android:background="?attr/round_corners"
                                 android:gravity="center"
                                 android:paddingLeft="10dp"
                                 android:paddingRight="10dp"

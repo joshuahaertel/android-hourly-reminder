@@ -10,6 +10,7 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="dialogTheme">@style/AppThemeDialogLight</item>
         <item name="alertDialogTheme">@style/AppThemeDialogLight</item>
+        <item name="round_corners">@drawable/round_corners_light</item>
     </style>
 
     <style name="AppThemeDialogLight" parent="@style/Theme.AppCompat.Light.Dialog.Alert">
@@ -40,6 +41,7 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="dialogTheme">@style/AppThemeDialogDark</item>
         <item name="alertDialogTheme">@style/AppThemeDialogDark</item>
+        <item name="round_corners">@drawable/round_corners_dark</item>
     </style>
 
     <style name="AppThemeDialogDark" parent="@style/Theme.AppCompat.Dialog.Alert">
