@@ -1,6 +1,7 @@
 package com.github.axet.hourlyreminder.animations;
 
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.TextView;
 
@@ -17,6 +18,14 @@ public class GlowAnimation extends StepAnimation {
         this.text = view;
         this.accent = 0x00ffffff & ThemeUtils.getThemeColor(view.getContext(), R.attr.colorAccent);
         setDuration(500);
+    }
+
+    public static void restore(TextView view) {
+        Animation a = view.getAnimation();
+        if (a instanceof GlowAnimation) {
+            view.setShadowLayer(0, 0, 0, 0xffff0000);
+        }
+        view.clearAnimation();
     }
 
     @Override
