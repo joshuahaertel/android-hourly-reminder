@@ -37,11 +37,14 @@ public class AlarmAnimation extends MarginAnimation {
     // the only one 'expand' should have control of showChild function.
     static AlarmAnimation atomicExpander;
 
-    public static void apply(final ListView list, final View v, final boolean expand, boolean animate) {
+    boolean animate;
+
+    public static void apply(final ListView list, final View v, final boolean expand, final boolean animate) {
         apply(new LateCreator() {
             @Override
             public MarginAnimation create() {
                 AlarmAnimation a = new AlarmAnimation(list, v, expand);
+                a.animate = animate;
                 if (expand)
                     atomicExpander = a;
                 return a;
@@ -162,7 +165,10 @@ public class AlarmAnimation extends MarginAnimation {
         bottom.setVisibility(expand ? View.VISIBLE : View.GONE);
 
         if (expand) {
-            colorOn();
+            if (animate)
+                colorOn();
+            else
+                colorEnd();
         }
     }
 
@@ -194,27 +200,23 @@ public class AlarmAnimation extends MarginAnimation {
     }
 
     void colorOn() {
-        final int acc = ThemeUtils.getThemeColor(convertView.getContext(), R.attr.colorAccent);
-
         final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
         GlowAnimation a = new GlowAnimation(time) {
             @Override
             public void end() {
                 super.end();
-                time.setTextColor(acc);
+                colorEnd();
             }
         };
         a.startAnimation(time);
 
-        final ImageView everyT = (ImageView) convertView.findViewById(R.id.alarm_every_image);
         final TextView every = (TextView) convertView.findViewById(R.id.alarm_every);
         if (every != null) {
             GlowAnimation aa = new GlowAnimation(every) {
                 @Override
                 public void end() {
                     super.end();
-                    every.setTextColor(acc);
-                    everyT.setColorFilter(acc);
+                    colorEnd();
                 }
             };
             aa.startAnimation(every);
@@ -231,5 +233,18 @@ public class AlarmAnimation extends MarginAnimation {
             GlowAnimation aa = new GlowAnimation(ring);
             aa.startAnimation(ring);
         }
+    }
+
+    void colorEnd() {
+        final int acc = ThemeUtils.getThemeColor(convertView.getContext(), R.attr.colorAccent);
+        final ImageView everyT = (ImageView) convertView.findViewById(R.id.alarm_every_image);
+        final TextView every = (TextView) convertView.findViewById(R.id.alarm_every);
+        final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
+        if (time != null)
+            time.setTextColor(acc);
+        if (every != null)
+            every.setTextColor(acc);
+        if (everyT != null)
+            everyT.setColorFilter(acc);
     }
 }

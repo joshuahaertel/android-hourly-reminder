@@ -32,20 +32,11 @@
     <style name="AppThemeLight.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="AppThemeDark" parent="Theme.AppCompat">
-        <item name="colorPrimary">@color/darkPrimary</item>
-        <item name="colorPrimaryDark">@color/darkPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccentDark</item>
         <item name="alarmBackground">@color/actionBarBackgroundDark</item>
         <item name="alarmRing">@drawable/round_circle_dark</item>
         <item name="alarmDismiss">@drawable/round_dismiss_dark</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="dialogTheme">@style/AppThemeDialogDark</item>
-        <item name="alertDialogTheme">@style/AppThemeDialogDark</item>
         <item name="round_corners">@drawable/round_corners_dark</item>
-    </style>
-
-    <style name="AppThemeDialogDark" parent="@style/Theme.AppCompat.Dialog.Alert">
-        <item name="colorAccent">@color/colorAccentDark</item>
     </style>
 
     <style name="AppThemeDark.NoActionBar">
