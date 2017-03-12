@@ -107,11 +107,11 @@ public class BeepPrefDialogFragment extends PreferenceDialogFragmentCompat {
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         super.onPrepareDialogBuilder(builder);
 
-        Context context = builder.getContext();
+        Context context = getActivity();
 
         final BeepPreference preference = (BeepPreference) getPreference();
 
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = LayoutInflater.from(context);
         final View view = inflater.inflate(R.layout.beep, null, false);
         freq = (TextView) view.findViewById(R.id.beep_freq);
         len = (TextView) view.findViewById(R.id.beep_length);

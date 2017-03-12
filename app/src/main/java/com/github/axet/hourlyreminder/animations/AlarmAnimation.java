@@ -173,6 +173,7 @@ public class AlarmAnimation extends MarginAnimation {
     }
 
     void colorOff() {
+        int color = 0xFFAAAAAA;
         Context context = convertView.getContext();
         TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
         time.setClickable(false);
@@ -187,7 +188,7 @@ public class AlarmAnimation extends MarginAnimation {
         ImageView every = (ImageView) convertView.findViewById(R.id.alarm_every_image);
         if (every != null) {
             every.clearAnimation();
-            every.setColorFilter(0xaaaaaaaa);
+            every.setColorFilter(color);
         }
 
         TextView browse = (TextView) convertView.findViewById(R.id.alarm_ringtone_browse);
