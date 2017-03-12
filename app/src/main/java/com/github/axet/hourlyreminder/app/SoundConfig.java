@@ -19,7 +19,7 @@ public class SoundConfig {
     public final static int SOUND_TYPE = AudioAttributes.CONTENT_TYPE_SONIFICATION;
     public final static int SOUND_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
     public final static int SOUND_CHANNELS = AudioFormat.CHANNEL_OUT_STEREO;
-    public final static int SOUD_SAMPLERATE = 44100;
+    public final static int SOUND_SAMPLERATE = 44100;
 
     public enum Silenced {
         NONE,
