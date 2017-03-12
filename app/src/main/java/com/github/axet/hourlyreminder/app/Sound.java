@@ -169,27 +169,28 @@ public class Sound extends TTS {
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(double freqHz, int durationMs) {
         int min = AudioTrack.getMinBufferSize(SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT);
-        int count = SOUND_SAMPLERATE * durationMs / 1000;
-        int last = count - 1;
-        int stereo = count * 2;
-        int size = stereo * (Short.SIZE / 8);
-        if (size < min) // AudioTrack unable to play shorter then 'min' size of data, fill it with zeros
-            size = min;
-        short[] samples = new short[size];
-        for (int i = 0; i < stereo; i += 2) {
-            int si = i / 2;
-            double sx = 2 * Math.PI * si / (SOUND_SAMPLERATE / freqHz);
+        int count = SOUND_SAMPLERATE * durationMs / 1000; // samples count
+        int last = count - 1; // last sample index
+        int stereo = count * 2; // total actual samples count
+        int stereoBytes = stereo * (Short.SIZE / 8); // total size in bytes
+        if (stereoBytes < min) // AudioTrack unable to play shorter then 'min' size of data, fill it with zeros
+            stereoBytes = min;
+        int stereoSize = stereoBytes / (Short.SIZE / 8); // total samples including zeros
+        short[] samples = new short[stereoSize]; // including zeros
+        for (int i = 0; i < count; i ++) {
+            double sx = 2 * Math.PI * i / (SOUND_SAMPLERATE / freqHz);
             short sample = (short) (Math.sin(sx) * 0x7FFF);
-            samples[i + 0] = sample;
-            samples[i + 1] = sample;
+            int si = i * 2;
+            samples[si] = sample;
+            samples[si + 1] = sample;
         }
         // old phones bug.
         //
         // http://stackoverflow.com/questions/27602492
         //
         // with MODE_STATIC setNotificationMarkerPosition not called
-        AudioTrack track = new AudioTrack(SOUND_STREAM, SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, size, AudioTrack.MODE_STREAM);
-        track.write(samples, 0, size);
+        AudioTrack track = new AudioTrack(SOUND_STREAM, SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereoBytes, AudioTrack.MODE_STREAM);
+        track.write(samples, 0, stereoSize);
         track.setNotificationMarkerPosition(last); // do not throw exception on != AudioTrack.SUCCESS
         return track;
     }
