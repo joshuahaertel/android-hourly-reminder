@@ -168,14 +168,17 @@ public class Sound extends TTS {
 
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(double freqHz, int durationMs) {
-        int sampleRate = 44100;
-        int count = sampleRate * durationMs / 1000;
+        int min = AudioTrack.getMinBufferSize(SOUD_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT);
+        int count = SOUD_SAMPLERATE * durationMs / 1000;
         int last = count - 1;
         int stereo = count * 2;
-        short[] samples = new short[stereo];
+        int size = stereo * (Short.SIZE / 8);
+        if (size < min) // AudioTrack unable to play shorter then 'min' size of data, fill it with zeros
+            size = min;
+        short[] samples = new short[size];
         for (int i = 0; i < stereo; i += 2) {
             int si = i / 2;
-            double sx = 2 * Math.PI * si / (sampleRate / freqHz);
+            double sx = 2 * Math.PI * si / (SOUD_SAMPLERATE / freqHz);
             short sample = (short) (Math.sin(sx) * 0x7FFF);
             samples[i + 0] = sample;
             samples[i + 1] = sample;
@@ -185,10 +188,8 @@ public class Sound extends TTS {
         // http://stackoverflow.com/questions/27602492
         //
         // with MODE_STATIC setNotificationMarkerPosition not called
-        AudioTrack track = new AudioTrack(SOUND_STREAM, sampleRate,
-                AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT,
-                stereo * (Short.SIZE / 8), AudioTrack.MODE_STREAM);
-        track.write(samples, 0, stereo);
+        AudioTrack track = new AudioTrack(SOUND_STREAM, SOUD_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, size, AudioTrack.MODE_STREAM);
+        track.write(samples, 0, size);
         track.setNotificationMarkerPosition(last); // do not throw exception on != AudioTrack.SUCCESS
         return track;
     }

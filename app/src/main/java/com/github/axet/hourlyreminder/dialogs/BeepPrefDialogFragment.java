@@ -123,7 +123,6 @@ public class BeepPrefDialogFragment extends PreferenceDialogFragmentCompat {
             @Override
             public void onClick(View v) {
                 beep.reset();
-
                 update();
             }
         });
