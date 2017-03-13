@@ -60,24 +60,6 @@
 
     <string-array name="empty" />
 
-    <string-array name="repeat_text">
-        <item>Hourly</item>
-        <item>Every 30 minutes</item>
-        <item>Every 20 minutes</item>
-        <item>Every 15 minutes</item>
-        <item>Every 10 minutes</item>
-        <item>Every 5 minutes</item>
-    </string-array>
-
-    <string-array name="repeat_values" translatable="false">
-        <item>60</item>
-        <item>30</item>
-        <item>20</item>
-        <item>15</item>
-        <item>10</item>
-        <item>5</item>
-    </string-array>
-
     <string-array name="custom_sound_text">
         <item>Off</item>
         <item>Ringtone Type</item>
@@ -298,6 +280,9 @@
     <string name="play">Play</string>
     <string name="snoozed">Snoozed</string>
     <string name="snooze">Snooze</string>
-    <string name="every">Reminder Every</string>
+    <string name="every">Reminder Every&#8230;</string>
     <string name="hours">Hours</string>
+    <string name="hourly">Hourly</string>
+    <string name="min">min</string>
+    <string name="repeat">Repeat</string>
 </resources>

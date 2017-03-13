@@ -84,17 +84,24 @@ public class ReminderSet extends WeekSet {
                     hh = 0;
                 String next = Reminder.format(hh);
 
-                int max = repeat;
-
-                if (hours.contains(next)) {
-                    max = 60;
-                }
-
-                for (int m = 0; m < max; m += repeat) {
+                if (repeat < 0) {
                     Reminder r = new Reminder(context, getWeekDaysProperty());
                     r.enabled = true;
-                    r.setTime(hour, m);
+                    r.setTime(hour, -repeat);
                     list.add(r);
+                } else {
+                    int max = repeat;
+
+                    if (hours.contains(next)) {
+                        max = 60;
+                    }
+
+                    for (int m = 0; m < max; m += repeat) {
+                        Reminder r = new Reminder(context, getWeekDaysProperty());
+                        r.enabled = true;
+                        r.setTime(hour, m);
+                        list.add(r);
+                    }
                 }
             }
         }

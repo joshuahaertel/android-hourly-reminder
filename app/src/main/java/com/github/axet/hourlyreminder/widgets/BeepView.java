@@ -7,7 +7,9 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -64,15 +66,15 @@ public class BeepView extends ViewGroup {
             markSize = ThemeUtils.dp2px(getContext(), 3);
 
             paint = new Paint();
-            paint.setColor(getThemeColor(R.attr.colorPrimary));
+            paint.setColor(ThemeUtils.getThemeColor(getContext(), R.attr.colorPrimary));
             paint.setStrokeWidth(pitchWidth);
 
             paintMark = new Paint();
-            paintMark.setColor(getThemeColor(R.attr.colorPrimaryDark));
+            paintMark.setColor(ThemeUtils.getThemeColor(getContext(), R.attr.colorPrimaryDark));
             paintMark.setStrokeWidth(pitchGraph);
 
             textPaint = new Paint();
-            textPaint.setColor(getThemeColor(R.attr.colorPrimary));
+            textPaint.setColor(ThemeUtils.getThemeColor(getContext(), R.attr.colorPrimary));
             textPaint.setTextSize(50f);
             textPaint.setAntiAlias(true);
 
@@ -178,7 +180,7 @@ public class BeepView extends ViewGroup {
             super(context, attrs, defStyleAttr);
 
             paint = new Paint();
-            paint.setColor(getThemeColor(R.attr.colorAccent));
+            paint.setColor(ThemeUtils.getThemeColor(getContext(), R.attr.colorAccent));
             paint.setStrokeWidth(pitchGraph);
         }
 
@@ -250,10 +252,6 @@ public class BeepView extends ViewGroup {
 
         if (isInEditMode()) {
         }
-    }
-
-    public int getThemeColor(int id) {
-        return ThemeUtils.getThemeColor(getContext(), id);
     }
 
     public void draw() {

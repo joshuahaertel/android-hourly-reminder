@@ -63,15 +63,6 @@
         <item>Вс</item>
     </string-array>
 
-    <string-array name="repeat_text">
-        <item>Каждый час</item>
-        <item>Каждые 30 минут</item>
-        <item>Каждые 20 минут</item>
-        <item>Каждые 15 минут</item>
-        <item>Каждые 10 минут</item>
-        <item>Каждые 5 минут</item>
-    </string-array>
-
     <string-array name="custom_sound_text">
         <item>Выключено</item>
         <item>Тип Звонок</item>
@@ -181,4 +172,7 @@
     <string name="snooze">Отложить</string>
     <string name="every">Периодичность</string>
     <string name="hours">Часы</string>
+    <string name="hourly">Час</string>
+    <string name="min">мин</string>
+    <string name="repeat">Повторять</string>
 </resources>

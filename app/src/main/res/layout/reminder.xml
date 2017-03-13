@@ -31,29 +31,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <FrameLayout
+                <include
+                    layout="@layout/refresh"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
                     android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp">
-
-                    <ImageView
-                        android:id="@+id/alarm_every_image"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_rotation_black_24dp"
-                        android:tint="@android:color/darker_gray" />
-
-                    <TextView
-                        android:id="@+id/alarm_every"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:text="1ч" />
-                </FrameLayout>
+                    android:layout_marginRight="15dp" />
 
                 <android.support.v7.widget.SwitchCompat
                     android:id="@+id/alarm_enable"

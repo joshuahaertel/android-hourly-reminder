@@ -294,7 +294,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     List<ReminderSet> reminders = HourlyApplication.loadReminders(getActivity());
                     boolean set = false;
                     for (ReminderSet rs : reminders) {
-                        if (rs.repeat < 15) {
+                        if (rs.repeat > 0 && rs.repeat < 15) {
                             if (!b) {
                                 set = true;
                                 rs.repeat = 15;
