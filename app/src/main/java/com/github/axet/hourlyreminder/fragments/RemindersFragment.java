@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.fragments;
 
+import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,6 +27,7 @@ import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
 import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
+import com.github.axet.hourlyreminder.dialogs.RepeatDialogFragment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -190,35 +192,14 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         every.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final List<String> ss = new ArrayList<>(Arrays.asList(getActivity().getResources().getStringArray(R.array.repeat_values)));
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle(R.string.every);
-                builder.setSingleChoiceItems(R.array.repeat_text, ss.indexOf("" + rr.repeat), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        String s = ss.get(which);
-                        int min = Integer.parseInt(s);
-                        rr.repeat = min;
-                        save(rr);
+                RepeatDialogFragment d = new RepeatDialogFragment();
 
-                        // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
-                        if (Build.VERSION.SDK_INT >= 23) {
-                            if (min < 15) {
-                                SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-                                boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, false);
-                                if (!b) {
-                                    Toast.makeText(getActivity(), R.string.alarm_type_alarm, Toast.LENGTH_SHORT).show();
-                                    SharedPreferences.Editor edit = shared.edit();
-                                    edit.putBoolean(HourlyApplication.PREFERENCE_ALARM, true);
-                                    edit.commit();
-                                }
-                            }
-                        }
+                Bundle args = new Bundle();
+                args.putInt("index", reminders.indexOf(a));
+                args.putInt("mins", rr.repeat);
+                d.setArguments(args);
 
-                        dialog.dismiss();
-                    }
-                });
-                Dialog d = builder.create();
-                d.show();
+                d.show(getFragmentManager(), "");
             }
         });
         updateEvery(every, a);
@@ -240,13 +221,17 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     void updateEvery(TextView every, WeekSet a) {
         String str = "";
         final ReminderSet rr = (ReminderSet) a;
-        switch (rr.repeat) {
-            case 60:
-                str = "1" + getString(R.string.hour_symbol);
-                break;
-            default:
-                str = "" + rr.repeat + getString(R.string.min_symbol);
-                break;
+        if (rr.repeat < 0) {
+            str = "!" + (-rr.repeat) + getString(R.string.min_symbol);
+        } else {
+            switch (rr.repeat) {
+                case 60:
+                    str = "1" + getString(R.string.hour_symbol);
+                    break;
+                default:
+                    str = "" + rr.repeat + getString(R.string.min_symbol);
+                    break;
+            }
         }
         every.setText(str);
     }
@@ -269,6 +254,28 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 ReminderSet rs = reminders.get(r.index);
                 rs.load(r.hours);
                 save(rs);
+            }
+        }
+        if (dialogInterface instanceof RepeatDialogFragment.Result) {
+            RepeatDialogFragment.Result r = (RepeatDialogFragment.Result) dialogInterface;
+            if (!r.ok)
+                return;
+            ReminderSet rs = reminders.get(r.index);
+            rs.repeat = r.mins;
+            save(rs);
+
+            // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
+            if (Build.VERSION.SDK_INT >= 23) {
+                if (rs.repeat > 0 && rs.repeat < 15) {
+                    SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
+                    boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, false);
+                    if (!b) {
+                        Toast.makeText(getActivity(), R.string.alarm_type_alarm, Toast.LENGTH_SHORT).show();
+                        SharedPreferences.Editor edit = shared.edit();
+                        edit.putBoolean(HourlyApplication.PREFERENCE_ALARM, true);
+                        edit.commit();
+                    }
+                }
             }
         }
     }
