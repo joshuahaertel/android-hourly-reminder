@@ -169,6 +169,8 @@ public class AlarmAnimation extends MarginAnimation {
                 colorOn();
             else
                 colorEnd();
+        } else {
+            colorOff();
         }
     }
 

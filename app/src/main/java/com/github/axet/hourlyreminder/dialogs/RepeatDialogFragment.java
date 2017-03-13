@@ -35,6 +35,7 @@ public class RepeatDialogFragment extends DialogFragment {
 
     View v;
 
+    TextView textint;
     TextView text;
     CircularSeekBar seekBar;
 
@@ -100,6 +101,11 @@ public class RepeatDialogFragment extends DialogFragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        if (buttonHourly.isChecked()) {
+            outState.putInt("mins", -mins);
+        } else {
+            outState.putInt("mins", mins);
+        }
         outState.putBoolean("changed", mPreferenceChanged);
     }
 
@@ -137,6 +143,8 @@ public class RepeatDialogFragment extends DialogFragment {
         Context context = inflater.getContext();
         final View view = inflater.inflate(R.layout.repeat, container, false);
         v = view;
+
+        textint = (TextView) view.findViewById(R.id.repeat_intervals);
 
         text = (TextView) view.findViewById(R.id.repeat_text);
 
@@ -224,6 +232,7 @@ public class RepeatDialogFragment extends DialogFragment {
         for (int i = 0; i < vv.length; i++) {
             View v = vv[i];
             if (buttonMins.isChecked()) {
+                textint.setVisibility(View.VISIBLE);
                 v.setVisibility(View.VISIBLE);
                 setRepeatColor(v, color);
                 TextView t = (TextView) v.findViewById(R.id.alarm_every);
@@ -238,7 +247,8 @@ public class RepeatDialogFragment extends DialogFragment {
                     }
                 });
             } else {
-                v.setVisibility(View.GONE);
+                textint.setVisibility(View.INVISIBLE);
+                v.setVisibility(View.INVISIBLE);
             }
         }
         switch (mins) {

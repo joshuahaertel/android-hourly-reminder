@@ -222,7 +222,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         String str = "";
         final ReminderSet rr = (ReminderSet) a;
         if (rr.repeat < 0) {
-            str = "!" + (-rr.repeat) + getString(R.string.min_symbol);
+            str = ":" + (-rr.repeat) + getString(R.string.min_symbol);
         } else {
             switch (rr.repeat) {
                 case 60:
