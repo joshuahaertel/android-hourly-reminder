@@ -385,7 +385,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
                     if (r.getTime() == time && r.enabled) {
-                        rep.add(rr.repeat); // add 15 or 5 or 30
+                        if (rr.repeat > 0) // negative means once per hour == 60 (already in the list), skip it
+                            rep.add(rr.repeat); // add 15 or 5 or 30
                     }
                 }
             }
