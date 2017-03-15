@@ -29,21 +29,17 @@ public class ReminderSet extends WeekSet {
 
     public ReminderSet(Context context, Set<String> hours, int repeat) {
         super(context);
-
         this.repeat = repeat;
         this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
-
         load(hours);
     }
 
     public ReminderSet(Context context, Set<String> hours) {
         super(context);
-
         this.repeat = 60;
         this.enabled = true;
         this.ringtone = false;
         this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
-
         load(hours);
     }
 
@@ -84,12 +80,7 @@ public class ReminderSet extends WeekSet {
                     hh = 0;
                 String next = Reminder.format(hh);
 
-                if (repeat < 0) {
-                    Reminder r = new Reminder(context, getWeekDaysProperty());
-                    r.enabled = true;
-                    r.setTime(hour, -repeat);
-                    list.add(r);
-                } else {
+                if (repeat > 0) {
                     int max = repeat;
 
                     if (hours.contains(next)) {
@@ -102,6 +93,11 @@ public class ReminderSet extends WeekSet {
                         r.setTime(hour, m);
                         list.add(r);
                     }
+                } else { // negative means once per hour at specified time
+                    Reminder r = new Reminder(context, getWeekDaysProperty());
+                    r.enabled = true;
+                    r.setTime(hour, -repeat);
+                    list.add(r);
                 }
             }
         }
