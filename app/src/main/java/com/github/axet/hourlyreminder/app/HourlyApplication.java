@@ -73,6 +73,8 @@ public class HourlyApplication extends Application {
 
     public static final String PREFERENCE_MUSICSILENCE = "musicsilence";
     public static final String PREFERENCE_CALLSILENCE = "callsilence";
+    public static final String PREFERENCE_PHONESILENCE = "phonesilence";
+
     public static final String PREFERENCE_WEEKSTART = "weekstart";
 
     public static final String PREFERENCE_VIBRATE = "vibrate";

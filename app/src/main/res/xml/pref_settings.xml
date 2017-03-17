@@ -29,6 +29,12 @@
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
+            android:key="phonesilence"
+            android:summary="Do not play sounds while phone in silince or vibrate mode"
+            android:title="Silence while Phone Silenced" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
             android:key="vibrate"
             android:summary="Vibrate while sounding an reminder / alarm"
             android:title="Vibrate" />
