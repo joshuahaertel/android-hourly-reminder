@@ -28,6 +28,12 @@
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
+            android:key="phonesilence"
+            android:summary="Не использовать звуки если телефон переведен в беззвучный режим"
+            android:title="Тишина в беззвучном режиме" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
             android:key="vibrate"
             android:summary="Использовать вибратор для будильника и оповещений"
             android:title="Вибратор" />

@@ -256,6 +256,13 @@ public class Sound extends TTS {
             }
         }
 
+        if (shared.getBoolean(HourlyApplication.PREFERENCE_PHONESILENCE, false)) {
+            AudioManager tm = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            if (tm.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
+                return Silenced.SETTINGS;
+            }
+        }
+
         return Silenced.NONE;
     }
 
