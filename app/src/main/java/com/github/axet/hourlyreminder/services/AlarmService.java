@@ -682,12 +682,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pe);
-        String id = checkString(intent);
+        String id = checkId(intent);
         handler.removeCallbacks(check.remove(id));
     }
 
     void checkPost(final long time, final Intent intent, final PendingIntent pe) {
-        final String id = checkString(intent);
+        final String id = checkId(intent);
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -709,7 +709,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         handler.postDelayed(r, delay);
     }
 
-    String checkString(Intent intent) {
+    String checkId(Intent intent) {
         return intent.getClass().getCanonicalName() + "_" + intent.getAction();
     }
 
