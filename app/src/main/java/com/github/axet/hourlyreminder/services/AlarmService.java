@@ -131,6 +131,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             sound = null;
         }
 
+        if (check != null) {
+            handler.removeCallbacks(check);
+            check = null;
+        }
+
         wakeClose();
     }
 
