@@ -7,7 +7,7 @@
             android:defaultValue="1"
             android:key="volume"
             android:summary="Set text speech volume"
-            android:title="Reduce volume" />
+            android:title="Reduce Volume" />
 
         <com.github.axet.hourlyreminder.widgets.BeepPreference
             android:defaultValue="1800:100"
@@ -19,19 +19,19 @@
             android:defaultValue="false"
             android:key="callsilence"
             android:summary="Do not play sounds during calls"
-            android:title="Silence during calls" />
+            android:title="Silence During Calls" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="musicsilence"
             android:summary="Do not play sounds while listening music"
-            android:title="Silence during music" />
+            android:title="Silence During Music" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="phonesilence"
             android:summary="Do not play sounds while phone in silince or vibrate mode"
-            android:title="Silence while Phone Silenced" />
+            android:title="Silence While Phone Silenced" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
@@ -132,6 +132,6 @@
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
             android:summary="Start week on specified day"
-            android:title="Start week on" />
+            android:title="Start Week On" />
     </PreferenceCategory>
 </PreferenceScreen>

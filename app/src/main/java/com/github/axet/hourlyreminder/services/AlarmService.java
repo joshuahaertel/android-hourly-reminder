@@ -79,13 +79,15 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     List<ReminderSet> reminders;
     PowerManager.WakeLock wl;
     PowerManager.WakeLock wlCpu;
-    Handler handler = new Handler();
+    Handler handler;
     Runnable wakeClose = new Runnable() {
         @Override
         public void run() {
             wakeClose();
         }
     };
+
+    Runnable check;
 
     public AlarmService() {
         super();
@@ -101,12 +103,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        prefs.registerOnSharedPreferenceChangeListener(this);
-
+        handler = new Handler();
         sound = new Sound(this);
         alarms = HourlyApplication.loadAlarms(this);
         reminders = HourlyApplication.loadReminders(this);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Nullable
@@ -144,7 +147,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     long time = intent.getLongExtra("time", 0);
                     tomorrow(time);
                 } else if (action.equals(DISMISS)) {
-                    String json = intent.getStringExtra("alarm");
                     FireAlarmService.dismissActiveAlarm(this);
                 } else if (action.equals(ALARM)) {
                     long time = intent.getLongExtra("time", 0);
@@ -255,9 +257,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         if (all.isEmpty()) {
             updateNotificationUpcomingAlarm(0);
+            check(0);
         } else {
             long time = all.first();
             updateNotificationUpcomingAlarm(time);
+            check(time);
         }
 
         if (reminders.isEmpty()) {
@@ -676,5 +680,25 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 wlCpu.release();
             wlCpu = null;
         }
+    }
+
+    // some bugged (Huawei and others) phones, not comply to specification on AlarmManager requires manual check for exact time.
+    void check(final long next) {
+        handler.removeCallbacks(check);
+
+        if (next == 0)
+            return;
+
+        check = new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "check run " + next + " " + System.currentTimeMillis());
+                soundAlarm(next);
+            }
+        };
+
+        long delay = (next - System.currentTimeMillis());
+        Log.d(TAG, "check " + delay);
+        handler.postDelayed(check, delay);
     }
 }
