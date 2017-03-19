@@ -682,7 +682,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pe);
-        handler.removeCallbacks(check.remove(checkString(intent)));
+        String id = checkString(intent);
+        handler.removeCallbacks(check.remove(id));
     }
 
     void checkPost(final long time, final Intent intent, final PendingIntent pe) {
