@@ -131,6 +131,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             sound = null;
         }
 
+        if (check != null) {
+            check(0);
+        }
+
         wakeClose();
     }
 
@@ -685,6 +689,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // some bugged (Huawei and others) phones, not comply to specification on AlarmManager requires manual check for exact time.
     void check(final long next) {
         handler.removeCallbacks(check);
+        check = null;
 
         if (next == 0)
             return;
