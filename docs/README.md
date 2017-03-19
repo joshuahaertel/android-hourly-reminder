@@ -9,3 +9,5 @@ Some Android 6.0 phones have bug, preventing AlarmManager to be executed exact o
 Affected phones:
 
   * Huawei P8lite / Huawei ALE-L21
+
+Some (android 5.0) Huawai phones also prevent to triggers exact on time, change Hourly Application to: "protected" in Huawei battery manager 
