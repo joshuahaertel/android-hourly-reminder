@@ -31,7 +31,9 @@ import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 /**
@@ -87,7 +89,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
     };
 
-    Runnable check;
+    Map<String, Runnable> check = new HashMap<>();
 
     public AlarmService() {
         super();
@@ -131,9 +133,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             sound = null;
         }
 
-        if (check != null) {
-            check(0);
+        for (String s : check.keySet()) {
+            handler.removeCallbacks(check.get(s));
         }
+        check.clear();
 
         wakeClose();
     }
@@ -239,7 +242,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // scan all alarms and hourly reminders and register net one
     //
     public void registerNextAlarm() {
-        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
 
         TreeSet<Long> all = new TreeSet<>();
@@ -261,63 +263,37 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         if (all.isEmpty()) {
             updateNotificationUpcomingAlarm(0);
-            check(0);
         } else {
             long time = all.first();
             updateNotificationUpcomingAlarm(time);
-            check(time);
         }
 
         if (reminders.isEmpty()) {
-            PendingIntent pe = PendingIntent.getService(this, 0, reminderIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-            alarm.cancel(pe);
+            cancel(reminderIntent);
         } else {
             long time = reminders.first();
 
             reminderIntent.putExtra("time", time);
 
-            PendingIntent pe = PendingIntent.getService(this, 0, reminderIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-
             Log.d(HourlyApplication.class.getSimpleName(), "Current: " + formatTime(cur.getTimeInMillis()) + "; SetReminder: " + formatTime(time));
 
             if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
-                if (Build.VERSION.SDK_INT >= 21) {
-                    alarm.setAlarmClock(new AlarmManager.AlarmClockInfo(time, pe), pe);
-                } else if (Build.VERSION.SDK_INT >= 19) {
-                    alarm.setExact(AlarmManager.RTC_WAKEUP, time, pe);
-                } else {
-                    alarm.set(AlarmManager.RTC_WAKEUP, time, pe);
-                }
+                setAlarm(time, reminderIntent);
             } else {
-                if (Build.VERSION.SDK_INT >= 23) {
-                    alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pe);
-                } else if (Build.VERSION.SDK_INT >= 19) {
-                    alarm.setExact(AlarmManager.RTC_WAKEUP, time, pe);
-                } else {
-                    alarm.set(AlarmManager.RTC_WAKEUP, time, pe);
-                }
+                setExact(time, reminderIntent);
             }
         }
 
         if (alarms.isEmpty()) {
-            PendingIntent pe = PendingIntent.getService(this, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-            alarm.cancel(pe);
+            cancel(alarmIntent);
         } else {
             long time = alarms.first();
 
             alarmIntent.putExtra("time", time);
 
-            PendingIntent pe = PendingIntent.getService(this, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-
             Log.d(HourlyApplication.class.getSimpleName(), "Current: " + formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + formatTime(time));
 
-            if (Build.VERSION.SDK_INT >= 21) {
-                alarm.setAlarmClock(new AlarmManager.AlarmClockInfo(time, pe), pe);
-            } else if (Build.VERSION.SDK_INT >= 19) {
-                alarm.setExact(AlarmManager.RTC_WAKEUP, time, pe);
-            } else {
-                alarm.set(AlarmManager.RTC_WAKEUP, time, pe);
-            }
+            setAlarm(time, alarmIntent);
         }
     }
 
@@ -326,13 +302,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // service will call showNotificationUpcoming(time)
     //
     void updateNotificationUpcomingAlarm(long time) {
-        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmService.class).setAction(NOTIFICATION).putExtra("time", time);
 
-        PendingIntent pe = PendingIntent.getService(this, 0,
-                new Intent(this, AlarmService.class).setAction(NOTIFICATION).putExtra("time", time),
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-
-        alarm.cancel(pe);
+        cancel(intent);
 
         if (time == 0) {
             showNotificationUpcoming(0);
@@ -354,13 +326,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 // time to wait before show notification_upcoming
                 time = cal.getTimeInMillis();
 
-                if (Build.VERSION.SDK_INT >= 23) {
-                    alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pe);
-                } else if (Build.VERSION.SDK_INT >= 19) {
-                    alarm.setExact(AlarmManager.RTC_WAKEUP, time, pe);
-                } else {
-                    alarm.set(AlarmManager.RTC_WAKEUP, time, pe);
-                }
+                setExact(time, intent);
             }
         }
     }
@@ -686,24 +652,64 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
     }
 
-    // some bugged (Huawei and others) phones, not comply to specification on AlarmManager requires manual check for exact time.
-    void check(final long next) {
-        handler.removeCallbacks(check);
-        check = null;
+    void setExact(long time, Intent intent) {
+        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (Build.VERSION.SDK_INT >= 23) {
+            alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pe);
+        } else if (Build.VERSION.SDK_INT >= 19) {
+            alarm.setExact(AlarmManager.RTC_WAKEUP, time, pe);
+        } else {
+            alarm.set(AlarmManager.RTC_WAKEUP, time, pe);
+        }
+        checkPost(time, intent, pe);
+    }
 
-        if (next == 0)
-            return;
+    void setAlarm(long time, Intent intent) {
+        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (Build.VERSION.SDK_INT >= 21) {
+            alarm.setAlarmClock(new AlarmManager.AlarmClockInfo(time, pe), pe);
+        } else if (Build.VERSION.SDK_INT >= 19) {
+            alarm.setExact(AlarmManager.RTC_WAKEUP, time, pe);
+        } else {
+            alarm.set(AlarmManager.RTC_WAKEUP, time, pe);
+        }
+        checkPost(time, intent, pe);
+    }
 
-        check = new Runnable() {
+    void cancel(Intent intent) {
+        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pe);
+        handler.removeCallbacks(check.remove(checkString(intent)));
+    }
+
+    void checkPost(final long time, final Intent intent, final PendingIntent pe) {
+        final String id = checkString(intent);
+        Runnable r = new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "check run " + next + " " + System.currentTimeMillis());
-                soundAlarm(next);
+                check.remove(id);
+                try {
+                    Log.d(TAG, "check post run " + time + " " + System.currentTimeMillis());
+                    pe.send();
+                } catch (PendingIntent.CanceledException e) {
+                    Log.e(TAG, "unable to execute", e); // already processed by AlarmManager?
+                }
             }
         };
-
-        long delay = (next - System.currentTimeMillis());
-        Log.d(TAG, "check " + delay);
-        handler.postDelayed(check, delay);
+        handler.removeCallbacks(check.get(id));
+        check.put(id, r);
+        long delay = (time - System.currentTimeMillis());
+        if (delay < 0) // instant?
+            delay = 0;
+        Log.d(TAG, "check post delay " + delay);
+        handler.postDelayed(r, delay);
     }
+
+    String checkString(Intent intent) {
+        return intent.getClass().getCanonicalName() + "_" + intent.getAction();
+    }
+
 }

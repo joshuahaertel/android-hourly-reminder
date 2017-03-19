@@ -1,6 +1,8 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.app.AlarmManager;
 import android.app.Application;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -630,3 +632,4 @@ public class HourlyApplication extends Application {
             return shared.getStringSet(name, def);
     }
 }
+
