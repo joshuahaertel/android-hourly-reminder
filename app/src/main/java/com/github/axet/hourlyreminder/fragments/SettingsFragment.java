@@ -286,13 +286,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         sound = new Sound(getActivity());
 
+        PreferenceGroup app = (PreferenceGroup) findPreference("application");
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
         SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 23 SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 23) {
             advanced.removePreference(alarm);
-            advanced.removePreference(optimization);
+            app.removePreference(optimization);
         } else {
             final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
             final String n = getContext().getPackageName();

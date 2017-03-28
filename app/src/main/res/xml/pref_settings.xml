@@ -107,7 +107,7 @@
             android:title="Speak AM/PM" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Application">
+    <PreferenceCategory android:title="Application" android:key="application">
         <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="optimization"

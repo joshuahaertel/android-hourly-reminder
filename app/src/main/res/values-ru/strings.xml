@@ -142,7 +142,7 @@
     <string name="alarm_disabled">Будильник отключен</string>
     <string name="alarm_set_for">Будильник установлен через %s</string>
     <string name="beep">Сигнал</string>
-    <string name="browse_sdcard">Обзор Карты</string>
+    <string name="browse_sdcard">Обзор карты</string>
 
     <string name="system">Системный язык</string>
 
