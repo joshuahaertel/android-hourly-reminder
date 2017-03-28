@@ -110,7 +110,14 @@
     <PreferenceCategory android:title="Приложение">
         <SwitchPreferenceCompat
             android:defaultValue="true"
+            android:key="optimization"
+            android:summary="Disable Battery Optimization"
+            android:title="Battery Optimization" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
             android:key="notifications"
+            android:persistent="false"
             android:summary="Показывать уведомления"
             android:title="Уведомления" />
 

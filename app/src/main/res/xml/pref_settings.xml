@@ -109,6 +109,13 @@
 
     <PreferenceCategory android:title="Application">
         <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="optimization"
+            android:persistent="false"
+            android:summary="Disable Battery Optimization"
+            android:title="Battery Optimization" />
+
+        <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="notifications"
             android:summary="Show notifications"
