@@ -1,14 +1,20 @@
 package com.github.axet.hourlyreminder.fragments;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -281,11 +287,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         sound = new Sound(getActivity());
 
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
+        SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 23 SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 23) {
             advanced.removePreference(alarm);
+            advanced.removePreference(optimization);
         } else {
+            final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+            final String n = getContext().getPackageName();
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
             alarm.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
@@ -305,7 +315,29 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         Toast.makeText(getActivity(), R.string.Reminders15, Toast.LENGTH_SHORT).show();
                         HourlyApplication.saveReminders(getActivity(), reminders);
                     }
+                    if (b) {
+                        if (!pm.isIgnoringBatteryOptimizations(n)) {
+                            Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                            intent.setData(Uri.parse("package:" + n));
+                            startActivity(intent);
+                        }
+                    }
                     return true;
+                }
+            });
+            optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
+            optimization.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object o) {
+                    if (pm.isIgnoringBatteryOptimizations(n)) {
+                        Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                        startActivity(intent);
+                    } else {
+                        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                        intent.setData(Uri.parse("package:" + n));
+                        startActivity(intent);
+                    }
+                    return false;
                 }
             });
         }
@@ -488,6 +520,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         if (s.equals(HourlyApplication.PREFERENCE_ALARM)) {
             ((SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_ALARM)).setChecked(sharedPreferences.getBoolean(HourlyApplication.PREFERENCE_ALARM, false));
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+        final String n = getContext().getPackageName();
+        PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
+        SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+        if (optimization != null) {
+            optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
         }
     }
 }
