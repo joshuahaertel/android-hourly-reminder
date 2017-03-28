@@ -51,7 +51,7 @@
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="alarm"
-            android:summary="Использовать тип для оповещений 'alarm' (более точное срабатывание)"
+            android:summary="Использовать тип для оповещений 'alarm' (пробуждение в режиме Doze)"
             android:title="Точное время" />
     </PreferenceCategory>
 
@@ -111,8 +111,8 @@
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="optimization"
-            android:summary="Disable Battery Optimization"
-            android:title="Battery Optimization" />
+            android:summary="Отключить оптимизацию расхода батареи"
+            android:title="Оптимизация батареи" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"

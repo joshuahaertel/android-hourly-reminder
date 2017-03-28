@@ -528,10 +528,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         super.onResume();
         final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
         final String n = getContext().getPackageName();
-        PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
-        SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
-        if (optimization != null) {
-            optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
+        if (Build.VERSION.SDK_INT >= 23) {
+            PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
+            SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+            if (optimization != null) {
+                optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
+            }
         }
     }
 }
