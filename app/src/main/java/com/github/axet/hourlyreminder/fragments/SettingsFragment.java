@@ -1,6 +1,7 @@
 package com.github.axet.hourlyreminder.fragments;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -51,6 +52,7 @@ import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
 
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -300,6 +302,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
             alarm.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
+                @TargetApi(23)
                 public boolean onPreferenceChange(Preference preference, Object o) {
                     boolean b = (Boolean) o;
                     List<ReminderSet> reminders = HourlyApplication.loadReminders(getActivity());
@@ -329,6 +332,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
             optimization.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
+                @TargetApi(23)
                 public boolean onPreferenceChange(Preference preference, Object o) {
                     if (pm.isIgnoringBatteryOptimizations(n)) {
                         Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);

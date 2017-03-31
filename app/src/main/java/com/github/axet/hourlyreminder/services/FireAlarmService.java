@@ -150,11 +150,13 @@ public class FireAlarmService extends Service implements SensorEventListener {
             try {
                 JSONObject o = new JSONObject(json);
                 list = new Sound.Playlist(o);
-                JSONArray a = o.getJSONArray("ids");
                 ids = new ArrayList<>();
-                for (int i = 0; i < a.length(); i++)
-                    ids.add(a.getLong(i));
-                settime = o.getLong("settime");
+                JSONArray a = o.optJSONArray("ids");
+                if (a != null) {
+                    for (int i = 0; i < a.length(); i++)
+                        ids.add(a.getLong(i));
+                }
+                settime = o.optLong("settime");
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
