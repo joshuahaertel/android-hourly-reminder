@@ -152,11 +152,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 list = new Sound.Playlist(o);
                 ids = new ArrayList<>();
                 JSONArray a = o.optJSONArray("ids");
-                if (a != null) {
-                    for (int i = 0; i < a.length(); i++)
-                        ids.add(a.getLong(i));
-                }
-                settime = o.optLong("settime");
+                for (int i = 0; i < a.length(); i++)
+                    ids.add(a.getLong(i));
+                settime = o.getLong("settime");
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
@@ -273,6 +271,8 @@ public class FireAlarmService extends Service implements SensorEventListener {
             String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
 
             if (alarm == null) { // started without alarm, read stored alarm
+                if (json.isEmpty()) // service intent started, after alarm been cleared by dismissActiveAlarm()
+                    return START_NOT_STICKY;
                 alarm = new FireAlarm(json);
             } else { // alarm loaded, does it interference with current running alarm?
                 if (!json.isEmpty()) { // yep, we already firering alarm, show missed
