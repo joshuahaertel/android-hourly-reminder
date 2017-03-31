@@ -491,7 +491,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             @Override
             public void onClick(View v) {
                 fragmentRequestRingtone = a;
-                if (permitted())
+                if (com.github.axet.androidlibrary.app.Storage.permitted(getActivity(), PERMISSIONS, 1))
                     selectFile();
             }
         });
@@ -552,7 +552,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
 
         switch (requestCode) {
             case 1:
-                if (permitted(permissions))
+                if (com.github.axet.androidlibrary.app.Storage.permitted(getContext(), permissions))
                     selectFile();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
@@ -560,29 +560,6 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     }
 
     public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
-
-    boolean permitted(String[] ss) {
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        for (String s : ss) {
-            if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    boolean permitted() {
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        for (String s : PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(PERMISSIONS, 1);
-                return false;
-            }
-        }
-        return true;
-    }
 
     void setEnable(WeekSet a, boolean e) {
         a.setEnable(e);
