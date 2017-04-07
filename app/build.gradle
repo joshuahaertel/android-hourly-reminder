@@ -8,8 +8,8 @@ android {
         applicationId "com.github.axet.hourlyreminder"
         minSdkVersion 9
         targetSdkVersion 23
-        versionCode 238
-        versionName "2.2.14"
+        versionCode 239
+        versionName "2.2.15"
     }
     signingConfigs {
         release {
