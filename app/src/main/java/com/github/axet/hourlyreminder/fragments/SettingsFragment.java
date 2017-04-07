@@ -39,7 +39,9 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.app.Storage;
 import com.github.axet.androidlibrary.widgets.FilePathPreference;
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.SeekBarPreference;
 import com.github.axet.androidlibrary.widgets.SeekBarPreferenceDialogFragment;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
@@ -290,12 +292,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         PreferenceGroup app = (PreferenceGroup) findPreference("application");
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
-        SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+        OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+        optimization.onResume();
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 23 SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 23) {
             advanced.removePreference(alarm);
-            app.removePreference(optimization);
         } else {
             final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
             final String n = getContext().getPackageName();
@@ -329,22 +331,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     return true;
                 }
             });
-            optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
-            optimization.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                @TargetApi(23)
-                public boolean onPreferenceChange(Preference preference, Object o) {
-                    if (pm.isIgnoringBatteryOptimizations(n)) {
-                        Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-                        startActivity(intent);
-                    } else {
-                        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                        intent.setData(Uri.parse("package:" + n));
-                        startActivity(intent);
-                    }
-                    return false;
-                }
-            });
         }
 
         bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_VOLUME));
@@ -365,8 +351,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         findPreference(HourlyApplication.PREFERENCE_CALLSILENCE).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                if (!permitted(PERMISSIONS)) {
-                    permitted(PERMISSIONS, 1);
+                if (!Storage.permitted(getActivity(), PERMISSIONS)) {
+                    Storage.permitted(getActivity(), PERMISSIONS, 1);
                     return false;
                 }
                 return true;
@@ -382,8 +368,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             vp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object o) {
-                    if (!permitted(PERMISSIONS_V)) {
-                        permitted(PERMISSIONS_V, 2);
+                    if (!Storage.permitted(getActivity(), PERMISSIONS_V)) {
+                        Storage.permitted(getActivity(), PERMISSIONS_V, 2);
                         return false;
                     }
                     return true;
@@ -418,13 +404,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         switch (requestCode) {
             case 1:
-                if (permitted(PERMISSIONS))
+                if (Storage.permitted(getActivity(), PERMISSIONS))
                     setPhone();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
                 break;
             case 2:
-                if (permitted(PERMISSIONS_V))
+                if (Storage.permitted(getActivity(), PERMISSIONS_V))
                     setVibr();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
@@ -435,29 +421,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_PHONE_STATE};
 
     public static final String[] PERMISSIONS_V = new String[]{Manifest.permission.VIBRATE};
-
-    boolean permitted(String[] ss) {
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        for (String s : ss) {
-            if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    boolean permitted(String[] p, int c) {
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        for (String s : p) {
-            if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(p, c);
-                return false;
-            }
-        }
-        return true;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -531,14 +494,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onResume() {
         super.onResume();
-        final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
-        final String n = getContext().getPackageName();
-        if (Build.VERSION.SDK_INT >= 23) {
-            PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
-            SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
-            if (optimization != null) {
-                optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
-            }
-        }
+        OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+        optimization.onResume();
     }
 }
