@@ -108,7 +108,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Приложение" android:key="application">
-        <SwitchPreferenceCompat
+        <com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat
             android:defaultValue="true"
             android:key="optimization"
             android:summary="Предотвращать удаление программы из памяти телефона"

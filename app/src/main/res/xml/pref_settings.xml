@@ -108,7 +108,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Application" android:key="application">
-        <SwitchPreferenceCompat
+        <com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat
             android:defaultValue="false"
             android:key="optimization"
             android:persistent="false"

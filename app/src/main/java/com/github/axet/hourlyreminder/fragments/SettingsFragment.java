@@ -41,6 +41,7 @@ import android.widget.Toast;
 
 import com.github.axet.androidlibrary.app.Storage;
 import com.github.axet.androidlibrary.widgets.FilePathPreference;
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.SeekBarPreference;
 import com.github.axet.androidlibrary.widgets.SeekBarPreferenceDialogFragment;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
@@ -291,12 +292,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         PreferenceGroup app = (PreferenceGroup) findPreference("application");
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
-        SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+        OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+        optimization.onResume();
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 23 SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 23) {
             advanced.removePreference(alarm);
-            app.removePreference(optimization);
         } else {
             final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
             final String n = getContext().getPackageName();
@@ -328,22 +329,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         }
                     }
                     return true;
-                }
-            });
-            optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
-            optimization.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                @TargetApi(23)
-                public boolean onPreferenceChange(Preference preference, Object o) {
-                    if (pm.isIgnoringBatteryOptimizations(n)) {
-                        Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-                        startActivity(intent);
-                    } else {
-                        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                        intent.setData(Uri.parse("package:" + n));
-                        startActivity(intent);
-                    }
-                    return false;
                 }
             });
         }
@@ -509,14 +494,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onResume() {
         super.onResume();
-        final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
-        final String n = getContext().getPackageName();
-        if (Build.VERSION.SDK_INT >= 23) {
-            PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
-            SwitchPreferenceCompat optimization = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
-            if (optimization != null) {
-                optimization.setChecked(pm.isIgnoringBatteryOptimizations(n));
-            }
-        }
+        OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+        optimization.onResume();
     }
 }
