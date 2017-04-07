@@ -39,6 +39,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.app.Storage;
 import com.github.axet.androidlibrary.widgets.FilePathPreference;
 import com.github.axet.androidlibrary.widgets.SeekBarPreference;
 import com.github.axet.androidlibrary.widgets.SeekBarPreferenceDialogFragment;
@@ -365,8 +366,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         findPreference(HourlyApplication.PREFERENCE_CALLSILENCE).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                if (!permitted(PERMISSIONS)) {
-                    permitted(PERMISSIONS, 1);
+                if (!Storage.permitted(getActivity(), PERMISSIONS)) {
+                    Storage.permitted(getActivity(), PERMISSIONS, 1);
                     return false;
                 }
                 return true;
@@ -382,8 +383,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             vp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object o) {
-                    if (!permitted(PERMISSIONS_V)) {
-                        permitted(PERMISSIONS_V, 2);
+                    if (!Storage.permitted(getActivity(), PERMISSIONS_V)) {
+                        Storage.permitted(getActivity(), PERMISSIONS_V, 2);
                         return false;
                     }
                     return true;
@@ -418,13 +419,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         switch (requestCode) {
             case 1:
-                if (permitted(PERMISSIONS))
+                if (Storage.permitted(getActivity(), PERMISSIONS))
                     setPhone();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
                 break;
             case 2:
-                if (permitted(PERMISSIONS_V))
+                if (Storage.permitted(getActivity(), PERMISSIONS_V))
                     setVibr();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
@@ -435,29 +436,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_PHONE_STATE};
 
     public static final String[] PERMISSIONS_V = new String[]{Manifest.permission.VIBRATE};
-
-    boolean permitted(String[] ss) {
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        for (String s : ss) {
-            if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    boolean permitted(String[] p, int c) {
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        for (String s : p) {
-            if (ContextCompat.checkSelfPermission(getActivity(), s) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(p, c);
-                return false;
-            }
-        }
-        return true;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
