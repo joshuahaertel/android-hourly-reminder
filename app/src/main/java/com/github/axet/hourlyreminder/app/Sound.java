@@ -177,7 +177,7 @@ public class Sound extends TTS {
             stereoBytes = min;
         int stereoSize = stereoBytes / (Short.SIZE / 8); // total samples including zeros
         short[] samples = new short[stereoSize]; // including zeros
-        for (int i = 0; i < count; i ++) {
+        for (int i = 0; i < count; i++) {
             double sx = 2 * Math.PI * i / (SOUND_SAMPLERATE / freqHz);
             short sample = (short) (Math.sin(sx) * 0x7FFF);
             int si = i * 2;
@@ -258,7 +258,14 @@ public class Sound extends TTS {
 
         if (shared.getBoolean(HourlyApplication.PREFERENCE_PHONESILENCE, false)) {
             AudioManager tm = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            if (tm.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
+            int mode = tm.getRingerMode();
+            if (mode != AudioManager.RINGER_MODE_NORMAL) {
+                if (mode == AudioManager.RINGER_MODE_VIBRATE) { // phone in vibrate mode
+                    boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
+                    if (v) { // if vibrate enabled
+                        return Silenced.VIBRATE;
+                    }
+                }
                 return Silenced.SETTINGS;
             }
         }
