@@ -52,7 +52,9 @@ import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.alarms.Reminder;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
+import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
+import com.github.axet.hourlyreminder.widgets.VibratePreference;
 
 import java.lang.annotation.Target;
 import java.util.ArrayList;
@@ -269,14 +271,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
             am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamVolume(AudioManager.STREAM_ALARM), AudioManager.FLAG_SHOW_UI);
             SeekBarPreferenceDialogFragment f = SeekBarPreferenceDialogFragment.newInstance(preference.getKey());
-            ((DialogFragment) f).setTargetFragment(this, 0);
-            ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
+            f.setTargetFragment(this, 0);
+            f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
             return;
         }
-        if (preference.getKey().equals(HourlyApplication.PREFERENCE_BEEP_CUSTOM)) {
+        if (preference instanceof BeepPreference) {
             BeepPrefDialogFragment f = BeepPrefDialogFragment.newInstance(preference.getKey());
-            ((DialogFragment) f).setTargetFragment(this, 0);
-            ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
+            f.setTargetFragment(this, 0);
+            f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
             return;
         }
         super.onDisplayPreferenceDialog(preference);
@@ -292,8 +294,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         PreferenceGroup app = (PreferenceGroup) findPreference("application");
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
-        OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
-        optimization.onResume();
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 23 SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 23) {
@@ -351,41 +351,28 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         findPreference(HourlyApplication.PREFERENCE_CALLSILENCE).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                if (!Storage.permitted(getActivity(), PERMISSIONS)) {
-                    Storage.permitted(getActivity(), PERMISSIONS, 1);
+                if (!Storage.permitted(getContext(), PERMISSIONS)) {
+                    Storage.permitted(SettingsFragment.this, PERMISSIONS, 1);
                     return false;
                 }
                 return true;
             }
         });
 
-        PreferenceGroup sounds = (PreferenceGroup) findPreference("sounds");
-        Preference vp = findPreference(HourlyApplication.PREFERENCE_VIBRATE);
-
-        if (!hasVibrator()) {
-            sounds.removePreference(vp);
-        } else {
-            vp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object o) {
-                    if (!Storage.permitted(getActivity(), PERMISSIONS_V)) {
-                        Storage.permitted(getActivity(), PERMISSIONS_V, 2);
-                        return false;
-                    }
-                    return true;
+        VibratePreference vp = (VibratePreference) findPreference(HourlyApplication.PREFERENCE_VIBRATE);
+        vp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                if (!Storage.permitted(getContext(), VibratePreference.PERMISSIONS_V)) {
+                    Storage.permitted(SettingsFragment.this, VibratePreference.PERMISSIONS_V, 2);
+                    return false;
                 }
-            });
-        }
+                return true;
+            }
+        });
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.registerOnSharedPreferenceChangeListener(this);
-    }
-
-    boolean hasVibrator() {
-        Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        return v.hasVibrator();
     }
 
     void setPhone() {
@@ -394,23 +381,22 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     void setVibr() {
-        SwitchPreferenceCompat s = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_VIBRATE);
+        VibratePreference s = (VibratePreference) findPreference(HourlyApplication.PREFERENCE_VIBRATE);
         s.setChecked(true);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         switch (requestCode) {
             case 1:
-                if (Storage.permitted(getActivity(), PERMISSIONS))
+                if (Storage.permitted(getContext(), PERMISSIONS))
                     setPhone();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
                 break;
             case 2:
-                if (Storage.permitted(getActivity(), PERMISSIONS_V))
+                if (Storage.permitted(getContext(), VibratePreference.PERMISSIONS_V))
                     setVibr();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
@@ -419,8 +405,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_PHONE_STATE};
-
-    public static final String[] PERMISSIONS_V = new String[]{Manifest.permission.VIBRATE};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
