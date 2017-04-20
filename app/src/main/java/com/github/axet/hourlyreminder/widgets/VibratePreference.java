@@ -226,7 +226,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
         if (d != null)
             return;
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(getTitle());
+//        builder.setTitle(getTitle());
         builder.setView(R.layout.vibrate);
         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
