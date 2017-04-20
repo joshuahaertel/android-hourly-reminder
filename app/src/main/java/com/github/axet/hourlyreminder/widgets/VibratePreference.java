@@ -76,13 +76,17 @@ public class VibratePreference extends SwitchPreferenceCompat {
 
     public static Config loadConfig(Context context) {
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
-        String json = shared.getString(HourlyApplication.PREFERENCE_VIBRATE, "");
-        if (json.isEmpty()) {
-            ArrayAdapter<CharSequence> values = ArrayAdapter.createFromResource(context, R.array.patterns_values, android.R.layout.simple_spinner_item);
-            return new Config(false, values.getItem(DEFAULT_VALUE_INDEX).toString());
+        ArrayAdapter<CharSequence> values = ArrayAdapter.createFromResource(context, R.array.patterns_values, android.R.layout.simple_spinner_item);
+        try {
+            String json = shared.getString(HourlyApplication.PREFERENCE_VIBRATE, "");
+            if (json.isEmpty()) {
+                return new Config(false, values.getItem(DEFAULT_VALUE_INDEX).toString());
+            }
+            return new Config(json);
+        } catch (ClassCastException e) {
+            boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
+            return new Config(b, values.getItem(DEFAULT_VALUE_INDEX).toString());
         }
-        Config config = new Config(json);
-        return config;
     }
 
     ArrayAdapter<CharSequence> values = ArrayAdapter.createFromResource(getContext(), R.array.patterns_values, android.R.layout.simple_spinner_item);
@@ -207,13 +211,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
 
     void read() {
         SharedPreferences shared = getSharedPreferences();
-        try {
-            String json = shared.getString(HourlyApplication.PREFERENCE_VIBRATE, "");
-            config = new Config(json);
-        } catch (ClassCastException e) {
-            boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
-            config = new Config(b, values.getItem(DEFAULT_VALUE_INDEX).toString());
-        }
+        config = loadConfig(getContext());
     }
 
     void save() {
