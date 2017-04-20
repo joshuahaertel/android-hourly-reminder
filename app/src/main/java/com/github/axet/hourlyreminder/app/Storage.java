@@ -13,13 +13,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class Storage {
-    Context context;
-
+public class Storage extends com.github.axet.androidlibrary.app.Storage{
     public static final String RINGTONES = "ringtones";
 
     public Storage(Context context) {
-        this.context = context;
+        super(context);
     }
 
     public File storeRingtone(Uri uri) {

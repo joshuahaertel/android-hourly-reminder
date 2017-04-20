@@ -52,8 +52,8 @@
 
             <com.github.axet.androidlibrary.widgets.CircularSeekBar
                 android:id="@+id/repeat_seekbar"
-                android:layout_width="220dp"
-                android:layout_height="220dp"
+                android:layout_width="210dp"
+                android:layout_height="210dp"
                 app:lock_enabled="false"
                 app:max="59" />
         </FrameLayout>

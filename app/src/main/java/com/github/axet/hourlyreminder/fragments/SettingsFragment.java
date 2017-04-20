@@ -2,24 +2,18 @@ package com.github.axet.hourlyreminder.fragments;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
@@ -46,15 +40,15 @@ import com.github.axet.androidlibrary.widgets.SeekBarPreference;
 import com.github.axet.androidlibrary.widgets.SeekBarPreferenceDialogFragment;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
+import com.github.axet.hourlyreminder.alarms.Reminder;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
-import com.github.axet.hourlyreminder.alarms.Reminder;
-import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
+import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
 
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -269,14 +263,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
             am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamVolume(AudioManager.STREAM_ALARM), AudioManager.FLAG_SHOW_UI);
             SeekBarPreferenceDialogFragment f = SeekBarPreferenceDialogFragment.newInstance(preference.getKey());
-            ((DialogFragment) f).setTargetFragment(this, 0);
-            ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
+            f.setTargetFragment(this, 0);
+            f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
             return;
         }
-        if (preference.getKey().equals(HourlyApplication.PREFERENCE_BEEP_CUSTOM)) {
+        if (preference instanceof BeepPreference) {
             BeepPrefDialogFragment f = BeepPrefDialogFragment.newInstance(preference.getKey());
-            ((DialogFragment) f).setTargetFragment(this, 0);
-            ((DialogFragment) f).show(this.getFragmentManager(), "android.support.v14.preference.PreferenceFragment.DIALOG");
+            f.setTargetFragment(this, 0);
+            f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
             return;
         }
         super.onDisplayPreferenceDialog(preference);
@@ -292,8 +286,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         PreferenceGroup app = (PreferenceGroup) findPreference("application");
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
-        OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
-        optimization.onResume();
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 23 SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 23) {
@@ -351,41 +343,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         findPreference(HourlyApplication.PREFERENCE_CALLSILENCE).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                if (!Storage.permitted(getActivity(), PERMISSIONS)) {
-                    Storage.permitted(getActivity(), PERMISSIONS, 1);
+                if (!Storage.permitted(getContext(), PERMISSIONS)) {
+                    Storage.permitted(SettingsFragment.this, PERMISSIONS, 1);
                     return false;
                 }
                 return true;
             }
         });
 
-        PreferenceGroup sounds = (PreferenceGroup) findPreference("sounds");
-        Preference vp = findPreference(HourlyApplication.PREFERENCE_VIBRATE);
-
-        if (!hasVibrator()) {
-            sounds.removePreference(vp);
-        } else {
-            vp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object o) {
-                    if (!Storage.permitted(getActivity(), PERMISSIONS_V)) {
-                        Storage.permitted(getActivity(), PERMISSIONS_V, 2);
-                        return false;
-                    }
-                    return true;
-                }
-            });
-        }
-
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.registerOnSharedPreferenceChangeListener(this);
-    }
-
-    boolean hasVibrator() {
-        Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        return v.hasVibrator();
     }
 
     void setPhone() {
@@ -393,25 +360,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         s.setChecked(true);
     }
 
-    void setVibr() {
-        SwitchPreferenceCompat s = (SwitchPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_VIBRATE);
-        s.setChecked(true);
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         switch (requestCode) {
             case 1:
-                if (Storage.permitted(getActivity(), PERMISSIONS))
+                if (Storage.permitted(getContext(), PERMISSIONS))
                     setPhone();
-                else
-                    Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
-                break;
-            case 2:
-                if (Storage.permitted(getActivity(), PERMISSIONS_V))
-                    setVibr();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
                 break;
@@ -419,8 +374,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
     public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_PHONE_STATE};
-
-    public static final String[] PERMISSIONS_V = new String[]{Manifest.permission.VIBRATE};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

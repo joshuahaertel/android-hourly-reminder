@@ -1,11 +1,8 @@
 package com.github.axet.hourlyreminder.widgets;
 
-import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.support.v7.preference.EditTextPreference;
+import android.support.v7.preference.PreferenceManager;
 import android.util.AttributeSet;
 
 public class BeepPreference extends EditTextPreference {
@@ -28,4 +25,5 @@ public class BeepPreference extends EditTextPreference {
     public void setValues(String s) {
         setText(s);
     }
+
 }

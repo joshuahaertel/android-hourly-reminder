@@ -23,6 +23,12 @@
         <item quantity="other">%d секунд</item>
     </plurals>
 
+    <string-array name="patterns_text">
+        <item>Длинный</item>
+        <item>Удар-удар</item>
+        <item>Длинный-удар</item>
+    </string-array>
+
     <string name="once">Единожды</string>
     <string name="Everyday">Каждый день</string>
 
@@ -178,4 +184,6 @@
     <string name="intervals">Промежутки:</string>
     <string name="once_per_hour">Раз в час в указанные минуты</string>
     <string name="repeat_time_interval">Повторять через выбранные промежутки</string>
+    <string name="vibrate_reminders">Вибратор на оповещения</string>
+    <string name="vibrate_alarms">Вибратор для будильника</string>
 </resources>

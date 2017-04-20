@@ -491,7 +491,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             @Override
             public void onClick(View v) {
                 fragmentRequestRingtone = a;
-                if (com.github.axet.androidlibrary.app.Storage.permitted(getActivity(), PERMISSIONS, 1))
+                if (com.github.axet.androidlibrary.app.Storage.permitted(WeekSetFragment.this, PERMISSIONS, 1))
                     selectFile();
             }
         });
@@ -552,7 +552,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
 
         switch (requestCode) {
             case 1:
-                if (com.github.axet.androidlibrary.app.Storage.permitted(getContext(), permissions))
+                if (Storage.permitted(getContext(), permissions))
                     selectFile();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();

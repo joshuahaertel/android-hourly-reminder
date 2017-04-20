@@ -25,6 +25,7 @@ import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
+import com.github.axet.hourlyreminder.widgets.VibratePreference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,6 +43,14 @@ public class Sound extends TTS {
     Runnable toneLoop;
     MediaPlayer player;
     AudioTrack track;
+    long[] vibrateTrack;
+    Runnable vibrateEnd = new Runnable() {
+        @Override
+        public void run() {
+            handler.removeCallbacks(vibrateEnd);
+            vibrateTrack = null;
+        }
+    };
     FadeVolume increaseVolume;
     Runnable loop; // loop preventer
 
@@ -158,6 +167,9 @@ public class Sound extends TTS {
     public void close() {
         super.close();
 
+        if (vibrateTrack != null)
+            vibrateStop();
+
         playerClose();
 
         if (track != null) {
@@ -195,15 +207,15 @@ public class Sound extends TTS {
         return track;
     }
 
-    public Silenced silencedPlaylist(Playlist rr) {
-        Silenced ss = silenced();
+    public Silenced silencedPlaylist(VibratePreference.Config config, Playlist rr) {
+        Silenced ss = silenced(config);
 
         if (ss != Silenced.NONE)
             return ss;
 
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
+        boolean v = config.reminders;
         boolean c = !rr.after.isEmpty() || !rr.before.isEmpty();
         boolean s = rr.speech;
         boolean b = rr.beep;
@@ -218,14 +230,15 @@ public class Sound extends TTS {
     }
 
     public Silenced silencedAlarm(WeekSet a) {
-        Silenced ss = silenced();
+        VibratePreference.Config config = VibratePreference.loadConfig(context);
+
+        Silenced ss = silenced(config);
 
         if (ss != Silenced.NONE)
             return ss;
 
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
+        boolean v = config.alarms;
         boolean c = a.ringtone;
         boolean s = a.speech;
         boolean b = a.beep;
@@ -239,7 +252,7 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public Silenced silenced() {
+    public Silenced silenced(VibratePreference.Config config) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (shared.getBoolean(HourlyApplication.PREFERENCE_CALLSILENCE, false)) {
@@ -261,7 +274,7 @@ public class Sound extends TTS {
             int mode = tm.getRingerMode();
             if (mode != AudioManager.RINGER_MODE_NORMAL) {
                 if (mode == AudioManager.RINGER_MODE_VIBRATE) { // phone in vibrate mode
-                    boolean v = shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false);
+                    boolean v = config.isChecked();
                     if (v) { // if vibrate enabled
                         return Silenced.VIBRATE;
                     }
@@ -276,22 +289,22 @@ public class Sound extends TTS {
     public Silenced playList(final Playlist rr, final long time, final Runnable done) {
         playerClose();
 
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        VibratePreference.Config config = VibratePreference.loadConfig(context);
 
-        Silenced s = silencedPlaylist(rr);
+        Silenced s = silencedPlaylist(config, rr);
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
             if (s == Silenced.VIBRATE)
-                vibrate();
+                vibrate(config.remindersPattern);
             if (done != null) {
                 done.run();
             }
             return s;
         }
 
-        if (shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false)) {
-            vibrate();
+        if (config.reminders) {
+            vibrate(config.remindersPattern);
         }
 
         final Runnable after = new Runnable() {
@@ -658,20 +671,35 @@ public class Sound extends TTS {
         return player;
     }
 
-    public void vibrate() {
-        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(400);
+    public void vibrate(String pattern) {
+        long[] p = VibratePreference.patternLoad(pattern);
+        vibrateStart(p, -1);
     }
 
-    public void vibrateStart() {
-        long[] pattern = {0, 1000, 300};
+    public void vibrateStart(String pattern, int repeat) {
+        long[] p = VibratePreference.patternLoad(pattern);
+        vibrateStart(p, repeat);
+    }
+
+    public void vibrateStart(long[] pattern, int repeat) {
         Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(pattern, 0);
+        if (v == null)
+            return;
+        vibrateTrack = pattern;
+        v.vibrate(vibrateTrack, repeat);
+        if (repeat == -1) { // not repating? clear track, prevent vibrateorStop call twice
+            long l = VibratePreference.patternLength(vibrateTrack);
+            handler.postDelayed(vibrateEnd, l);
+        }
     }
 
     public void vibrateStop() {
         Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        if (v == null)
+            return;
         v.cancel();
+        vibrateTrack = null;
+        handler.removeCallbacks(vibrateEnd);
     }
 
     void playerCl() {
@@ -716,19 +744,19 @@ public class Sound extends TTS {
 
         final Playlist rr = alarm.list;
 
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        VibratePreference.Config config = VibratePreference.loadConfig(context);
 
-        Silenced s = silencedPlaylist(alarm.list);
+        Silenced s = silencedPlaylist(config, alarm.list);
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
             if (s == Silenced.VIBRATE)
-                vibrate();
+                vibrateStart(config.alarmsPattern, 0);
             return s;
         }
 
-        if (shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false)) {
-            vibrate();
+        if (config.alarms) {
+            vibrateStart(config.alarmsPattern, 0);
         }
 
         final Runnable restart = new Runnable() {
