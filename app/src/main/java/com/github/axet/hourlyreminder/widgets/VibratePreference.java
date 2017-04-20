@@ -107,9 +107,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
     Runnable remStop = new Runnable() {
         @Override
         public void run() {
-            remPlaying = null;
-            handler.removeCallbacks(remStop);
-            sound.vibrateStop();
+            stop();
             update();
         }
     };
@@ -236,6 +234,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 d = null;
+                stop();
                 if (sound != null)
                     sound.close();
                 sound = null;
@@ -264,8 +263,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 read();
 
                 sound = new Sound(getContext());
-                remPlaying = null;
-                alaPlaying = null;
+                stop();
 
                 Window v = d.getWindow();
 
@@ -299,7 +297,8 @@ public class VibratePreference extends SwitchPreferenceCompat {
             remPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    remStop.run();
+                    stop();
+                    update();
                 }
             });
         } else {
@@ -308,7 +307,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 @Override
                 public void onClick(View v) {
                     save();
-                    alaPlaying = null;
+                    stop();
                     remPlaying = patternLoad(config.remindersPattern);
                     long l = patternLength(remPlaying);
                     sound.vibrateStart(remPlaying, -1);
@@ -323,8 +322,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
             alaPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    alaPlaying = null;
-                    sound.vibrateStop();
+                    stop();
                     update();
                 }
             });
@@ -334,12 +332,24 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 @Override
                 public void onClick(View v) {
                     save();
-                    remPlaying = null;
+                    stop();
                     alaPlaying = patternLoad(config.alarmsPattern);
                     sound.vibrateStart(alaPlaying, 0);
                     update();
                 }
             });
         }
+    }
+
+    void stop() {
+        if (remPlaying != null) {
+            remPlaying = null;
+            sound.vibrateStop();
+        }
+        if (alaPlaying != null) {
+            alaPlaying = null;
+            sound.vibrateStop();
+        }
+        handler.removeCallbacks(remStop);
     }
 }
