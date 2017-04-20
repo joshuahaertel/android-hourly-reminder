@@ -30,6 +30,7 @@ import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
+import com.github.axet.hourlyreminder.widgets.VibratePreference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -382,9 +383,6 @@ public class FireAlarmService extends Service implements SensorEventListener {
         Log.d(FireAlarmService.class.getSimpleName(), "onDestory");
 
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-        if (shared.getBoolean(HourlyApplication.PREFERENCE_VIBRATE, false)) {
-            sound.vibrateStop();
-        }
 
         if (sound != null) {
             sound.close();

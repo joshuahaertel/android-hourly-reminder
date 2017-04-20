@@ -136,6 +136,18 @@
         <item>ru_RU</item>
     </string-array>
 
+    <string-array name="patterns_text">
+        <item>Single</item>
+        <item>Beat-Beat</item>
+        <item>Long-Beat</item>
+    </string-array>
+
+    <string-array name="patterns_values" translatable="false">
+        <item>v:1000,s:1000</item>
+        <item>v:200,s:100,v:200,s:500,v:200,s:100,v:200,s:1000</item>
+        <item>v:1000,s:100,v:200,s:100,v:200,s:1000</item>
+    </string-array>
+
     <!--MainActivity-->
     <string name="HourlyReminders">Hourly Reminders</string>
     <string name="CustomAlarms">Custom Alarms</string>
@@ -288,4 +300,6 @@
     <string name="intervals">Intervals:</string>
     <string name="once_per_hour">Once per Hour</string>
     <string name="repeat_time_interval">Repeat Time Interval</string>
+    <string name="vibrate_reminders">Vibrate Reminders</string>
+    <string name="vibrate_alarms">Vibrate Alarms</string>
 </resources>
