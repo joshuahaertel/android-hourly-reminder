@@ -8,8 +8,8 @@ android {
         applicationId "com.github.axet.hourlyreminder"
         minSdkVersion 9
         targetSdkVersion 23
-        versionCode 246
-        versionName "2.3.4"
+        versionCode 247
+        versionName "2.3.5"
     }
     signingConfigs {
         release {
@@ -39,5 +39,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:design:25.3.1'
-    compile 'com.github.axet:android-library:1.11.5' // compile project(':android-library')
+    compile 'com.github.axet:android-library:1.11.6' // compile project(':android-library')
 }

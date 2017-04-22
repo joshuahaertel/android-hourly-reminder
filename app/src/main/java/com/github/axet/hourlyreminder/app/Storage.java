@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class Storage extends com.github.axet.androidlibrary.app.Storage{
+public class Storage extends com.github.axet.androidlibrary.app.Storage {
     public static final String RINGTONES = "ringtones";
 
     public Storage(Context context) {
