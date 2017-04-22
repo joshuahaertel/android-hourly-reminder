@@ -143,7 +143,7 @@
     </string-array>
 
     <string-array name="patterns_values" translatable="false">
-        <item>v:1000,s:1000</item>
+        <item>v:400,s:1000</item>
         <item>v:200,s:100,v:200,s:500,v:200,s:100,v:200,s:1000</item>
         <item>v:1000,s:100,v:200,s:100,v:200,s:1000</item>
     </string-array>
