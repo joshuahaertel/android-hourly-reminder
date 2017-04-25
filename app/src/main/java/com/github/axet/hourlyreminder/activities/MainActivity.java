@@ -29,6 +29,7 @@ import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
@@ -170,6 +171,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
         shared.registerOnSharedPreferenceChangeListener(this);
+
+        if (OptimizationPreferenceCompat.needWarning(this)) {
+            OptimizationPreferenceCompat.showWarning(this);
+        }
     }
 
     @Override
