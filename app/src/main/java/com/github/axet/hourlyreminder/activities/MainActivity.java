@@ -18,6 +18,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
@@ -132,10 +134,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         AppBarLayout appbar = (AppBarLayout) findViewById(R.id.appbar);
-        if (Build.VERSION.SDK_INT < 16)
-            appbar.setBackgroundDrawable(new ColorDrawable(HourlyApplication.getActionbarColor(this)));
-        else
-            appbar.setBackground(new ColorDrawable(HourlyApplication.getActionbarColor(this)));
+        ViewCompat.setBackground(appbar, new ColorDrawable(HourlyApplication.getActionbarColor(this)));
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
