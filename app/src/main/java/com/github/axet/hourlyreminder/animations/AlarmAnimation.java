@@ -204,37 +204,39 @@ public class AlarmAnimation extends MarginAnimation {
 
     void colorOn() {
         final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
-        GlowAnimation a = new GlowAnimation(time) {
-            @Override
-            public void end() {
-                super.end();
-                colorEnd();
-            }
-        };
-        a.startAnimation(time);
+//        GlowAnimation a = new GlowAnimation(time) {
+//            @Override
+//            public void end() {
+//                super.end();
+//                colorEnd();
+//            }
+//        };
+//        a.startAnimation(time);
+        colorEnd();
 
         final TextView every = (TextView) convertView.findViewById(R.id.alarm_every);
         if (every != null) {
-            GlowAnimation aa = new GlowAnimation(every) {
-                @Override
-                public void end() {
-                    super.end();
-                    colorEnd();
-                }
-            };
-            aa.startAnimation(every);
+//            GlowAnimation aa = new GlowAnimation(every) {
+//                @Override
+//                public void end() {
+//                    super.end();
+//                    colorEnd();
+//                }
+//            };
+//            aa.startAnimation(every);
+            colorEnd();
         }
 
         TextView browse = (TextView) convertView.findViewById(R.id.alarm_ringtone_browse);
         if (browse != null) {
-            GlowAnimation aa = new GlowAnimation(browse);
-            aa.startAnimation(browse);
+//            GlowAnimation aa = new GlowAnimation(browse);
+//            aa.startAnimation(browse);
         }
 
         TextView ring = (TextView) convertView.findViewById(R.id.alarm_ringtone_value);
         if (ring != null) {
-            GlowAnimation aa = new GlowAnimation(ring);
-            aa.startAnimation(ring);
+//            GlowAnimation aa = new GlowAnimation(ring);
+//            aa.startAnimation(ring);
         }
     }
 

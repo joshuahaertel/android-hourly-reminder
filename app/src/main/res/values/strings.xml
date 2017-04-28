@@ -302,4 +302,5 @@
     <string name="repeat_time_interval">Repeat Time Interval</string>
     <string name="vibrate_reminders">Vibrate Reminders</string>
     <string name="vibrate_alarms">Vibrate Alarms</string>
+    <string name="show_30_minutes">Show 30-minutes</string>
 </resources>

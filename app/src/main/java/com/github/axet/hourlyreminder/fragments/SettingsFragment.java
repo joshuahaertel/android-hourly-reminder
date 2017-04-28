@@ -82,8 +82,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             }
 
             if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
-                List sortedList = new ArrayList((Set) value);
-                preference.setSummary(HourlyApplication.getHours2String(preference.getContext(), sortedList));
+                preference.setSummary(HourlyApplication.getHours2String(preference.getContext(), (Set) value));
                 return true;
             }
 

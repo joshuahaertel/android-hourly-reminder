@@ -24,14 +24,46 @@ import com.github.axet.androidlibrary.widgets.ThemeUtils;
 // better to create simple class. java always better then xml (note to google)
 //
 public class RoundCheckbox extends AppCompatCheckBox {
+    /*
+    <style name="RoundCheckBox">
+        <item name="android:button">@android:color/transparent</item>
+        <item name="android:textColor">@color/round_checkbox_color</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:background">@drawable/round_checkbox</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <selector xmlns:android="http://schemas.android.com/apk/res/android">
+        <item android:drawable="@drawable/round_checkbox_uncheck" android:state_checked="false" />
+        <item android:drawable="@drawable/round_checkbox_check" android:state_checked="true" />
+    </selector>
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+        <solid android:color="@color/colorAccent" />
+        <padding
+            android:bottom="0dip"
+            android:left="0dip"
+            android:right="0dip"
+            android:top="0dip" />
+    </shape>
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <shape xmlns:android="http://schemas.android.com/apk/res/android"
+        android:shape="oval">
+        <solid android:color="#222222" />
+        <padding
+            android:bottom="0dip"
+            android:left="0dip"
+            android:right="0dip"
+            android:top="0dip" />
+    </shape>
+    */
 
     public static int SECOND_BACKGROUND = 0x22222222;
 
     ObjectAnimator animator;
-
-    float stateAnimator;
-
-    Property<RoundCheckbox, Float> STATE_ANIMATOR = null;
 
     public RoundCheckbox(Context context) {
         super(context);
@@ -49,43 +81,6 @@ public class RoundCheckbox extends AppCompatCheckBox {
     }
 
     public void create() {
-        /*
-        <style name="RoundCheckBox">
-            <item name="android:button">@android:color/transparent</item>
-            <item name="android:textColor">@color/round_checkbox_color</item>
-            <item name="android:textStyle">bold</item>
-            <item name="android:background">@drawable/round_checkbox</item>
-            <item name="android:gravity">center</item>
-        </style>
-
-        <?xml version="1.0" encoding="utf-8"?>
-        <selector xmlns:android="http://schemas.android.com/apk/res/android">
-            <item android:drawable="@drawable/round_checkbox_uncheck" android:state_checked="false" />
-            <item android:drawable="@drawable/round_checkbox_check" android:state_checked="true" />
-        </selector>
-
-        <?xml version="1.0" encoding="UTF-8"?>
-        <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
-            <solid android:color="@color/colorAccent" />
-            <padding
-                android:bottom="0dip"
-                android:left="0dip"
-                android:right="0dip"
-                android:top="0dip" />
-        </shape>
-
-        <?xml version="1.0" encoding="UTF-8"?>
-        <shape xmlns:android="http://schemas.android.com/apk/res/android"
-            android:shape="oval">
-            <solid android:color="#222222" />
-            <padding
-                android:bottom="0dip"
-                android:left="0dip"
-                android:right="0dip"
-                android:top="0dip" />
-        </shape>
-        */
-
         ShapeDrawable checkbox_on = new ShapeDrawable(new OvalShape());
         PorterDuffColorFilter checkbox_on_filter = new PorterDuffColorFilter(ThemeUtils.getThemeColor(getContext(), R.attr.colorAccent), PorterDuff.Mode.SRC_ATOP);
         checkbox_on.setColorFilter(checkbox_on_filter);
@@ -133,19 +128,21 @@ public class RoundCheckbox extends AppCompatCheckBox {
     public void setChecked(boolean checked) {
         super.setChecked(checked);
         if (Build.VERSION.SDK_INT >= 14) {
-            STATE_ANIMATOR = new Property<RoundCheckbox, Float>(Float.class, "stateAnimator") {
+            Property<RoundCheckbox, Float> prop = new Property<RoundCheckbox, Float>(Float.class, "stateAnimator") {
+                float stateAnimator;
+
                 @Override
                 public Float get(RoundCheckbox object) {
-                    return object.stateAnimator;
+                    return stateAnimator;
                 }
 
                 @Override
                 public void set(RoundCheckbox object, Float value) {
-                    object.stateAnimator = value;
+                    stateAnimator = value;
                     object.invalidate();
                 }
             };
-            animator = ObjectAnimator.ofFloat(this, STATE_ANIMATOR, 1f);
+            animator = ObjectAnimator.ofFloat(this, prop, 1f);
             animator.setDuration(500);
             if (Build.VERSION.SDK_INT >= 18)
                 animator.setAutoCancel(true);

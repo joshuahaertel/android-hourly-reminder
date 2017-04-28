@@ -22,6 +22,8 @@ public class GlowAnimation extends StepAnimation {
 
     public static void restore(TextView view) {
         Animation a = view.getAnimation();
+        if (a == null)
+            return;
         if (a instanceof GlowAnimation) {
             view.setShadowLayer(0, 0, 0, 0xffff0000);
         }

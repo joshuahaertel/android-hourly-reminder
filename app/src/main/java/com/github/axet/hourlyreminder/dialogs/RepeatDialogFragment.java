@@ -227,7 +227,8 @@ public class RepeatDialogFragment extends DialogFragment {
         if (mins == 0 || mins == 60) {
             text.setText(R.string.hourly);
         } else {
-            text.setText(mins + " " + getString(R.string.min));
+            String pref = buttonHourly.isChecked() ? ":" : "";
+            text.setText(pref + mins + " " + getString(R.string.min));
         }
         for (int i = 0; i < vv.length; i++) {
             View v = vv[i];

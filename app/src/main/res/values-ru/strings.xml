@@ -186,4 +186,5 @@
     <string name="repeat_time_interval">Повторять через выбранные промежутки</string>
     <string name="vibrate_reminders">Вибратор на оповещения</string>
     <string name="vibrate_alarms">Вибратор для будильника</string>
+    <string name="show_30_minutes">Показать 30-минут</string>
 </resources>

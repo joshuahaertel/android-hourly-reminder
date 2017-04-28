@@ -22,8 +22,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppThemeLight.FullScreen" parent="@android:style/Theme.Light.NoTitleBar.Fullscreen">
-    </style>
+    <style name="AppThemeLight.FullScreen" parent="@android:style/Theme.Light.NoTitleBar.Fullscreen"></style>
 
     <style name="AppThemeLight.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="android:textColorPrimary">@android:color/white</item>
@@ -44,7 +43,25 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppThemeDark.FullScreen" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+    <style name="AppThemeDark.FullScreen" parent="@android:style/Theme.NoTitleBar.Fullscreen"></style>
+
+    <style name="HourRound">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_margin">3dp</item>
+    </style>
+
+    <style name="Hour30">
+        <item name="android:layout_width">5dp</item>
+        <item name="android:layout_height">5dp</item>
+        <item name="android:background">@drawable/round_corners_light</item>
+    </style>
+
+    <style name="Hour30b">
+        <item name="android:layout_width">26dp</item>
+        <item name="android:layout_height">26dp</item>
+        <item name="android:layout_marginLeft">25dp</item>
+        <item name="android:text">30</item>
     </style>
 
 </resources>
