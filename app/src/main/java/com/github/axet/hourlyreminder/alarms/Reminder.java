@@ -13,7 +13,6 @@ public class Reminder extends WeekTime {
         public int hour;
         public int min;
 
-
         public Key(int h) {
             this(h, 0);
         }
