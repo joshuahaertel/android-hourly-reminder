@@ -19,5 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="1ч" />
+        android:text="1ч"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 </FrameLayout>

@@ -505,6 +505,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         if (alarm != null || rlist != null) {
             HourlyApplication.save(this, alarms, reminders);
             registerNextAlarm();
+        } else {
+            Log.d(TAG, "Time ignored: " + time);
         }
     }
 
@@ -653,7 +655,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     void setExact(long time, Intent intent) {
-        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
         AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         if (Build.VERSION.SDK_INT >= 23) {
             alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pe);
@@ -666,7 +668,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     void setAlarm(long time, Intent intent) {
-        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
         AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         if (Build.VERSION.SDK_INT >= 21) {
             alarm.setAlarmClock(new AlarmManager.AlarmClockInfo(time, pe), pe);
@@ -679,7 +681,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     void cancel(Intent intent) {
-        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
         AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pe);
         checkCancel(intent);

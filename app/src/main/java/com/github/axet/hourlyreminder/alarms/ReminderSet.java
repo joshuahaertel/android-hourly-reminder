@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -58,7 +59,7 @@ public class ReminderSet extends WeekSet {
     }
 
     public String format() {
-        return HourlyApplication.getHours2String(context, new ArrayList<>(hours));
+        return HourlyApplication.getHours2String(context, hours);
     }
 
     @Override
@@ -72,33 +73,99 @@ public class ReminderSet extends WeekSet {
     public void load(Set<String> hours) {
         this.hours = new TreeSet<>(hours);
         this.list = new ArrayList<>();
-        for (int hour = 0; hour < 24; hour++) {
-            String h = Reminder.format(hour);
-            if (hours.contains(h)) {
-                int hh = hour + 1;
-                if (hh > 23)
-                    hh = 0;
-                String next = Reminder.format(hh);
+//        for (int hour = 0; hour < 24; hour++) {
+//            Reminder.Key h = new Reminder.Key(hour);
+//            if (hours.contains(h.key)) {
+//                int hh = hour + 1;
+//                if (hh > 23)
+//                    hh = 0;
+//                String next = Reminder.format(hh);
+//                if (repeat > 0) {
+//                    int max = repeat;
+//
+//                    if (hours.contains(next)) {
+//                        max = 60;
+//                    }
+//
+//                    for (int m = 0; m < max; m += repeat) {
+//                        Reminder r = new Reminder(context, getWeekDaysProperty());
+//                        r.enabled = true;
+//                        r.setTime(hour, m);
+//                        list.add(r);
+//                    }
+//                } else { // negative means once per hour at specified time
+//                    Reminder r = new Reminder(context, getWeekDaysProperty());
+//                    r.enabled = true;
+//                    r.setTime(hour, -repeat);
+//                    list.add(r);
+//                }
+//            }
+//        }
 
-                if (repeat > 0) {
-                    int max = repeat;
+        ArrayList<String> list = new ArrayList<>(hours);
 
-                    if (hours.contains(next)) {
-                        max = 60;
-                    }
-
-                    for (int m = 0; m < max; m += repeat) {
-                        Reminder r = new Reminder(context, getWeekDaysProperty());
-                        r.enabled = true;
-                        r.setTime(hour, m);
-                        list.add(r);
-                    }
-                } else { // negative means once per hour at specified time
-                    Reminder r = new Reminder(context, getWeekDaysProperty());
-                    r.enabled = true;
-                    r.setTime(hour, -repeat);
-                    list.add(r);
+        // find start index, it maybe mid night or daylight interval.
+        int start = 0;
+        if (list.contains(Reminder.format(0))) {
+            for (int prev = 23; prev >= 0; prev--) {
+                String h = Reminder.format(prev) + Reminder.HALF;
+                int i = list.indexOf(h);
+                if (i != -1) {
+                    start = i;
                 }
+                h = Reminder.format(prev);
+                i = list.indexOf(h);
+                if (i == -1) {
+                    break;
+                }
+                start = i;
+            }
+        }
+
+        Reminder.Key prev = null;
+        for (int i = 0; i < list.size(); i++) {
+            int index = start + i;
+            if (index >= list.size()) {
+                index -= list.size();
+            }
+            Reminder.Key s = new Reminder.Key(list.get(index));
+            int max;
+            if (prev != null) {
+                if (prev.next(s)) { // have next, roll up full hour
+                    if (s.min == 0)
+                        max = 60;
+                    else
+                        max = s.min;
+                } else {
+                    max = repeat;
+                }
+                add(prev, max);
+            }
+            prev = s;
+        }
+        if (prev != null) { // add last hour
+            int min = prev.min + repeat;
+            if (min < repeat)
+                min = repeat;
+            add(prev, min);
+        }
+    }
+
+    void add(Reminder.Key prev, int max) {
+        if (repeat > 0) {
+            for (int m = prev.min; m < max; m += repeat) {
+                Reminder r = new Reminder(context, getWeekDaysProperty());
+                r.enabled = true;
+                r.setTime(prev.hour, m);
+                this.list.add(r);
+            }
+        } else { // negative means once per hour at specified time
+            int min = -repeat;
+            if (prev.min < min) {
+                Reminder r = new Reminder(context, getWeekDaysProperty());
+                r.enabled = true;
+                r.setTime(prev.hour, min);
+                this.list.add(r);
             }
         }
     }

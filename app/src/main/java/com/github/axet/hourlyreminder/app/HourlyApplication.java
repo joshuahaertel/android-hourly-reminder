@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -360,13 +361,8 @@ public class HourlyApplication extends Application {
         Toast.makeText(context, context.getString(R.string.alarm_set_for, str), Toast.LENGTH_SHORT).show();
     }
 
-    public static String getHours2String(Context context, List<String> hours) {
+    public static String getHours2String(Context context, Set<String> hours) {
         boolean h24 = DateFormat.is24HourFormat(context);
-
-        String[] AMPM = new String[]{
-                "12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
-                "12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
-        };
 
         String AM = context.getString(R.string.day_am);
         String PM = context.getString(R.string.day_pm);
@@ -375,78 +371,95 @@ public class HourlyApplication extends Application {
 
         String str = "";
 
-        Collections.sort(hours);
+        ArrayList<String> list = new ArrayList<>(hours);
 
-        int prev = -2;
+        // find start index, it maybe mid night or daylight interval.
+        int start = 0;
+        if (list.contains(Reminder.format(0))) {
+            for (int prev = 23; prev >= 0; prev--) {
+                String h = Reminder.format(prev) + Reminder.HALF;
+                int i = list.indexOf(h);
+                if (i != -1) {
+                    start = i;
+                }
+                h = Reminder.format(prev);
+                i = list.indexOf(h);
+                if (i == -1) {
+                    break;
+                }
+                start = i;
+            }
+        }
+
         int count = 0;
-        for (String s : hours) {
-            int i = Integer.parseInt(s);
-            int next = prev + count;
-            if (i == next + 1) {
+        Reminder.Key prev = null;
+        Reminder.Key last = null;
+        for (int i = 0; i < list.size(); i++) {
+            int index = start + i;
+            if (index >= list.size()) {
+                index -= list.size();
+            }
+            Reminder.Key s = new Reminder.Key(list.get(index));
+            if (prev != null && prev.next(s)) {
                 count++;
             } else {
                 if (count != 0) {
                     if (!h24) {
-                        if (prev < 12 && next >= 12)
+                        if (last.hour < 12 && prev.hour >= 12)
                             str += AM;
+                        if (last.hour >= 12 && s.hour < 12)
+                            str += PM;
                     }
-
-                    if (count == 1)
+                    if (count == 1 && (last.min == 0 && prev.min == 0))
                         str += ",";
                     else
                         str += "-";
-
-                    if (h24)
-                        str += Reminder.format(next);
-                    else
-                        str += AMPM[next];
-
+                    str += prev.formatShort(context);
                     if (!h24) {
-                        if (next < 12 && i >= 12)
+                        if (last.hour < 12 && s.hour >= 12)
                             str += AM;
+                        if (last.hour >= 12 && s.hour < 12)
+                            str += PM;
                     }
-
-                    if (h24)
-                        str += "," + Reminder.format(i);
-                    else
-                        str += "," + AMPM[i];
+                    str += ",";
+                    str += s.formatShort(context);
+                    last = s;
                 } else {
-                    if (!h24) {
-                        if (prev < 12 && i >= 12)
-                            str += AM;
-                    }
-                    if (!str.isEmpty())
+                    if (last != null) {
+                        if (!h24) {
+                            if (last.hour < 12 && s.hour >= 12)
+                                str += AM;
+                            if (last.hour >= 12 && s.hour < 12)
+                                str += PM;
+                        }
                         str += ",";
-                    if (h24)
-                        str += Reminder.format(i);
-                    else
-                        str += AMPM[i];
+                    }
+                    str += s.formatShort(context);
+                    last = s;
                 }
-
-                prev = i;
                 count = 0;
             }
+            prev = s;
         }
 
         if (count != 0) {
-            int next = prev + count;
-
             if (!h24) {
-                if (prev < 12 && next >= 12)
+                if (last.hour < 12 && prev.hour >= 12)
                     str += AM;
+                if (last.hour >= 12 && prev.hour < 12)
+                    str += PM;
             }
-
-            str += "-";
-
-            if (h24)
-                str += Reminder.format(next) + H;
+            if (count == 1 && (last.min == 0 && prev.min == 0))
+                str += ",";
             else
-                str += AMPM[next] + (next >= 12 ? PM : AM);
-        } else if (prev != -2) {
+                str += "-";
+            str += prev.formatShort(context);
+        }
+        if (prev != null) {
             if (h24)
                 str += H;
             else
-                str += (prev >= 12 ? PM : AM);
+                str += (prev.hour >= 12 ? PM : AM);
         }
 
         return str;

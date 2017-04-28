@@ -19,12 +19,18 @@
             android:orientation="horizontal"
             android:paddingTop="5dp">
 
-            <TextView
-                android:id="@+id/alarm_time"
-                android:layout_width="wrap_content"
+            <com.github.axet.androidlibrary.widgets.PathMax
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="09:00"
-                android:textSize="30dp" />
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/alarm_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="09:00"
+                    android:textSize="30dp" />
+            </com.github.axet.androidlibrary.widgets.PathMax>
 
             <LinearLayout
                 android:layout_width="wrap_content"
