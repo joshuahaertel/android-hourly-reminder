@@ -73,34 +73,6 @@ public class ReminderSet extends WeekSet {
     public void load(Set<String> hours) {
         this.hours = new TreeSet<>(hours);
         this.list = new ArrayList<>();
-//        for (int hour = 0; hour < 24; hour++) {
-//            Reminder.Key h = new Reminder.Key(hour);
-//            if (hours.contains(h.key)) {
-//                int hh = hour + 1;
-//                if (hh > 23)
-//                    hh = 0;
-//                String next = Reminder.format(hh);
-//                if (repeat > 0) {
-//                    int max = repeat;
-//
-//                    if (hours.contains(next)) {
-//                        max = 60;
-//                    }
-//
-//                    for (int m = 0; m < max; m += repeat) {
-//                        Reminder r = new Reminder(context, getWeekDaysProperty());
-//                        r.enabled = true;
-//                        r.setTime(hour, m);
-//                        list.add(r);
-//                    }
-//                } else { // negative means once per hour at specified time
-//                    Reminder r = new Reminder(context, getWeekDaysProperty());
-//                    r.enabled = true;
-//                    r.setTime(hour, -repeat);
-//                    list.add(r);
-//                }
-//            }
-//        }
 
         ArrayList<String> list = new ArrayList<>(hours);
 
