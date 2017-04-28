@@ -105,9 +105,9 @@ public class ReminderSet extends WeekSet {
                 int max;
                 if (prev.next(s)) { // have next, roll up full hour
                     if (s.min == 0)
-                        max = 60;
+                        max = 60; // 59 + 1
                     else
-                        max = s.min + repeat;
+                        max = s.min + 1; // min + 1
                 } else {
                     max = repeat;
                 }
