@@ -80,13 +80,13 @@ public class ReminderSet extends WeekSet {
         int start = 0;
         if (list.contains(Reminder.format(0))) {
             for (int prev = 23; prev >= 0; prev--) {
-                String h = Reminder.format(prev) + Reminder.HALF;
-                int i = list.indexOf(h);
+                Reminder.Key hh = new Reminder.Key(prev, Reminder.HALF);
+                int i = list.indexOf(hh.key);
                 if (i != -1) {
                     start = i;
                 }
-                h = Reminder.format(prev);
-                i = list.indexOf(h);
+                Reminder.Key h = new Reminder.Key(prev);
+                i = list.indexOf(h.key);
                 if (i == -1) {
                     break;
                 }
@@ -95,31 +95,25 @@ public class ReminderSet extends WeekSet {
         }
 
         Reminder.Key prev = null;
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0; i <= list.size(); i++) {
             int index = start + i;
             if (index >= list.size()) {
                 index -= list.size();
             }
             Reminder.Key s = new Reminder.Key(list.get(index));
-            int max;
             if (prev != null) {
+                int max;
                 if (prev.next(s)) { // have next, roll up full hour
                     if (s.min == 0)
                         max = 60;
                     else
-                        max = s.min;
+                        max = s.min + repeat;
                 } else {
                     max = repeat;
                 }
                 add(prev, max);
             }
             prev = s;
-        }
-        if (prev != null) { // add last hour
-            int min = prev.min + repeat;
-            if (min < repeat)
-                min = repeat;
-            add(prev, min);
         }
     }
 
