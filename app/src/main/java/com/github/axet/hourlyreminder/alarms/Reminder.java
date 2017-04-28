@@ -39,12 +39,14 @@ public class Reminder extends WeekTime {
         }
 
         public boolean next(Key k) {
-            if (hour == k.hour)
-                return true;
             int next = hour + 1;
             if (next > 23)
                 next = 0;
-            if (next == k.hour && k.min == 0)
+            if (min == 0 && hour == k.hour && k.min != 0)
+                return true;
+            if (min == 0 && next == k.hour && k.min == 0)
+                return true;
+            if (min != 0 && next == k.hour)
                 return true;
             return false;
         }
