@@ -80,13 +80,13 @@ public class ReminderSet extends WeekSet {
         int start = 0;
         if (list.contains(Reminder.format(0))) {
             for (int prev = 23; prev >= 0; prev--) {
-                String h = Reminder.format(prev) + Reminder.HALF;
-                int i = list.indexOf(h);
+                Reminder.Key hh = new Reminder.Key(prev, Reminder.HALF);
+                int i = list.indexOf(hh.key);
                 if (i != -1) {
                     start = i;
                 }
-                h = Reminder.format(prev);
-                i = list.indexOf(h);
+                Reminder.Key h = new Reminder.Key(prev);
+                i = list.indexOf(h.key);
                 if (i == -1) {
                     break;
                 }
