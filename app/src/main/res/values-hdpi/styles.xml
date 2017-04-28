@@ -1,0 +1,38 @@
+<resources>
+
+    <style name="Hours12Block">
+        <!-- 13dp = 26dp / 2 (half of Hour30b width) -->
+        <item name="android:paddingTop">13dp</item>
+    </style>
+
+    <style name="Hours30MainBlock">
+        <!-- 26dp = 26dp / 2 - 5dp / 2 -->
+        <item name="android:paddingLeft">10.5dp</item>
+    </style>
+
+    <style name="Hours30SecondBlock">
+        <!-- 20dp = 40dp / 2 -->
+        <item name="android:paddingTop">20dp</item>
+    </style>
+
+    <style name="HourButton">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_margin">3dp</item>
+    </style>
+
+    <style name="Hour30Dot">
+        <item name="android:layout_width">5dp</item>
+        <item name="android:layout_height">5dp</item>
+        <item name="android:background">@drawable/round_corners_light</item>
+    </style>
+
+    <style name="Hour30Button">
+        <item name="android:layout_width">26dp</item>
+        <item name="android:layout_height">26dp</item>
+        <!-- (40+3+3)dp + 5dp - 26dp -->
+        <item name="android:layout_marginLeft">25dp</item>
+        <item name="android:text">30</item>
+    </style>
+
+</resources>

@@ -45,22 +45,38 @@
 
     <style name="AppThemeDark.FullScreen" parent="@android:style/Theme.NoTitleBar.Fullscreen"></style>
 
-    <style name="HourRound">
-        <item name="android:layout_width">40dp</item>
-        <item name="android:layout_height">40dp</item>
+    <style name="Hours12Block">
+        <!-- 26dp / 2 -->
+        <item name="android:paddingTop">13dp</item>
+    </style>
+
+    <style name="Hours30MainBlock">
+        <!-- 26dp / 2 - 5dp / 2 -->
+        <item name="android:paddingLeft">10.5dp</item>
+    </style>
+
+    <style name="Hours30SecondBlock">
+        <!-- 34dp / 2 -->
+        <item name="android:paddingTop">17dp</item>
+    </style>
+
+    <style name="HourButton">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">34dp</item>
         <item name="android:layout_margin">3dp</item>
     </style>
 
-    <style name="Hour30">
+    <style name="Hour30Dot">
         <item name="android:layout_width">5dp</item>
         <item name="android:layout_height">5dp</item>
         <item name="android:background">@drawable/round_corners_light</item>
     </style>
 
-    <style name="Hour30b">
+    <style name="Hour30Button">
         <item name="android:layout_width">26dp</item>
         <item name="android:layout_height">26dp</item>
-        <item name="android:layout_marginLeft">25dp</item>
+        <!-- 41dp (34+3+3) + 5dp - 26dp -->
+        <item name="android:layout_marginLeft">19dp</item>
         <item name="android:text">30</item>
     </style>
 
