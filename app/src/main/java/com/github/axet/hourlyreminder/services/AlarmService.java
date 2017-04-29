@@ -12,9 +12,9 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -176,7 +176,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             reminders = HourlyApplication.loadReminders(this);
             registerNextAlarm();
         }
-
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -275,7 +274,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             reminderIntent.putExtra("time", time);
 
-            Log.d(HourlyApplication.class.getSimpleName(), "Current: " + formatTime(cur.getTimeInMillis()) + "; SetReminder: " + formatTime(time));
+            Log.d(TAG, "Current: " + formatTime(cur.getTimeInMillis()) + "; SetReminder: " + formatTime(time));
 
             if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
                 setAlarm(time, reminderIntent);
@@ -291,7 +290,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             alarmIntent.putExtra("time", time);
 
-            Log.d(HourlyApplication.class.getSimpleName(), "Current: " + formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + formatTime(time));
+            Log.d(TAG, "Current: " + formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + formatTime(time));
 
             setAlarm(time, alarmIntent);
         }
@@ -460,15 +459,16 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         Sound.Playlist rlist = null;
         for (final ReminderSet rr : reminders) {
-            if (rr.enabled) {
+            if (rr.enabled && rr.last < time) {
                 for (Reminder r : rr.list) {
-                    if (r.getTime() == time && r.enabled) {
+                    if (r.isSoundAlarm(time) && r.enabled) {
                         // calling setNext is more safe. if this alarm have to fire today we will reset it
                         // to the same time. if it is already past today's time (as we expect) then it will
                         // be set for tomorrow.
                         //
                         // also safe if we moved to another timezone.
                         r.setNext();
+                        rr.last = time;
                         if (alarm == null) { // do not cross alarms
                             if (rlist == null) {
                                 rlist = new Sound.Playlist(rr);
@@ -698,7 +698,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             public void run() {
                 check.remove(id);
                 try {
-                    Log.d(TAG, "check post run " + time + " " + System.currentTimeMillis());
                     pe.send();
                 } catch (PendingIntent.CanceledException e) {
                     Log.e(TAG, "unable to execute", e); // already processed by AlarmManager?
@@ -710,7 +709,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         long delay = (time - System.currentTimeMillis());
         if (delay < 0) // instant?
             delay = 0;
-        Log.d(TAG, "check post delay " + delay);
         handler.postDelayed(r, delay);
     }
 

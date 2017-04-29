@@ -281,9 +281,7 @@ public class Week {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
-        if (cal.after(cur)) {
-            // time is future? then it points for correct time.
-            // change nothing, but seconds.
+        if (cal.after(cur)) { // time is future? then it points for correct time. change nothing, but seconds.
             return cal.getTimeInMillis();
         } else {
             int ch = cur.get(Calendar.HOUR_OF_DAY);
@@ -292,24 +290,21 @@ public class Week {
             int ah = cal.get(Calendar.HOUR_OF_DAY);
             int am = cal.get(Calendar.MINUTE);
 
-            if ((ah < ch) || ((ah == ch) && (am <= cm))) {
-                // if it too late to play, point to for tomorrow
+            if ((ah < ch) || ((ah == ch) && (am <= cm))) { // if it too late to play, point to for tomorrow
                 cal = Calendar.getInstance();
-                cal.setTime(cur.getTime());
-                cal.set(Calendar.HOUR_OF_DAY, ah);
-                cal.set(Calendar.MINUTE, am);
+                cal.setTime(cur.getTime()); // today
+                cal.set(Calendar.HOUR_OF_DAY, ah); // alarm hour
+                cal.set(Calendar.MINUTE, am); // alarm min
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
-
-                cal.add(Calendar.DATE, 1);
+                cal.add(Calendar.DATE, 1); // next day
                 cal = rollWeek(cal);
                 return cal.getTimeInMillis();
-            } else {
-                // it is today alarm, fix day
+            } else { // it is today alarm, set day to today
                 cal = Calendar.getInstance();
-                cal.setTime(cur.getTime());
-                cal.set(Calendar.HOUR_OF_DAY, ah);
-                cal.set(Calendar.MINUTE, am);
+                cal.setTime(cur.getTime()); // today
+                cal.set(Calendar.HOUR_OF_DAY, ah); // alarm hour
+                cal.set(Calendar.MINUTE, am); // alarm min
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
                 return cal.getTimeInMillis();

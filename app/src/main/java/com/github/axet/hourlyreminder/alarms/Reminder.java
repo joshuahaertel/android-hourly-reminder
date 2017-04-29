@@ -3,6 +3,7 @@ package com.github.axet.hourlyreminder.alarms;
 import android.content.Context;
 import android.text.format.DateFormat;
 
+import java.util.Calendar;
 import java.util.Set;
 
 public class Reminder extends WeekTime {
@@ -84,13 +85,21 @@ public class Reminder extends WeekTime {
 
     public Reminder(Context context, Set days) {
         super(context);
-
         weekdaysCheck = true;
         setWeekDaysProperty(days);
     }
 
     public static String format(int hour) {
         return String.format("%02d", hour);
+    }
+
+    // check if it is the same hour and min. if reminder loaded late, it will have time will be in the future
+    public boolean isSoundAlarm(long time) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(time);
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int min = cal.get(Calendar.MINUTE);
+        return this.hour == hour && this.min == min;
     }
 
 }
