@@ -3,6 +3,7 @@ package com.github.axet.hourlyreminder.alarms;
 import android.content.Context;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.text.format.DateFormat;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
@@ -59,7 +60,7 @@ public class ReminderSet extends WeekSet {
     }
 
     public String format() {
-        return HourlyApplication.getHours2String(context, hours);
+        return format(context, hours);
     }
 
     @Override
@@ -166,5 +167,109 @@ public class ReminderSet extends WeekSet {
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String format(Context context, Set<String> hours) {
+        boolean h24 = DateFormat.is24HourFormat(context);
+
+        String AM = context.getString(R.string.day_am);
+        String PM = context.getString(R.string.day_pm);
+
+        String H = context.getString(R.string.hour_symbol);
+
+        String str = "";
+
+        ArrayList<String> list = new ArrayList<>(hours);
+
+        // find start index, it maybe mid night or daylight interval.
+        int start = 0;
+        if (list.contains(Reminder.format(0))) {
+            for (int prev = 23; prev >= 0; prev--) {
+                Reminder.Key hh = new Reminder.Key(prev, Reminder.HALF);
+                int i = list.indexOf(hh.key);
+                if (i != -1) {
+                    start = i;
+                }
+                Reminder.Key h = new Reminder.Key(prev);
+                i = list.indexOf(h.key);
+                if (i == -1) {
+                    break;
+                }
+                start = i;
+            }
+        }
+
+        int count = 0;
+        Reminder.Key prev = null;
+        Reminder.Key last = null;
+        for (int i = 0; i < list.size(); i++) {
+            int index = start + i;
+            if (index >= list.size()) {
+                index -= list.size();
+            }
+            Reminder.Key s = new Reminder.Key(list.get(index));
+            if (prev != null && prev.next(s)) {
+                count++;
+            } else {
+                if (count != 0) {
+                    if (!h24) {
+                        if (last.hour < 12 && prev.hour >= 12)
+                            str += AM;
+                        if (last.hour >= 12 && s.hour < 12)
+                            str += PM;
+                    }
+                    if (count == 1 && (last.min == 0 && prev.min == 0))
+                        str += ",";
+                    else
+                        str += "-";
+                    str += prev.formatShort(context);
+                    if (!h24) {
+                        if (last.hour < 12 && s.hour >= 12)
+                            str += AM;
+                        if (last.hour >= 12 && s.hour < 12)
+                            str += PM;
+                    }
+                    str += ",";
+                    str += s.formatShort(context);
+                    last = s;
+                } else {
+                    if (last != null) {
+                        if (!h24) {
+                            if (last.hour < 12 && s.hour >= 12)
+                                str += AM;
+                            if (last.hour >= 12 && s.hour < 12)
+                                str += PM;
+                        }
+                        str += ",";
+                    }
+                    str += s.formatShort(context);
+                    last = s;
+                }
+                count = 0;
+            }
+            prev = s;
+        }
+
+        if (count != 0) {
+            if (!h24) {
+                if (last.hour < 12 && prev.hour >= 12)
+                    str += AM;
+                if (last.hour >= 12 && prev.hour < 12)
+                    str += PM;
+            }
+            if (count == 1 && (last.min == 0 && prev.min == 0))
+                str += ",";
+            else
+                str += "-";
+            str += prev.formatShort(context);
+        }
+        if (prev != null) {
+            if (h24)
+                str += H;
+            else
+                str += (prev.hour >= 12 ? PM : AM);
+        }
+
+        return str;
     }
 }

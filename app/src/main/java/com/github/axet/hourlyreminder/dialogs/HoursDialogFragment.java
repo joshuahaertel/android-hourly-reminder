@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Reminder;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.widgets.RoundCheckbox;
 
@@ -371,10 +372,10 @@ public class HoursDialogFragment extends DialogFragment {
                 setDot30(id, false, View.INVISIBLE);
                 setBut30(id, false, View.INVISIBLE);
             }
-            status.setText(HourlyApplication.getHours2String(getContext(), save()));
+            status.setText(ReminderSet.format(getContext(), save()));
             return;
         }
-        status.setText(HourlyApplication.getHours2String(getContext(), values));
+        status.setText(ReminderSet.format(getContext(), values));
         for (int hour = 0; hour < 24; hour++) {
             Reminder.Key half = new Reminder.Key(hour, Reminder.HALF);
             String h = Reminder.format(hour);
