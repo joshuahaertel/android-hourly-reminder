@@ -46,7 +46,7 @@ public class Reminder extends WeekTime {
                 return true;
             if (min == 0 && next == k.hour && k.min == 0)
                 return true;
-            if (min != 0 && next == k.hour)
+            if (min != 0 && next == k.hour && k.min == 0)
                 return true;
             return false;
         }

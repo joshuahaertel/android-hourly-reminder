@@ -82,7 +82,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             }
 
             if (preference.getKey().equals(HourlyApplication.PREFERENCE_HOURS)) {
-                preference.setSummary(HourlyApplication.getHours2String(preference.getContext(), (Set) value));
+                preference.setSummary(ReminderSet.format(preference.getContext(), (Set) value));
                 return true;
             }
 
