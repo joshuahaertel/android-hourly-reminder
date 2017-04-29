@@ -26,6 +26,7 @@ public class ReminderSet extends WeekSet {
     public Set<String> hours; // actual hours selected
     public List<Reminder> list; // generated reminders (depend on repeat)
     public int repeat; // minutes
+    public long last; // last reminder announced, to prevent double annonunces
 
     public static final Set<String> DEF_HOURS = new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"}));
 
@@ -142,6 +143,7 @@ public class ReminderSet extends WeekSet {
         super.load(o);
         try {
             this.repeat = o.getInt("repeat");
+            this.last = o.optLong("last");
             JSONArray list = o.getJSONArray("list");
             Set<String> hh = new TreeSet<>();
             for (int i = 0; i < list.length(); i++) {
@@ -163,6 +165,7 @@ public class ReminderSet extends WeekSet {
             JSONObject o = super.save();
             o.put("repeat", this.repeat);
             o.put("list", list);
+            o.put("last", last);
             return o;
         } catch (JSONException e) {
             throw new RuntimeException(e);
