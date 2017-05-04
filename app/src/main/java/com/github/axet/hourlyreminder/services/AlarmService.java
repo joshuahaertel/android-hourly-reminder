@@ -741,11 +741,21 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         long delay = (time - cur);
         if (delay < 0) // instant?
             delay = 0;
-        if (delay < 15 * 60 * 1000 && delay > 1 * 60 * 1000) {
-            int diffSeconds = (int) (cur / 1000 % 60);
-            delay = 1 * 60 * 1000 - diffSeconds * 1000;
-            Log.d(TAG, "agressige delaying " + HourlyApplication.formatDuration(this, delay) + " " + formatTime(cur) + " " + formatTime(time));
+        int diffMilliseconds = (int) (cur % 1000);
+        int diffSeconds = (int) (cur / 1000 % 60);
+        if (delay < 1000) {
+            ; // nothing
+        } else if (delay < 10 * 1000) {
+            int step = 1 * 1000;
+            delay = step - diffMilliseconds;
+        } else if (delay < 1 * 60 * 1000) {
+            int step = 10 * 1000;
+            delay = step - diffMilliseconds;
+        } else if (delay < 15 * 60 * 1000) {
+            int step = 1 * 60 * 1000;
+            delay = step - diffSeconds * 1000 - diffMilliseconds;
         }
+        Log.d(TAG, "delaying " + HourlyApplication.formatDuration(this, delay) + " " + formatTime(cur) + " " + formatTime(time));
         handler.postDelayed(r, delay);
     }
 
