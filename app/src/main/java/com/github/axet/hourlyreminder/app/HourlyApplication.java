@@ -14,6 +14,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateFormat;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.app.MainApplication;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
@@ -39,7 +40,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class HourlyApplication extends Application {
+public class HourlyApplication extends MainApplication {
     public static final int NOTIFICATION_UPCOMING_ICON = 0;
     public static final int NOTIFICATION_ALARM_ICON = 1;
     public static final int NOTIFICATION_MISSED_ICON = 2;

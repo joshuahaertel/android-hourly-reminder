@@ -301,11 +301,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // service will call showNotificationUpcoming(time)
     //
     void updateNotificationUpcomingAlarm(long time) {
-        Intent intent = new Intent(this, AlarmService.class).setAction(NOTIFICATION).putExtra("time", time);
-
-        cancel(intent);
-
+        Intent upcomingIntent = new Intent(this, AlarmService.class).setAction(NOTIFICATION).putExtra("time", time);
         if (time == 0) {
+            cancel(upcomingIntent);
             showNotificationUpcoming(0);
         } else {
             Calendar cur = Calendar.getInstance();
@@ -317,15 +315,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             int sec = repeat / 4;
             cal.add(Calendar.SECOND, -sec);
 
-            if (cur.after(cal)) {
-                // we already 15 before alarm, show notification_upcoming
+            if (cur.after(cal)) { // we already 15 before alarm, show notification_upcoming
+                cancel(upcomingIntent);
                 showNotificationUpcoming(time);
             } else {
                 showNotificationUpcoming(0);
-                // time to wait before show notification_upcoming
-                time = cal.getTimeInMillis();
-
-                setExact(time, intent);
+                time = cal.getTimeInMillis(); // time to wait before show notification_upcoming
+                setExact(time, upcomingIntent);
             }
         }
     }
@@ -696,19 +692,30 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                check.remove(id);
-                try {
-                    pe.send();
-                } catch (PendingIntent.CanceledException e) {
-                    Log.e(TAG, "unable to execute", e); // already processed by AlarmManager?
+                long cur = System.currentTimeMillis();
+                if (cur < time) {
+                    checkPost(time, intent, pe);
+                } else {
+                    check.remove(id);
+                    try {
+                        pe.send();
+                    } catch (PendingIntent.CanceledException e) {
+                        Log.e(TAG, "unable to execute", e); // already processed by AlarmManager?
+                    }
                 }
             }
         };
         handler.removeCallbacks(check.get(id));
         check.put(id, r);
-        long delay = (time - System.currentTimeMillis());
+        long cur = System.currentTimeMillis();
+        long delay = (time - cur);
         if (delay < 0) // instant?
             delay = 0;
+        if (delay < 15 * 60 * 1000 && delay > 1 * 60 * 1000) {
+            int diffSeconds = (int) (cur / 1000 % 60);
+            delay = 1 * 60 * 1000 - diffSeconds * 1000;
+            Log.d(TAG, "agressige delaying " + HourlyApplication.formatDuration(this, delay) + " " + formatTime(cur) + " " + formatTime(time));
+        }
         handler.postDelayed(r, delay);
     }
 
