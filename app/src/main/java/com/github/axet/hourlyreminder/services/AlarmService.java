@@ -168,6 +168,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 if (action.equals(NOTIFICATION)) {
                     long time = intent.getLongExtra("time", 0);
                     showNotificationUpcoming(time);
+                    registerNextAlarm();
                 } else if (action.equals(CANCEL)) {
                     long time = intent.getLongExtra("time", 0);
                     tomorrow(time);
@@ -187,6 +188,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     FireAlarmService.FireAlarm a = new FireAlarmService.FireAlarm(intent.getStringExtra("state"));
                     snooze(a.ids);
                 }
+            } else {
+                registerNextAlarm();
             }
         } else {
             Log.d(TAG, "onStartCommand restart"); // crash fail
