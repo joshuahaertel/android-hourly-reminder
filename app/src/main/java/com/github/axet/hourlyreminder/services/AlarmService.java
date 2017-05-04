@@ -29,6 +29,7 @@ import com.github.axet.hourlyreminder.alarms.Reminder;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -76,6 +77,20 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         context.startService(intent);
     }
 
+    public static class Check {
+        public long time;
+        public Runnable r;
+        public Intent intent;
+        public PendingIntent pe;
+
+        public Check(long time, Runnable r, Intent intent, PendingIntent pe) {
+            this.time = time;
+            this.r = r;
+            this.intent = intent;
+            this.pe = pe;
+        }
+    }
+
     Sound sound;
     List<Alarm> alarms;
     List<ReminderSet> reminders;
@@ -89,7 +104,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
     };
 
-    Map<String, Runnable> check = new HashMap<>();
+    Map<String, Check> check = new HashMap<>();
 
     public AlarmService() {
         super();
@@ -134,7 +149,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
 
         for (String s : check.keySet()) {
-            handler.removeCallbacks(check.get(s));
+            Check old = check.get(s);
+            if (old != null)
+                handler.removeCallbacks(old.r);
         }
         check.clear();
 
@@ -143,6 +160,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        checkUpdate();
         if (intent != null) {
             String action = intent.getAction();
             Log.d(TAG, "onStartCommand " + action);
@@ -687,6 +705,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         return intent.getClass().getCanonicalName() + "_" + intent.getAction();
     }
 
+    void checkUpdate() {
+        ArrayList<Check> cc = new ArrayList<>(check.values());
+        for (Check c : cc) {
+            checkPost(c.time, c.intent, c.pe);
+        }
+    }
+
     void checkPost(final long time, final Intent intent, final PendingIntent pe) {
         final String id = checkId(intent);
         Runnable r = new Runnable() {
@@ -705,8 +730,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             }
         };
-        handler.removeCallbacks(check.get(id));
-        check.put(id, r);
+        Check old = check.remove(id);
+        if (old != null)
+            handler.removeCallbacks(old.r);
+        check.put(id, new Check(time, r, intent, pe));
         long cur = System.currentTimeMillis();
         long delay = (time - cur);
         if (delay < 0) // instant?
@@ -721,6 +748,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     void checkCancel(Intent intent) {
         String id = checkId(intent);
-        handler.removeCallbacks(check.remove(id));
+        Check old = check.remove(id);
+        if (old != null)
+            handler.removeCallbacks(old.r);
     }
 }
