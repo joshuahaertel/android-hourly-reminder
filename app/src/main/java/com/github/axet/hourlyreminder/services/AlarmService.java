@@ -60,6 +60,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // dismiss current alarm action
     public static final String DISMISS = HourlyApplication.class.getCanonicalName() + ".DISMISS";
 
+    public static final long SEC1 = 1 * 1000;
+    public static final long SEC3 = 3 * 1000;
+    public static final long SEC10 = 10 * 1000;
+    public static final long MIN1 = 1 * 60 * 1000;
+    public static final long MIN15 = 15 * 60 * 1000;
+
     // minutes
     public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
     public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
@@ -77,17 +83,40 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         context.startService(intent);
     }
 
-    public static class Check {
+    public class Check {
         public long time;
         public Runnable r;
         public Intent intent;
         public PendingIntent pe;
+        PowerManager.WakeLock wlCpu;
 
         public Check(long time, Runnable r, Intent intent, PendingIntent pe) {
             this.time = time;
             this.r = r;
             this.intent = intent;
             this.pe = pe;
+        }
+
+        public void close() {
+            handler.removeCallbacks(r);
+            wakeClose();
+        }
+
+        public void wakeLock() {
+            wakeClose();
+            Log.d(TAG, "Wake CPU lock " + time);
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock2");
+            wlCpu.acquire();
+        }
+
+        public void wakeClose() {
+            if (wlCpu != null) {
+                Log.d(TAG, "Wake CPU lock close " + time);
+                if (wlCpu.isHeld())
+                    wlCpu.release();
+                wlCpu = null;
+            }
         }
     }
 
@@ -150,8 +179,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         for (String s : check.keySet()) {
             Check old = check.get(s);
-            if (old != null)
-                handler.removeCallbacks(old.r);
+            old.close();
         }
         check.clear();
 
@@ -370,7 +398,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     int getRepeat(long time) {
         TreeSet<Integer> rep = new TreeSet<>();
-        rep.add(60); // default 60 minutes
+        rep.add(60); // default 60 minutes == 15 mintures before alarm
         for (ReminderSet rr : reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
@@ -381,7 +409,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             }
         }
-        return rep.first(); // sorted smallest first, but 60 must
+        return rep.first(); // sorted smallest first
     }
 
     // show notification_upcoming. (about upcoming alarm)
@@ -516,7 +544,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             });
             sound.silencedToast(s, time);
             handler.removeCallbacks(wakeClose); // remove previous wakeClose actions
-            handler.postDelayed(wakeClose, 3000); // screen off after 3 seconds, even if playlist keep playing
+            handler.postDelayed(wakeClose, SEC3); // screen off after 3 seconds, even if playlist keep playing
         }
 
         if (alarm != null || rlist != null) {
@@ -649,16 +677,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             wakeClose();
             wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, getString(R.string.app_name) + "_wakelock");
             wl.acquire();
-
             wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock");
             wlCpu.acquire();
-
-            handler.postDelayed(wakeClose, 10000); // old phones crash on handle wl.acquire(10000)
+            handler.postDelayed(wakeClose, SEC10); // old phones crash on handle wl.acquire(10000)
         }
     }
 
     void wakeClose() {
-        handler.removeCallbacks(wakeClose);
         if (wl != null) {
             if (wl.isHeld())
                 wl.release();
@@ -669,6 +694,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 wlCpu.release();
             wlCpu = null;
         }
+        handler.removeCallbacks(wakeClose);
     }
 
     void setExact(long time, Intent intent) {
@@ -724,7 +750,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 if (cur < time) {
                     checkPost(time, intent, pe);
                 } else {
-                    check.remove(id);
+                    Check c = check.remove(id);
+                    if (c != null)
+                        c.close();
                     try {
                         pe.send();
                     } catch (PendingIntent.CanceledException e) {
@@ -733,26 +761,30 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             }
         };
-        Check old = check.remove(id);
-        if (old != null)
-            handler.removeCallbacks(old.r);
-        check.put(id, new Check(time, r, intent, pe));
+        Check c = new Check(time, r, intent, pe);
+        Check old = check.put(id, c);
+        if (old != null) {
+            old.close();
+        }
         long cur = System.currentTimeMillis();
-        long delay = (time - cur);
+        long delay = time - cur;
         if (delay < 0) // instant?
             delay = 0;
+        if (delay < MIN15) {
+            c.wakeLock();
+        }
         int diffMilliseconds = (int) (cur % 1000);
         int diffSeconds = (int) (cur / 1000 % 60);
         if (delay < 1000) {
             ; // nothing
-        } else if (delay < 10 * 1000) {
-            int step = 1 * 1000;
+        } else if (delay < SEC10) {
+            long step = SEC1;
             delay = step - diffMilliseconds;
-        } else if (delay < 1 * 60 * 1000) {
-            int step = 10 * 1000;
+        } else if (delay < MIN1) {
+            long step = SEC10;
             delay = step - diffMilliseconds;
-        } else if (delay < 15 * 60 * 1000) {
-            int step = 1 * 60 * 1000;
+        } else if (delay < MIN15) {
+            long step = MIN1;
             delay = step - diffSeconds * 1000 - diffMilliseconds;
         }
         Log.d(TAG, "delaying " + HourlyApplication.formatDuration(this, delay) + " " + formatTime(cur) + " " + formatTime(time));
@@ -762,7 +794,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     void checkCancel(Intent intent) {
         String id = checkId(intent);
         Check old = check.remove(id);
-        if (old != null)
-            handler.removeCallbacks(old.r);
+        if (old != null) {
+            old.close();
+        }
     }
 }
