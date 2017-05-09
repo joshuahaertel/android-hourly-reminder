@@ -64,6 +64,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     public static final long SEC3 = 3 * 1000;
     public static final long SEC10 = 10 * 1000;
     public static final long MIN1 = 1 * 60 * 1000;
+    public static final long MIN2 = 2 * 60 * 1000;
+    public static final long MIN5 = 5 * 60 * 1000;
     public static final long MIN15 = 15 * 60 * 1000;
 
     // minutes
@@ -106,7 +108,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             wakeClose();
             Log.d(TAG, "Wake CPU lock " + time);
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock2");
+            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_" + time + "_cpulock");
             wlCpu.acquire();
         }
 
@@ -770,7 +772,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         long delay = time - cur;
         if (delay < 0) // instant?
             delay = 0;
-        if (delay < MIN1) {
+        if (delay < MIN2) {
             c.wakeLock();
         }
         int diffMilliseconds = (int) (cur % 1000);
@@ -784,7 +786,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             long step = SEC10;
             delay = step - diffMilliseconds;
         } else if (delay < MIN15) {
-            long step = MIN1;
+            long step = MIN5;
             delay = step - diffSeconds * 1000 - diffMilliseconds;
         }
         Log.d(TAG, "delaying " + HourlyApplication.formatDuration(this, delay) + " " + formatTime(cur) + " " + formatTime(time));
