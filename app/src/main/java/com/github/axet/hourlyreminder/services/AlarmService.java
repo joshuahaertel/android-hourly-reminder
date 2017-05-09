@@ -772,9 +772,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         long delay = time - cur;
         if (delay < 0) // instant?
             delay = 0;
-        if (delay < MIN2) {
-            c.wakeLock();
-        }
+//        if (delay < MIN1) {
+//            c.wakeLock();
+//        }
         int diffMilliseconds = (int) (cur % 1000);
         int diffSeconds = (int) (cur / 1000 % 60);
         if (delay < 1000) {
@@ -786,7 +786,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             long step = SEC10;
             delay = step - diffMilliseconds;
         } else if (delay < MIN15) {
-            long step = MIN5;
+            long step = MIN1;
             delay = step - diffSeconds * 1000 - diffMilliseconds;
         }
         Log.d(TAG, "delaying " + HourlyApplication.formatDuration(this, delay) + " " + formatTime(cur) + " " + formatTime(time));
