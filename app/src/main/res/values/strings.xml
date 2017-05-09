@@ -213,7 +213,7 @@
         <item quantity="other">%d seconds</item>
     </plurals>
 
-    <string name="alarm_set_for">Alarm set for%s from now!</string>
+    <string name="alarm_set_for">Alarm set for %s from now!</string>
     <string name="alarm_disabled">Alarm is disabled</string>
     <string name="hour_symbol">h</string>
     <string name="min_symbol">m</string>

@@ -340,24 +340,7 @@ public class HourlyApplication extends MainApplication {
 
         long diff = cal.getTimeInMillis() - cur.getTimeInMillis();
 
-        int diffSeconds = (int) (diff / 1000 % 60);
-        int diffMinutes = (int) (diff / (60 * 1000) % 60);
-        int diffHours = (int) (diff / (60 * 60 * 1000) % 24);
-        int diffDays = (int) (diff / (24 * 60 * 60 * 1000));
-
-        String str = "";
-
-        if (diffDays > 0)
-            str += " " + context.getResources().getQuantityString(R.plurals.days, diffDays, diffDays);
-
-        if (diffHours > 0)
-            str += " " + context.getResources().getQuantityString(R.plurals.hours, diffHours, diffHours);
-
-        if (diffMinutes > 0)
-            str += " " + context.getResources().getQuantityString(R.plurals.minutes, diffMinutes, diffMinutes);
-
-        if (diffDays == 0 && diffHours == 0 && diffMinutes == 0 && diffSeconds > 0)
-            str += " " + context.getResources().getQuantityString(R.plurals.seconds, diffSeconds, diffSeconds);
+        String str = formatLeftExact(context, diff);
 
         Toast.makeText(context, context.getString(R.string.alarm_set_for, str), Toast.LENGTH_SHORT).show();
     }
@@ -421,7 +404,6 @@ public class HourlyApplication extends MainApplication {
 
         return str;
     }
-
 
     public static String getString(Context context, Locale locale, int id, Object... formatArgs) {
         Resources res = context.getResources();
