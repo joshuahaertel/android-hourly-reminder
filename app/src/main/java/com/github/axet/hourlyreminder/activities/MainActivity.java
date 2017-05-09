@@ -22,6 +22,7 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatImageView;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
@@ -70,14 +71,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TimeSetReceiver.class.getSimpleName(), "TimeSetReceiver " + intent.getAction());
-
             if (intent.getAction().equals(Intent.ACTION_TIME_CHANGED)) {
                 timeChanged = is24Hours != DateFormat.is24HourFormat(MainActivity.this);
             }
         }
     }
 
-    public static class SettingsTabView extends ImageView {
+    public static class SettingsTabView extends AppCompatImageView {
         Drawable d;
 
         public SettingsTabView(Context context, TabLayout.Tab tab, ColorStateList colors) {

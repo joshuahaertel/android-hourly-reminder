@@ -770,7 +770,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         long delay = time - cur;
         if (delay < 0) // instant?
             delay = 0;
-        if (delay < MIN15) {
+        if (delay < MIN1) {
             c.wakeLock();
         }
         int diffMilliseconds = (int) (cur % 1000);
