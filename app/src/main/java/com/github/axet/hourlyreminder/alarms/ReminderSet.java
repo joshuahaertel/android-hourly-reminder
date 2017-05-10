@@ -78,6 +78,9 @@ public class ReminderSet extends WeekSet {
 
         ArrayList<String> list = new ArrayList<>(hours);
 
+        if (list.isEmpty())
+            return;
+
         // find start index, it maybe mid night or daylight interval.
         int start = 0;
         if (list.contains(Reminder.format(0))) {
