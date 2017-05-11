@@ -46,6 +46,7 @@ import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
+import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
 
@@ -349,6 +350,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 return true;
             }
         });
+
+        OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
+        optimization.enable(AlarmService.class);
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.registerOnSharedPreferenceChangeListener(this);

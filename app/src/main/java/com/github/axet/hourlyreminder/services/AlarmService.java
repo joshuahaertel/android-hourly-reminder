@@ -1,6 +1,5 @@
 package com.github.axet.hourlyreminder.services;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -19,6 +18,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.MainActivity;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
@@ -60,14 +61,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // dismiss current alarm action
     public static final String DISMISS = HourlyApplication.class.getCanonicalName() + ".DISMISS";
 
-    public static final long SEC1 = 1 * 1000;
-    public static final long SEC3 = 3 * 1000;
-    public static final long SEC10 = 10 * 1000;
-    public static final long MIN1 = 1 * 60 * 1000;
-    public static final long MIN2 = 2 * 60 * 1000;
-    public static final long MIN5 = 5 * 60 * 1000;
-    public static final long MIN15 = 15 * 60 * 1000;
-
     // minutes
     public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
     public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
@@ -85,43 +78,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         context.startService(intent);
     }
 
-    public class Check {
-        public long time;
-        public Runnable r;
-        public Intent intent;
-        public PendingIntent pe;
-        PowerManager.WakeLock wlCpu;
-
-        public Check(long time, Runnable r, Intent intent, PendingIntent pe) {
-            this.time = time;
-            this.r = r;
-            this.intent = intent;
-            this.pe = pe;
-        }
-
-        public void close() {
-            handler.removeCallbacks(r);
-            wakeClose();
-        }
-
-        public void wakeLock() {
-            wakeClose();
-            Log.d(TAG, "Wake CPU lock " + time);
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_" + time + "_cpulock");
-            wlCpu.acquire();
-        }
-
-        public void wakeClose() {
-            if (wlCpu != null) {
-                Log.d(TAG, "Wake CPU lock close " + time);
-                if (wlCpu.isHeld())
-                    wlCpu.release();
-                wlCpu = null;
-            }
-        }
-    }
-
     Sound sound;
     List<Alarm> alarms;
     List<ReminderSet> reminders;
@@ -134,16 +90,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             wakeClose();
         }
     };
-
-    Map<String, Check> check = new HashMap<>();
+    AlarmManager am = new AlarmManager(this);
+    OptimizationPreferenceCompat.ServiceReceiver optimization;
 
     public AlarmService() {
         super();
-    }
-
-    public static String formatTime(long time) {
-        SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return s.format(new Date(time));
     }
 
     @Override
@@ -151,6 +102,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         super.onCreate();
         Log.d(TAG, "onCreate");
 
+        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass());
         handler = new Handler();
         sound = new Sound(this);
         alarms = HourlyApplication.loadAlarms(this);
@@ -179,18 +131,25 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             sound = null;
         }
 
-        for (String s : check.keySet()) {
-            Check old = check.get(s);
-            old.close();
+        if (optimization != null) {
+            optimization.close();
+            optimization = null;
         }
-        check.clear();
+
+        am.close();
 
         wakeClose();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        checkUpdate();
+        am.update();
+        if (optimization.onStartCommand(intent, flags, startId)) {
+            Log.d(TAG, "onStartCommand restart"); // crash fail
+            alarms = HourlyApplication.loadAlarms(this);
+            reminders = HourlyApplication.loadReminders(this);
+            registerNextAlarm();
+        }
         if (intent != null) {
             String action = intent.getAction();
             Log.d(TAG, "onStartCommand " + action);
@@ -221,11 +180,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             } else {
                 registerNextAlarm();
             }
-        } else {
-            Log.d(TAG, "onStartCommand restart"); // crash fail
-            alarms = HourlyApplication.loadAlarms(this);
-            reminders = HourlyApplication.loadReminders(this);
-            registerNextAlarm();
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -319,31 +273,31 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
 
         if (reminders.isEmpty()) {
-            cancel(reminderIntent);
+            am.cancel(reminderIntent);
         } else {
             long time = reminders.first();
 
             reminderIntent.putExtra("time", time);
 
-            Log.d(TAG, "Current: " + formatTime(cur.getTimeInMillis()) + "; SetReminder: " + formatTime(time));
+            Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetReminder: " + AlarmManager.formatTime(time));
 
             if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
-                setAlarm(time, reminderIntent);
+                am.setAlarm(time, reminderIntent);
             } else {
-                setExact(time, reminderIntent);
+                am.setExact(time, reminderIntent);
             }
         }
 
         if (alarms.isEmpty()) {
-            cancel(alarmIntent);
+            am.cancel(alarmIntent);
         } else {
             long time = alarms.first();
 
             alarmIntent.putExtra("time", time);
 
-            Log.d(TAG, "Current: " + formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + formatTime(time));
+            Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + AlarmManager.formatTime(time));
 
-            setAlarm(time, alarmIntent);
+            am.setAlarm(time, alarmIntent);
         }
     }
 
@@ -354,7 +308,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     void updateNotificationUpcomingAlarm(long time) {
         Intent upcomingIntent = new Intent(this, AlarmService.class).setAction(NOTIFICATION).putExtra("time", time);
         if (time == 0) {
-            cancel(upcomingIntent);
+            am.cancel(upcomingIntent);
             showNotificationUpcoming(0);
         } else {
             Calendar cur = Calendar.getInstance();
@@ -367,12 +321,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             cal.add(Calendar.SECOND, -sec);
 
             if (cur.after(cal)) { // we already 15 before alarm, show notification_upcoming
-                cancel(upcomingIntent);
+                am.cancel(upcomingIntent);
                 showNotificationUpcoming(time);
             } else {
                 showNotificationUpcoming(0);
                 time = cal.getTimeInMillis(); // time to wait before show notification_upcoming
-                setExact(time, upcomingIntent);
+                am.setExact(time, upcomingIntent);
             }
         }
     }
@@ -546,7 +500,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             });
             sound.silencedToast(s, time);
             handler.removeCallbacks(wakeClose); // remove previous wakeClose actions
-            handler.postDelayed(wakeClose, SEC3); // screen off after 3 seconds, even if playlist keep playing
+            handler.postDelayed(wakeClose, AlarmManager.SEC3); // screen off after 3 seconds, even if playlist keep playing
         }
 
         if (alarm != null || rlist != null) {
@@ -681,7 +635,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             wl.acquire();
             wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock");
             wlCpu.acquire();
-            handler.postDelayed(wakeClose, SEC10); // old phones crash on handle wl.acquire(10000)
+            handler.postDelayed(wakeClose, AlarmManager.SEC10); // old phones crash on handle wl.acquire(10000)
         }
     }
 
@@ -699,105 +653,4 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         handler.removeCallbacks(wakeClose);
     }
 
-    void setExact(long time, Intent intent) {
-        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        if (Build.VERSION.SDK_INT >= 23) {
-            alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pe);
-        } else if (Build.VERSION.SDK_INT >= 19) {
-            alarm.setExact(AlarmManager.RTC_WAKEUP, time, pe);
-        } else {
-            alarm.set(AlarmManager.RTC_WAKEUP, time, pe);
-        }
-        checkPost(time, intent, pe);
-    }
-
-    void setAlarm(long time, Intent intent) {
-        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        if (Build.VERSION.SDK_INT >= 21) {
-            alarm.setAlarmClock(new AlarmManager.AlarmClockInfo(time, pe), pe);
-        } else if (Build.VERSION.SDK_INT >= 19) {
-            alarm.setExact(AlarmManager.RTC_WAKEUP, time, pe);
-        } else {
-            alarm.set(AlarmManager.RTC_WAKEUP, time, pe);
-        }
-        checkPost(time, intent, pe);
-    }
-
-    void cancel(Intent intent) {
-        PendingIntent pe = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarm.cancel(pe);
-        checkCancel(intent);
-    }
-
-    static String checkId(Intent intent) {
-        return intent.getClass().getCanonicalName() + "_" + intent.getAction();
-    }
-
-    void checkUpdate() {
-        ArrayList<Check> cc = new ArrayList<>(check.values());
-        for (Check c : cc) {
-            checkPost(c.time, c.intent, c.pe);
-        }
-    }
-
-    void checkPost(final long time, final Intent intent, final PendingIntent pe) {
-        final String id = checkId(intent);
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                long cur = System.currentTimeMillis();
-                if (cur < time) {
-                    checkPost(time, intent, pe);
-                } else {
-                    Check c = check.remove(id);
-                    if (c != null)
-                        c.close();
-                    try {
-                        pe.send();
-                    } catch (PendingIntent.CanceledException e) {
-                        Log.e(TAG, "unable to execute", e); // already processed by AlarmManager?
-                    }
-                }
-            }
-        };
-        Check c = new Check(time, r, intent, pe);
-        Check old = check.put(id, c);
-        if (old != null) {
-            old.close();
-        }
-        long cur = System.currentTimeMillis();
-        long delay = time - cur;
-        if (delay < 0) // instant?
-            delay = 0;
-//        if (delay < MIN1) {
-//            c.wakeLock();
-//        }
-        int diffMilliseconds = (int) (cur % 1000);
-        int diffSeconds = (int) (cur / 1000 % 60);
-        if (delay < 1000) {
-            ; // nothing
-        } else if (delay < SEC10) {
-            long step = SEC1;
-            delay = step - diffMilliseconds;
-        } else if (delay < MIN1) {
-            long step = SEC10;
-            delay = step - diffMilliseconds;
-        } else if (delay < MIN15) {
-            long step = MIN1;
-            delay = step - diffSeconds * 1000 - diffMilliseconds;
-        }
-        Log.d(TAG, "delaying " + HourlyApplication.formatDuration(this, delay) + " " + formatTime(cur) + " " + formatTime(time));
-        handler.postDelayed(r, delay);
-    }
-
-    void checkCancel(Intent intent) {
-        String id = checkId(intent);
-        Check old = check.remove(id);
-        if (old != null) {
-            old.close();
-        }
-    }
 }
