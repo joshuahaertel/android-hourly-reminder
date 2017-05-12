@@ -102,7 +102,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass());
+        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass()) {
+            @Override
+            public void check() {
+            }
+        };
         handler = new Handler();
         sound = new Sound(this);
         alarms = HourlyApplication.loadAlarms(this);
@@ -653,4 +657,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         handler.removeCallbacks(wakeClose);
     }
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        optimization.onTaskRemoved(rootIntent);
+    }
 }
