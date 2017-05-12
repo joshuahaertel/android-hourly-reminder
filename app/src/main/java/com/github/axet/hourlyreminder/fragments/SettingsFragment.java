@@ -287,12 +287,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         PreferenceGroup app = (PreferenceGroup) findPreference("application");
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
-        // 23 SDK requires to be Alarm to be percice on time
-        if (Build.VERSION.SDK_INT < 23) {
+        // 21 SDK requires to be Alarm to be percice on time
+        if (Build.VERSION.SDK_INT < 21) {
             advanced.removePreference(alarm);
-        } else {
-            final PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
-            final String n = getContext().getPackageName();
+        }
+        // 23 SDK requires to be Alarm to be percice on time
+        if (Build.VERSION.SDK_INT >= 23) {
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
             alarm.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
@@ -312,13 +312,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     if (set) {
                         Toast.makeText(getActivity(), R.string.Reminders15, Toast.LENGTH_SHORT).show();
                         HourlyApplication.saveReminders(getActivity(), reminders);
-                    }
-                    if (b) {
-                        if (!pm.isIgnoringBatteryOptimizations(n)) {
-                            Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                            intent.setData(Uri.parse("package:" + n));
-                            startActivity(intent);
-                        }
                     }
                     return true;
                 }
