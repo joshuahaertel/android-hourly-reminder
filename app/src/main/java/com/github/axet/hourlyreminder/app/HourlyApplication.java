@@ -378,8 +378,13 @@ public class HourlyApplication extends MainApplication {
         Ringtone rt = RingtoneManager.getRingtone(context, uri);
         if (rt == null)
             return null;
-        title = rt.getTitle(context);
-        rt.stop();
+        try {
+            title = rt.getTitle(context);
+        } catch (SecurityException e) {
+            return null;
+        } finally {
+            rt.stop();
+        }
         titles.put(uri, title);
         return title;
     }

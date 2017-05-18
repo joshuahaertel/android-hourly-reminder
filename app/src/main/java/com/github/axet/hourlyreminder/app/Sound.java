@@ -587,13 +587,7 @@ public class Sound extends TTS {
                 mp.setDataSource(context, uri);
                 mp.prepare();
                 return mp;
-            } catch (IOException ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
-            } catch (IllegalArgumentException ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
-            } catch (SecurityException ex) {
+            } catch (Exception ex) {
                 Log.d(TAG, "create failed:", ex);
                 // fall through
             }
@@ -605,13 +599,7 @@ public class Sound extends TTS {
                 mp.setAudioStreamType(SOUND_STREAM);
                 mp.prepare();
                 return mp;
-            } catch (IOException ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
-            } catch (IllegalArgumentException ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
-            } catch (SecurityException ex) {
+            } catch (Exception ex) {
                 Log.d(TAG, "create failed:", ex);
                 // fall through
             }
