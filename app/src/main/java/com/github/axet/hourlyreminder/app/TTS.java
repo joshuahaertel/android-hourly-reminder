@@ -34,6 +34,7 @@ public class TTS extends SoundConfig {
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
     boolean restart; // restart tts once if failed. on apk upgrade tts failed connection.
     Set<Runnable> done = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
+    Runnable create;
 
     public TTS(Context context) {
         super(context);
@@ -41,33 +42,34 @@ public class TTS extends SoundConfig {
     }
 
     void ttsCreate() {
-        final Runnable create = new Runnable() {
-            @Override
-            public void run() {
-                if (tts == null)
-                    return; // already been closed. happens on StrongPhoneQ4 crashes with ZygoteInit callstack
-
-                tts.setLanguage(Locale.US);
-
-                if (Build.VERSION.SDK_INT >= 21) {
-                    tts.setAudioAttributes(new AudioAttributes.Builder()
-                            .setUsage(SOUND_CHANNEL)
-                            .setContentType(SOUND_TYPE)
-                            .build());
-                }
-
-                if (delayed != null) {
-                    delayed.run();
-                    handler.removeCallbacks(delayed);
-                    delayed = null;
-                }
-            }
-        };
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(final int status) {
                 if (status != TextToSpeech.SUCCESS)
                     return;
+                if (create != null)
+                    handler.removeCallbacks(create);
+                create = new Runnable() {
+                    TextToSpeech tts = TTS.this.tts;
+
+                    @Override
+                    public void run() {
+                        tts.setLanguage(Locale.US);
+
+                        if (Build.VERSION.SDK_INT >= 21) {
+                            tts.setAudioAttributes(new AudioAttributes.Builder()
+                                    .setUsage(SOUND_CHANNEL)
+                                    .setContentType(SOUND_TYPE)
+                                    .build());
+                        }
+
+                        if (delayed != null) {
+                            delayed.run();
+                            handler.removeCallbacks(delayed);
+                            delayed = null;
+                        }
+                    }
+                };
                 handler.post(create);
             }
         });
@@ -77,6 +79,10 @@ public class TTS extends SoundConfig {
         if (tts != null) {
             tts.shutdown();
             tts = null;
+        }
+        if (create != null) {
+            handler.removeCallbacks(create);
+            create = null;
         }
         if (delayed != null) {
             handler.removeCallbacks(delayed);
