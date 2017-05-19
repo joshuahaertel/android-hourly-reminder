@@ -3,9 +3,7 @@ package com.github.axet.hourlyreminder.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
-import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.ToneGenerator;
 import android.net.Uri;
@@ -18,6 +16,7 @@ import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.app.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
@@ -31,7 +30,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -180,13 +178,10 @@ public class Sound extends TTS {
 
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(double freqHz, int durationMs) {
-        int min = AudioTrack.getMinBufferSize(SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT);
         int count = SOUND_SAMPLERATE * durationMs / 1000; // samples count
         int last = count - 1; // last sample index
         int stereo = count * 2; // total actual samples count
         int stereoBytes = stereo * (Short.SIZE / 8); // total size in bytes
-        if (stereoBytes < min) // AudioTrack unable to play shorter then 'min' size of data, fill it with zeros
-            stereoBytes = min;
         int stereoSize = stereoBytes / (Short.SIZE / 8); // total samples including zeros
         short[] samples = new short[stereoSize]; // including zeros
         for (int i = 0; i < count; i++) {
@@ -196,12 +191,7 @@ public class Sound extends TTS {
             samples[si] = sample;
             samples[si + 1] = sample;
         }
-        // old phones bug.
-        //
-        // http://stackoverflow.com/questions/27602492
-        //
-        // with MODE_STATIC setNotificationMarkerPosition not called
-        AudioTrack track = new AudioTrack(SOUND_STREAM, SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereoBytes, AudioTrack.MODE_STREAM);
+        AudioTrack track = new AudioTrack(SOUND_STREAM, SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereoBytes);
         track.write(samples, 0, stereoSize);
         track.setNotificationMarkerPosition(last); // do not throw exception on != AudioTrack.SUCCESS
         return track;
@@ -432,32 +422,16 @@ public class Sound extends TTS {
             }
         };
 
-        int mark = 0;
-        try {
-            mark = track.getNotificationMarkerPosition();
-        } catch (IllegalStateException ignore) { // Unable to retrieve AudioTrack pointer for getMarkerPosition()
-        }
-        if (mark <= 0) { // some old bugged phones unable to set markers
-            try {
-                Method m = track.getClass().getDeclaredMethod("getNativeFrameCount");
-                m.setAccessible(true);
-                int len = (int) m.invoke(track) * 1000 / track.getSampleRate();
-                handler.postDelayed(end, len * 2);
-            } catch (Exception e) { // use 1 sec delay
-                handler.postDelayed(end, 1000);
+        track.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
+            @Override
+            public void onMarkerReached(android.media.AudioTrack t) {
+                end.run();
             }
-        } else {
-            track.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
-                @Override
-                public void onMarkerReached(AudioTrack t) {
-                    end.run();
-                }
 
-                @Override
-                public void onPeriodicNotification(AudioTrack track) {
-                }
-            });
-        }
+            @Override
+            public void onPeriodicNotification(android.media.AudioTrack track) {
+            }
+        });
 
         track.play();
     }
