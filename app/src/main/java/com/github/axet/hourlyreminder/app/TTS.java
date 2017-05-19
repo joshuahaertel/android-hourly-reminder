@@ -54,8 +54,6 @@ public class TTS extends SoundConfig {
 
                     @Override
                     public void run() {
-                        tts.setLanguage(Locale.US);
-
                         if (Build.VERSION.SDK_INT >= 21) {
                             tts.setAudioAttributes(new AudioAttributes.Builder()
                                     .setUsage(SOUND_CHANNEL)
@@ -206,7 +204,7 @@ public class TTS extends SoundConfig {
             locale = new Locale(lang);
 
         if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) {
-            locale = new Locale("en_US");
+            locale = tts.getLanguage();
         }
 
         String speakAMPM = "";
