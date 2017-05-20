@@ -16,7 +16,7 @@ import android.view.Gravity;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.axet.androidlibrary.app.AudioTrack;
+import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
@@ -193,7 +193,7 @@ public class Sound extends TTS {
         }
         AudioTrack track = new AudioTrack(SOUND_STREAM, SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereoBytes);
         track.write(samples, 0, stereoSize);
-        track.setNotificationMarkerPosition(last); // do not throw exception on != AudioTrack.SUCCESS
+        track.setNotificationMarkerPosition(last);
         return track;
     }
 

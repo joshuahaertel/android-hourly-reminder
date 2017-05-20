@@ -205,6 +205,12 @@ public class TTS extends SoundConfig {
 
         if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) {
             locale = tts.getLanguage();
+            if (Build.VERSION.SDK_INT >= 18) {
+                if (locale == null)
+                    locale = tts.getDefaultLanguage();
+            }
+            if (locale == null)
+                locale = Locale.getDefault();
         }
 
         String speakAMPM = "";
