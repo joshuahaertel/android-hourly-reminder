@@ -205,12 +205,11 @@ public class TTS extends SoundConfig {
             locale = new Locale(lang);
 
         if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // user selection not supported.
+            locale = null;
             if (Build.VERSION.SDK_INT >= 21) {
                 Voice v = tts.getDefaultVoice();
                 if (v != null)
                     locale = v.getLocale();
-                else
-                    locale = null;
             }
             if (locale == null) {
                 if (Build.VERSION.SDK_INT >= 18) {
