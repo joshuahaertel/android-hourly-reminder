@@ -221,8 +221,7 @@ public class TTS extends SoundConfig {
             }
             if (locale == null)
                 locale = Locale.getDefault();
-
-            if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // default voice not supported by platform. use 'en'
+            if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // default tts voice not supported. use 'en'
                 locale = new Locale("en");
                 if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // 'en' not supported? do not speak
                     return false;
@@ -255,6 +254,7 @@ public class TTS extends SoundConfig {
                     speak = HourlyApplication.getString(context, ru, R.string.speak_time_12, speakHour);
                 }
             }
+            tts.setLanguage(ru);
         }
 
         // english requres zero minutes
@@ -282,15 +282,15 @@ public class TTS extends SoundConfig {
                     speak = HourlyApplication.getString(context, en, R.string.speak_time_12, speakHour);
                 }
             }
+            tts.setLanguage(en);
         }
 
         if (speak.isEmpty()) { // no adopted translation
             speakHour = String.format("%d", h);
             speakMinute = String.format("%d", min);
             speak = speakHour + " " + speakMinute;
+            tts.setLanguage(locale);
         }
-
-        tts.setLanguage(locale);
 
         Log.d(TAG, speak);
 
