@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
@@ -194,26 +195,38 @@ public class TTS extends SoundConfig {
         boolean is24 = DateFormat.is24HourFormat(context);
         boolean speakAMPMFlag = !is24 && shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK_AMPM, false);
 
-        String lang = shared.getString(HourlyApplication.PREFERENCE_LANGUAGE, "");
+        String lang = shared.getString(HourlyApplication.PREFERENCE_LANGUAGE, ""); // take user lang preferences
 
         Locale locale;
 
-        if (lang.isEmpty())
+        if (lang.isEmpty()) // use system locale (system language)
             locale = Locale.getDefault();
         else
             locale = new Locale(lang);
 
-        if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) {
-            locale = tts.getLanguage();
+        if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // user selection does not supported.
+            if (Build.VERSION.SDK_INT >= 21) {
+                Voice v = tts.getDefaultVoice();
+                if (v != null)
+                    locale = v.getLocale();
+                else
+                    locale = null;
+            }
             if (locale == null) {
-                if (Build.VERSION.SDK_INT >= 21) {
-                    locale = tts.getDefaultVoice().getLocale();
-                } else if (Build.VERSION.SDK_INT >= 18) {
+                if (Build.VERSION.SDK_INT >= 18) {
                     locale = tts.getDefaultLanguage();
+                } else {
+                    locale = tts.getLanguage();
                 }
             }
             if (locale == null)
                 locale = Locale.getDefault();
+            if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) // default voice not supported by platform. use 'en'
+                locale = new Locale("en");
+            if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // still not supported? do not speak
+                restart = false;
+                return false;
+            }
         }
 
         String speakAMPM = "";
@@ -241,7 +254,6 @@ public class TTS extends SoundConfig {
                     speak = HourlyApplication.getString(context, ru, R.string.speak_time_12, speakHour);
                 }
             }
-            tts.setLanguage(ru);
         }
 
         // english requres zero minutes
@@ -269,15 +281,15 @@ public class TTS extends SoundConfig {
                     speak = HourlyApplication.getString(context, en, R.string.speak_time_12, speakHour);
                 }
             }
-            tts.setLanguage(en);
         }
 
         if (speak.isEmpty()) { // no adopted translation
             speakHour = String.format("%d", h);
             speakMinute = String.format("%d", min);
             speak = speakHour + " " + speakMinute;
-            tts.setLanguage(locale);
         }
+
+        tts.setLanguage(locale);
 
         Log.d(TAG, speak);
 
