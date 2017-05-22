@@ -261,6 +261,7 @@ public class TTS extends SoundConfig {
                     speak = HourlyApplication.getString(context, ru, R.string.speak_time_12, speakHour);
                 }
             }
+            tts.setLanguage(ru);
         }
 
         // english requres zero minutes
@@ -288,15 +289,15 @@ public class TTS extends SoundConfig {
                     speak = HourlyApplication.getString(context, en, R.string.speak_time_12, speakHour);
                 }
             }
+            tts.setLanguage(en);
         }
 
         if (speak.isEmpty()) { // no adopted translation
             speakHour = String.format("%d", h);
             speakMinute = String.format("%d", min);
             speak = speakHour + " " + speakMinute;
+            tts.setLanguage(locale);
         }
-
-        tts.setLanguage(locale);
 
         Log.d(TAG, speak);
 
