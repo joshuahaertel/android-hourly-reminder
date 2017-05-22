@@ -182,6 +182,7 @@ public class Sound extends TTS {
         int last = count - 1; // last sample index
         int stereo = count * 2; // total actual samples count
         int stereoBytes = stereo * (Short.SIZE / 8); // total size in bytes
+        stereoBytes = AudioTrack.getMinSize(SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereoBytes);
         int stereoSize = stereoBytes / (Short.SIZE / 8); // total samples including zeros
         short[] samples = new short[stereoSize]; // including zeros
         for (int i = 0; i < count; i++) {
