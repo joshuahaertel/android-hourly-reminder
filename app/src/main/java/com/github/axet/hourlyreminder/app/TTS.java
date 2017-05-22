@@ -1,6 +1,7 @@
 package com.github.axet.hourlyreminder.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.os.Build;
@@ -228,6 +229,13 @@ public class TTS extends SoundConfig {
             }
         }
 
+        if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_MISSING_DATA) {
+            Intent installIntent = new Intent();
+            installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+            context.startActivity(installIntent);
+            return false;
+        }
+
         String speakAMPM = "";
         String speakHour = "";
         String speakMinute = "";
@@ -253,7 +261,6 @@ public class TTS extends SoundConfig {
                     speak = HourlyApplication.getString(context, ru, R.string.speak_time_12, speakHour);
                 }
             }
-            tts.setLanguage(ru);
         }
 
         // english requres zero minutes
@@ -281,15 +288,15 @@ public class TTS extends SoundConfig {
                     speak = HourlyApplication.getString(context, en, R.string.speak_time_12, speakHour);
                 }
             }
-            tts.setLanguage(en);
         }
 
         if (speak.isEmpty()) { // no adopted translation
             speakHour = String.format("%d", h);
             speakMinute = String.format("%d", min);
             speak = speakHour + " " + speakMinute;
-            tts.setLanguage(locale);
         }
+
+        tts.setLanguage(locale);
 
         Log.d(TAG, speak);
 
