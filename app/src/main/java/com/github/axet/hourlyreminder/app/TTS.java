@@ -205,6 +205,11 @@ public class TTS extends SoundConfig {
         else
             locale = new Locale(lang);
 
+        if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) {
+            lang = locale.getLanguage();
+            locale = new Locale(lang);
+        }
+
         if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // user selection not supported.
             locale = null;
             if (Build.VERSION.SDK_INT >= 21) {
@@ -219,9 +224,19 @@ public class TTS extends SoundConfig {
                     locale = tts.getLanguage();
                 }
             }
-            if (locale == null)
+            if (locale == null) {
                 locale = Locale.getDefault();
-            if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // default tts voice not supported. use 'en'
+            }
+            if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // default tts voice not supported. use 'lang'
+                lang = locale.getLanguage();
+                locale = new Locale(lang);
+            }
+            if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // default 'lang' tts voice not supported. use 'system default lang'
+                locale = Locale.getDefault();
+                lang = locale.getLanguage();
+                locale = new Locale(lang);
+            }
+            if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // 'system default lang' tts voice not supported. use 'en'
                 locale = new Locale("en");
                 if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // 'en' not supported? do not speak
                     return false;
