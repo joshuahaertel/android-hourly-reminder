@@ -3,7 +3,6 @@
 To translate 'Hourly Reminder' to your language you need to translate following files:
 
   * [pref_settings.xml](/app/src/main/res/xml/pref_settings.xml)
-  * [pref_reminders.xml](/app/src/main/res/xml/pref_reminders.xml)
   * [strings.xml](/app/src/main/res/values/strings.xml)
 
 Additional file from 'android-library'
