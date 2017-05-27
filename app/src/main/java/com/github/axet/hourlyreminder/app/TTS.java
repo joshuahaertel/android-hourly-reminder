@@ -14,6 +14,7 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 
 import java.util.Calendar;
@@ -247,7 +248,9 @@ public class TTS extends SoundConfig {
         if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_MISSING_DATA) {
             Intent installIntent = new Intent();
             installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-            context.startActivity(installIntent);
+            if (OptimizationPreferenceCompat.isCallable(context, installIntent)) {
+                context.startActivity(installIntent);
+            }
             return false;
         }
 
