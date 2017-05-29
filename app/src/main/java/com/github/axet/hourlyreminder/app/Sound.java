@@ -181,19 +181,15 @@ public class Sound extends TTS {
         int count = SOUND_SAMPLERATE * durationMs / 1000; // samples count
         int last = count - 1; // last sample index
         int stereo = count * 2; // total actual samples count
-        int stereoBytes = stereo * (Short.SIZE / 8); // total size in bytes
-        stereoBytes = AudioTrack.getMinSize(SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereoBytes);
-        int stereoSize = stereoBytes / (Short.SIZE / 8); // total samples including zeros
-        short[] samples = new short[stereoSize]; // including zeros
+        AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereo);
         for (int i = 0; i < count; i++) {
             double sx = 2 * Math.PI * i / (SOUND_SAMPLERATE / freqHz);
             short sample = (short) (Math.sin(sx) * 0x7FFF);
             int si = i * 2;
-            samples[si] = sample;
-            samples[si + 1] = sample;
+            buf.buffer[si] = sample;
+            buf.buffer[si + 1] = sample;
         }
-        AudioTrack track = new AudioTrack(SOUND_STREAM, SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereoBytes);
-        track.write(samples, 0, stereoSize);
+        AudioTrack track = new AudioTrack(SOUND_STREAM, buf);
         track.setNotificationMarkerPosition(last);
         return track;
     }
