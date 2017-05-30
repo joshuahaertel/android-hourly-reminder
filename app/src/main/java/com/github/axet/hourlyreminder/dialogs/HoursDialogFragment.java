@@ -304,6 +304,8 @@ public class HoursDialogFragment extends DialogFragment {
         min30.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (okb == null) // onRestoreInstanceState call
+                    return;
                 update();
             }
         });
