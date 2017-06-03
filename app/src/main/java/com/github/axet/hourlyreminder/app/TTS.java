@@ -246,10 +246,9 @@ public class TTS extends SoundConfig {
         }
 
         if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_MISSING_DATA) {
-            Intent installIntent = new Intent();
-            installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-            if (OptimizationPreferenceCompat.isCallable(context, installIntent)) {
-                context.startActivity(installIntent);
+            Intent intent = new Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+            if (intent.resolveActivity(context.getPackageManager()) != null) {
+                context.startActivity(intent);
             }
             return false;
         }

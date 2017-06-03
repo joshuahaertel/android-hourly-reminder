@@ -301,11 +301,9 @@ public class HoursDialogFragment extends DialogFragment {
                 b = true;
         }
         min30.setChecked(b);
-        min30.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        min30.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (okb == null) // onRestoreInstanceState call
-                    return;
+            public void onClick(View v) {
                 update();
             }
         });
@@ -316,9 +314,9 @@ public class HoursDialogFragment extends DialogFragment {
     void changed() {
         mPreferenceChanged = true;
         values = save();
-        update();
-        values = save(); // half hours maybe removed
-        update(); // and update status
+        update(); // half hours maybe removed
+        values = save(); // save them
+        update(); // and update new 'values'
     }
 
     Set<String> save() {
