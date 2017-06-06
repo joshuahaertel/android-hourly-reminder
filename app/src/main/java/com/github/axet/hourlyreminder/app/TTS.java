@@ -11,6 +11,7 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.text.format.DateFormat;
+import android.util.AndroidRuntimeException;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -246,9 +247,23 @@ public class TTS extends SoundConfig {
         }
 
         if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_MISSING_DATA) {
-            Intent intent = new Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-            if (intent.resolveActivity(context.getPackageManager()) != null) {
-                context.startActivity(intent);
+            try {
+                Intent intent = new Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                if (intent.resolveActivity(context.getPackageManager()) != null) {
+                    context.startActivity(intent);
+                }
+            } catch (AndroidRuntimeException e) {
+                Log.d(TAG, "Unable load TTS", e);
+                try {
+                    Intent intent = new Intent(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    if (intent.resolveActivity(context.getPackageManager()) != null) {
+                        context.startActivity(intent);
+                    }
+                } catch (AndroidRuntimeException e1) {
+                    Log.d(TAG, "Unable load TTS", e1);
+                }
             }
             return false;
         }
