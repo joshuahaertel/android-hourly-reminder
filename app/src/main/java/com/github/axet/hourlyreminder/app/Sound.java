@@ -178,12 +178,14 @@ public class Sound extends TTS {
 
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(double freqHz, int durationMs) {
-        int count = SOUND_SAMPLERATE * durationMs / 1000; // samples count
+        int rate = SOUND_SAMPLERATE;
+        rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(2, rate);
+        int count = rate * durationMs / 1000; // samples count
         int last = count - 1; // last sample index
         int stereo = count * 2; // total actual samples count
-        AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(SOUND_SAMPLERATE, SOUND_CHANNELS, SOUND_FORMAT, stereo);
+        AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(rate, SOUND_CHANNELS, SOUND_FORMAT, stereo);
         for (int i = 0; i < count; i++) {
-            double sx = 2 * Math.PI * i / (SOUND_SAMPLERATE / freqHz);
+            double sx = 2 * Math.PI * i / (rate / freqHz);
             short sample = (short) (Math.sin(sx) * 0x7FFF);
             int si = i * 2;
             buf.buffer[si] = sample;
