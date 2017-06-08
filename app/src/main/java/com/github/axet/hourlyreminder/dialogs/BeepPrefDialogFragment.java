@@ -265,7 +265,7 @@ public class BeepPrefDialogFragment extends PreferenceDialogFragmentCompat {
 
     void playSound() {
         int f = getFreq();
-        int l = Integer.parseInt(len.getText().toString());
+        int l = getLen();
         sound.playBeep(Sound.generateTone(f, l), null);
     }
 
