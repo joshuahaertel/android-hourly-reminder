@@ -3,6 +3,7 @@ package com.github.axet.hourlyreminder.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
+import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.ToneGenerator;
@@ -178,18 +179,41 @@ public class Sound extends TTS {
 
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(double freqHz, int durationMs) {
-        int rate = SOUND_SAMPLERATE;
-        rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(SOUND_CHANNELS, rate);
+        int rate;
+        int channels = SOUND_CHANNELS;
+        rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(channels, SOUND_SAMPLERATE);
+        if (rate == -1) {
+            channels = AudioFormat.CHANNEL_OUT_MONO;
+            rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(channels, SOUND_SAMPLERATE);
+        }
+        if (rate == -1)
+            rate = com.github.axet.androidlibrary.sound.Sound.DEFAULT_RATE;
         int count = rate * durationMs / 1000; // samples count
         int last = count - 1; // last sample index
-        int stereo = count * 2; // total actual samples count
-        AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(rate, SOUND_CHANNELS, SOUND_FORMAT, stereo);
-        for (int i = 0; i < count; i++) {
-            double sx = 2 * Math.PI * i / (rate / freqHz);
-            short sample = (short) (Math.sin(sx) * 0x7FFF);
-            int si = i * 2;
-            buf.buffer[si] = sample;
-            buf.buffer[si + 1] = sample;
+        AudioTrack.AudioBuffer buf;
+        switch (channels) {
+            case AudioFormat.CHANNEL_OUT_MONO:
+                int mono = count;
+                buf = new AudioTrack.AudioBuffer(rate, channels, SOUND_FORMAT, mono);
+                for (int i = 0; i < count; i++) {
+                    double sx = 2 * Math.PI * i / (rate / freqHz);
+                    short sample = (short) (Math.sin(sx) * 0x7FFF);
+                    buf.buffer[i] = sample;
+                }
+                break;
+            case AudioFormat.CHANNEL_OUT_STEREO:
+                int stereo = count * 2; // total actual samples count
+                buf = new AudioTrack.AudioBuffer(rate, channels, SOUND_FORMAT, stereo);
+                for (int i = 0; i < count; i++) {
+                    double sx = 2 * Math.PI * i / (rate / freqHz);
+                    short sample = (short) (Math.sin(sx) * 0x7FFF);
+                    int si = i * 2;
+                    buf.buffer[si] = sample;
+                    buf.buffer[si + 1] = sample;
+                }
+                break;
+            default:
+                throw new RuntimeException("unknown audio mode");
         }
         AudioTrack track = new AudioTrack(SOUND_STREAM, buf);
         track.setNotificationMarkerPosition(last);
