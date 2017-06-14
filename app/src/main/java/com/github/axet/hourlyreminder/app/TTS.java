@@ -15,6 +15,7 @@ import android.util.AndroidRuntimeException;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 
@@ -28,7 +29,7 @@ import java.util.UUID;
 public class TTS extends SoundConfig {
     public static final String TAG = TTS.class.getSimpleName();
 
-    public static final int DELAYED_DELAY = 5000;
+    public static final int DELAYED_DELAY = 5 * AlarmManager.SEC1;
 
     public static final String KEY_PARAM_VOLUME = "volume"; // TextToSpeech.Engine.KEY_PARAM_VOLUME
 

@@ -31,7 +31,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -194,7 +193,7 @@ public class Sound extends TTS {
         switch (channels) {
             case AudioFormat.CHANNEL_OUT_MONO:
                 int mono = count;
-                buf = new AudioTrack.AudioBuffer(rate, channels, SOUND_FORMAT, mono);
+                buf = new AudioTrack.AudioBuffer(rate, channels, com.github.axet.androidlibrary.sound.Sound.DEFAULT_AUDIOFORMAT, mono);
                 for (int i = 0; i < count; i++) {
                     double sx = 2 * Math.PI * i / (rate / freqHz);
                     short sample = (short) (Math.sin(sx) * 0x7FFF);
@@ -203,7 +202,7 @@ public class Sound extends TTS {
                 break;
             case AudioFormat.CHANNEL_OUT_STEREO:
                 int stereo = count * 2; // total actual samples count
-                buf = new AudioTrack.AudioBuffer(rate, channels, SOUND_FORMAT, stereo);
+                buf = new AudioTrack.AudioBuffer(rate, channels, com.github.axet.androidlibrary.sound.Sound.DEFAULT_AUDIOFORMAT, stereo);
                 for (int i = 0; i < count; i++) {
                     double sx = 2 * Math.PI * i / (rate / freqHz);
                     short sample = (short) (Math.sin(sx) * 0x7FFF);
