@@ -103,8 +103,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
             if (a.equals(Intent.ACTION_SCREEN_ON)) {
                 final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
                 String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
-                FireAlarm alarm = new FireAlarm(json);
-                showAlarmActivity(alarm, silenced);
+                if (!json.isEmpty()) {
+                    FireAlarm alarm = new FireAlarm(json);
+                    showAlarmActivity(alarm, silenced);
+                }
             }
             if (a.equals(Intent.ACTION_SCREEN_OFF)) {
                 // do nothing. do not annoy user. he will see alarm screen on next screen on event.
