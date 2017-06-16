@@ -214,7 +214,7 @@ public class Sound extends TTS {
             default:
                 throw new RuntimeException("unknown audio mode");
         }
-        AudioTrack track = AudioTrack.create(SOUND_STREAM, SOUND_TYPE, buf);
+        AudioTrack track = AudioTrack.create(SOUND_STREAM, SOUND_CHANNEL, SOUND_TYPE, buf);
         track.setNotificationMarkerPosition(last);
         return track;
     }
