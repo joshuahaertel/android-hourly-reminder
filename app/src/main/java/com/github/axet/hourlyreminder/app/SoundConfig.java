@@ -13,11 +13,9 @@ import com.github.axet.hourlyreminder.R;
 public class SoundConfig {
     public static final String TAG = SoundConfig.class.getSimpleName();
 
-    // AudioSystem.STREAM_ALARM AudioManager.STREAM_ALARM;
-    public final static int SOUND_STREAM = AudioManager.STREAM_ALARM;
+    public final static int SOUND_STREAM = AudioManager.STREAM_ALARM; // AudioSystem.STREAM_ALARM == AudioManager.STREAM_ALARM;
     public final static int SOUND_CHANNEL = AudioAttributes.USAGE_ALARM;
     public final static int SOUND_TYPE = AudioAttributes.CONTENT_TYPE_SONIFICATION;
-    public final static int SOUND_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
     public final static int SOUND_CHANNELS = AudioFormat.CHANNEL_OUT_STEREO;
     public final static int SOUND_SAMPLERATE = 44100;
 

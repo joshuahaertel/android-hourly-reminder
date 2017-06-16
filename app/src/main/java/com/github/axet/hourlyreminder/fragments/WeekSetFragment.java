@@ -65,6 +65,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     View alarmRingtonePlay;
     Sound sound;
     Storage storage;
+    OpenFileDialog dialog;
 
     int startweek = 0;
 
@@ -494,7 +495,9 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     }
 
     void selectFile() {
-        final OpenFileDialog f = new OpenFileDialog(getActivity(), OpenFileDialog.DIALOG_TYPE.FILE_DIALOG);
+        if (dialog != null)
+            return;
+        dialog = new OpenFileDialog(getActivity(), OpenFileDialog.DIALOG_TYPE.FILE_DIALOG);
 
         String path = fragmentRequestRingtone.ringtoneValue;
 
@@ -513,12 +516,12 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             }
         }
 
-        f.setReadonly(true);
-        f.setCurrentPath(sound);
-        f.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        dialog.setReadonly(true);
+        dialog.setCurrentPath(sound);
+        dialog.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                File ff = f.getCurrentPath();
+            public void onClick(DialogInterface d, int which) {
+                File ff = dialog.getCurrentPath();
 
                 SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
                 shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, ff.getParent()).commit();
@@ -531,7 +534,13 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 fragmentRequestRingtone = null;
             }
         });
-        f.show();
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface d) {
+                dialog = null;
+            }
+        });
+        dialog.show();
     }
 
     @Override
