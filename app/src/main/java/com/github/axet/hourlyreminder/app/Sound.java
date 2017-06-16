@@ -186,7 +186,7 @@ public class Sound extends TTS {
             rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(channels, SOUND_SAMPLERATE);
         }
         if (rate == -1)
-            rate = com.github.axet.androidlibrary.sound.Sound.DEFAULT_RATE;
+            throw new RuntimeException("Unable to find proper audio attrs");
         int count = rate * durationMs / 1000; // samples count
         int last = count - 1; // last sample index
         AudioTrack.AudioBuffer buf;
@@ -214,7 +214,7 @@ public class Sound extends TTS {
             default:
                 throw new RuntimeException("unknown audio mode");
         }
-        AudioTrack track = new AudioTrack(SOUND_STREAM, buf);
+        AudioTrack track = AudioTrack.create(SOUND_STREAM, SOUND_TYPE, buf);
         track.setNotificationMarkerPosition(last);
         return track;
     }
