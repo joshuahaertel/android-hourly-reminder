@@ -206,9 +206,9 @@ public class Sound extends TTS {
                 for (int i = 0; i < count; i++) {
                     double sx = 2 * Math.PI * i / (rate / freqHz);
                     short sample = (short) (Math.sin(sx) * 0x7FFF);
-                    int si = i * 2;
-                    buf.buffer[si] = sample;
-                    buf.buffer[si + 1] = sample;
+                    int ii = i * 2;
+                    buf.buffer[ii] = sample;
+                    buf.buffer[ii + 1] = sample;
                 }
                 break;
             default:
