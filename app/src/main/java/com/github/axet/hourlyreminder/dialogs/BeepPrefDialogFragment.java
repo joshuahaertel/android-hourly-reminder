@@ -167,15 +167,17 @@ public class BeepPrefDialogFragment extends PreferenceDialogFragmentCompat {
                 if (ignore)
                     return;
 
-                beep.value_f = getFreq();
+                int f = getFreq();
+                if (f > fmax) {
+                    s.clear();
+                    s.append("" + fmax);
+                    f = fmax;
+                }
+
+                beep.value_f = f;
                 mPreferenceChanged = true;
 
                 int p = f2p(beep.value_f);
-                if (p > fmax) {
-                    s.clear();
-                    s.append("" + fmax);
-                    p = fmax;
-                }
                 ignore = true;
                 seek.setProgress(p);
                 ignore = false;
@@ -273,14 +275,14 @@ public class BeepPrefDialogFragment extends PreferenceDialogFragmentCompat {
         String t = freq.getText().toString();
         if (t.isEmpty())
             t = "20";
-        return Integer.parseInt(t);
+        return Integer.valueOf(t);
     }
 
     int getLen() {
         String t = len.getText().toString();
         if (t.isEmpty())
             t = "50";
-        return Integer.parseInt(t);
+        return Integer.valueOf(t);
     }
 
     @Override

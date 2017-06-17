@@ -197,7 +197,7 @@ public class Sound extends TTS {
                 for (int i = 0; i < count; i++) {
                     double sx = 2 * Math.PI * i / (rate / freqHz);
                     short sample = (short) (Math.sin(sx) * 0x7FFF);
-                    buf.buffer[i] = sample;
+                    buf.write(i, sample);
                 }
                 break;
             case AudioFormat.CHANNEL_OUT_STEREO:
@@ -206,9 +206,7 @@ public class Sound extends TTS {
                 for (int i = 0; i < count; i++) {
                     double sx = 2 * Math.PI * i / (rate / freqHz);
                     short sample = (short) (Math.sin(sx) * 0x7FFF);
-                    int si = i * 2;
-                    buf.buffer[si] = sample;
-                    buf.buffer[si + 1] = sample;
+                    buf.write(i * 2, sample, sample);
                 }
                 break;
             default:
