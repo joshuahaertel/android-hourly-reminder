@@ -286,11 +286,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetReminder: " + AlarmManager.formatTime(time));
 
+            AlarmManager.Alarm a;
             if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
-                am.setAlarm(time, reminderIntent);
+                a = am.setAlarm(time, reminderIntent);
             } else {
-                am.setExact(time, reminderIntent);
+                a= am.setExact(time, reminderIntent);
             }
+            upcomingLock(time, a);
         }
 
         if (alarms.isEmpty()) {
@@ -302,8 +304,16 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + AlarmManager.formatTime(time));
 
-            am.setAlarm(time, alarmIntent);
+            AlarmManager.Alarm a = am.setAlarm(time, alarmIntent);
+            upcomingLock(time, a);
         }
+    }
+
+    void upcomingLock(long time, AlarmManager.Alarm a) {
+        Calendar cur = Calendar.getInstance();
+        Calendar upcoming = upcomingTime(time);
+        if (cur.after(upcoming))
+            a.wakeLock();
     }
 
     // register notification_upcoming alarm event for 'time' - 15min.
@@ -318,12 +328,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         } else {
             Calendar cur = Calendar.getInstance();
 
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(time);
-
-            int repeat = getRepeat(time) * 60; // make seconds
-            int sec = repeat / 4;
-            cal.add(Calendar.SECOND, -sec);
+            Calendar cal = upcomingTime(time);
 
             if (cur.after(cal)) { // we already 15 before alarm, show notification_upcoming
                 am.cancel(upcomingIntent);
@@ -373,7 +378,18 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         return rep.first(); // sorted smallest first
     }
 
-    // show notification_upcoming. (about upcoming alarm)
+    Calendar upcomingTime(long time) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(time);
+
+        int repeat = getRepeat(time) * 60; // make seconds
+        int sec = repeat / 4;
+        cal.add(Calendar.SECOND, -sec);
+
+        return cal;
+    }
+
+    // show upcoming alarm notification
     //
     // time - 0 cancel notifcation
     // time - upcoming alarm time, show text.
