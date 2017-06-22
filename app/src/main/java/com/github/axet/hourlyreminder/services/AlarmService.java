@@ -290,7 +290,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
                 a = am.setAlarm(time, reminderIntent);
             } else {
-                a= am.setExact(time, reminderIntent);
+                a = am.setExact(time, reminderIntent);
             }
             upcomingLock(time, a);
         }
@@ -310,6 +310,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     void upcomingLock(long time, AlarmManager.Alarm a) {
+        if (!OptimizationPreferenceCompat.isHuawei(this))
+            return;
         Calendar cur = Calendar.getInstance();
         Calendar upcoming = upcomingTime(time);
         if (cur.after(upcoming))
