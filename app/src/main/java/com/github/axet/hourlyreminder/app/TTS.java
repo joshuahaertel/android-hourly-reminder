@@ -37,9 +37,10 @@ public class TTS extends SoundConfig {
 
     TextToSpeech tts;
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
-    boolean restart; // restart tts once if failed. on apk upgrade tts failed connection.
+    boolean restart; // restart tts once if failed. on apk upgrade tts alwyas failed.
     Set<Runnable> done = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
-    Runnable create;
+    Runnable onInit;
+    Runnable onFailed;
 
     public TTS(Context context) {
         super(context);
@@ -47,33 +48,45 @@ public class TTS extends SoundConfig {
     }
 
     void ttsCreate() {
+        handler.removeCallbacks(onFailed);
+        onFailed = new Runnable() {
+            @Override
+            public void run() {
+                close();
+            }
+        };
+        handler.removeCallbacks(onInit);
+        onInit = new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= 21) {
+                    tts.setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(SOUND_CHANNEL)
+                            .setContentType(SOUND_TYPE)
+                            .build());
+                }
+
+                handler.removeCallbacks(onInit);
+                onInit = null;
+                handler.removeCallbacks(onFailed);
+                onFailed = null;
+
+                if (delayed != null) {
+                    Runnable r = delayed;
+                    handler.removeCallbacks(delayed);
+                    delayed = null;
+                    r.run();
+                }
+            }
+        };
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(final int status) {
-                if (status != TextToSpeech.SUCCESS)
+                if (status != TextToSpeech.SUCCESS) {
+                    handler.post(onFailed);
                     return;
-                if (create != null)
-                    handler.removeCallbacks(create);
-                create = new Runnable() {
-                    TextToSpeech tts = TTS.this.tts;
-
-                    @Override
-                    public void run() {
-                        if (Build.VERSION.SDK_INT >= 21) {
-                            tts.setAudioAttributes(new AudioAttributes.Builder()
-                                    .setUsage(SOUND_CHANNEL)
-                                    .setContentType(SOUND_TYPE)
-                                    .build());
-                        }
-
-                        if (delayed != null) {
-                            delayed.run();
-                            handler.removeCallbacks(delayed);
-                            delayed = null;
-                        }
-                    }
-                };
-                handler.post(create);
+                }
+                handler.post(onInit);
             }
         });
     }
@@ -83,36 +96,35 @@ public class TTS extends SoundConfig {
             tts.shutdown();
             tts = null;
         }
-        if (create != null) {
-            handler.removeCallbacks(create);
-            create = null;
-        }
-        if (delayed != null) {
-            handler.removeCallbacks(delayed);
-            delayed = null;
-        }
+        handler.removeCallbacks(onInit);
+        onInit = null;
+        handler.removeCallbacks(onFailed);
+        onFailed = null;
+        handler.removeCallbacks(delayed);
+        delayed = null;
     }
 
     public void playSpeech(final long time, final Runnable done) {
         TTS.this.done.clear();
         TTS.this.done.add(done);
 
-        // clear delayed(), sound just played
-        final Runnable clear = new Runnable() {
-            @Override
-            public void run() {
-                if (delayed != null) {
-                    handler.removeCallbacks(delayed);
-                    delayed = null;
-                }
-                if (done != null && TTS.this.done.contains(done))
-                    done.run();
-            }
-        };
+        handler.removeCallbacks(delayed);
+        delayed = null;
 
         if (tts == null) {
             ttsCreate();
         }
+
+        // clear delayed(), sound just played
+        final Runnable clear = new Runnable() {
+            @Override
+            public void run() {
+                handler.removeCallbacks(delayed);
+                delayed = null;
+                if (done != null && TTS.this.done.contains(done))
+                    done.run();
+            }
+        };
 
         if (Build.VERSION.SDK_INT < 15) {
             tts.setOnUtteranceCompletedListener(new TextToSpeech.OnUtteranceCompletedListener() {
@@ -129,12 +141,12 @@ public class TTS extends SoundConfig {
 
                 @Override
                 public void onDone(String utteranceId) {
-                    handler.post(clear); // from different thread
+                    handler.post(clear);
                 }
 
                 @Override
                 public void onError(String utteranceId) {
-                    clear.run();
+                    handler.post(clear);
                 }
             });
         }
@@ -143,24 +155,19 @@ public class TTS extends SoundConfig {
         // play speech twice if clear.run() was called.
         if (!playSpeech(time)) {
             Toast.makeText(context, context.getString(R.string.WaitTTS), Toast.LENGTH_SHORT).show();
-            if (delayed != null) {
-                handler.removeCallbacks(delayed);
-            }
+            handler.removeCallbacks(delayed);
             delayed = new Runnable() {
                 @Override
                 public void run() {
                     if (!playSpeech(time)) {
-                        tts.shutdown(); // on apk upgrade tts failed always. close it and restart.
-                        tts = null;
+                        close();
                         if (restart) {
                             Toast.makeText(context, context.getString(R.string.FailedTTS), Toast.LENGTH_SHORT).show();
                             clear.run();
                         } else {
                             restart = true;
                             Toast.makeText(context, context.getString(R.string.FailedTTSRestar), Toast.LENGTH_SHORT).show();
-                            if (delayed != null) {
-                                handler.removeCallbacks(delayed);
-                            }
+                            handler.removeCallbacks(delayed);
                             delayed = new Runnable() {
                                 @Override
                                 public void run() {
@@ -177,6 +184,9 @@ public class TTS extends SoundConfig {
     }
 
     boolean playSpeech(long time) {
+        if (onInit != null)
+            return false;
+
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(time);
         int hour = c.get(Calendar.HOUR_OF_DAY);
