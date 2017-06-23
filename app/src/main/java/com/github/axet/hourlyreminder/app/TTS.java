@@ -40,7 +40,6 @@ public class TTS extends SoundConfig {
     boolean restart; // restart tts once if failed. on apk upgrade tts alwyas failed.
     Set<Runnable> done = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
     Runnable onInit;
-    Runnable onFailed;
 
     public TTS(Context context) {
         super(context);
@@ -48,13 +47,6 @@ public class TTS extends SoundConfig {
     }
 
     void ttsCreate() {
-        handler.removeCallbacks(onFailed);
-        onFailed = new Runnable() {
-            @Override
-            public void run() {
-                close();
-            }
-        };
         handler.removeCallbacks(onInit);
         onInit = new Runnable() {
             @Override
@@ -68,8 +60,6 @@ public class TTS extends SoundConfig {
 
                 handler.removeCallbacks(onInit);
                 onInit = null;
-                handler.removeCallbacks(onFailed);
-                onFailed = null;
 
                 if (delayed != null) {
                     Runnable r = delayed;
@@ -82,10 +72,8 @@ public class TTS extends SoundConfig {
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(final int status) {
-                if (status != TextToSpeech.SUCCESS) {
-                    handler.post(onFailed);
+                if (status != TextToSpeech.SUCCESS)
                     return;
-                }
                 handler.post(onInit);
             }
         });
@@ -98,8 +86,6 @@ public class TTS extends SoundConfig {
         }
         handler.removeCallbacks(onInit);
         onInit = null;
-        handler.removeCallbacks(onFailed);
-        onFailed = null;
         handler.removeCallbacks(delayed);
         delayed = null;
     }
