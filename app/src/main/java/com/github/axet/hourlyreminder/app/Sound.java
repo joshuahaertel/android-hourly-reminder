@@ -3,7 +3,6 @@ package com.github.axet.hourlyreminder.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
-import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.ToneGenerator;
@@ -14,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.SurfaceHolder;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +51,25 @@ public class Sound extends TTS {
     };
     FadeVolume increaseVolume;
     Runnable loop; // loop preventer
+
+    // https://gist.github.com/slightfoot/6330866
+    public static AudioTrack generateTone(double hz, int dur) {
+        int rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(SOUND_CHANNELS, SOUND_SAMPLERATE);
+        if (rate == -1 || 1 == 1)
+            throw new RuntimeException("Unable to find proper audio attrs");
+        int count = rate * dur / 1000; // samples count
+        int last = count - 1; // last sample index
+        int stereo = count * 2; // total actual samples count
+        AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(rate, SOUND_CHANNELS, com.github.axet.androidlibrary.sound.Sound.DEFAULT_AUDIOFORMAT, stereo);
+        for (int i = 0; i < count; i++) {
+            double sx = 2 * Math.PI * i / (rate / hz);
+            short sample = (short) (Math.sin(sx) * 0x7FFF);
+            buf.write(i * 2, sample, sample);
+        }
+        AudioTrack track = AudioTrack.create(SOUND_STREAM, SOUND_CHANNEL, SOUND_TYPE, buf);
+        track.setNotificationMarkerPosition(last);
+        return track;
+    }
 
     public static class Playlist {
         public List<String> beforeOnce = new ArrayList<>();
@@ -176,54 +195,11 @@ public class Sound extends TTS {
         }
     }
 
-    // https://gist.github.com/slightfoot/6330866
-    public static AudioTrack generateTone(double freqHz, int durationMs) {
-        int rate;
-        int channels = SOUND_CHANNELS;
-        rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(channels, SOUND_SAMPLERATE);
-        if (rate == -1) {
-            channels = AudioFormat.CHANNEL_OUT_MONO;
-            rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(channels, SOUND_SAMPLERATE);
-        }
-        if (rate == -1)
-            throw new RuntimeException("Unable to find proper audio attrs");
-        int count = rate * durationMs / 1000; // samples count
-        int last = count - 1; // last sample index
-        AudioTrack.AudioBuffer buf;
-        switch (channels) {
-            case AudioFormat.CHANNEL_OUT_MONO:
-                int mono = count;
-                buf = new AudioTrack.AudioBuffer(rate, channels, com.github.axet.androidlibrary.sound.Sound.DEFAULT_AUDIOFORMAT, mono);
-                for (int i = 0; i < count; i++) {
-                    double sx = 2 * Math.PI * i / (rate / freqHz);
-                    short sample = (short) (Math.sin(sx) * 0x7FFF);
-                    buf.write(i, sample);
-                }
-                break;
-            case AudioFormat.CHANNEL_OUT_STEREO:
-                int stereo = count * 2; // total actual samples count
-                buf = new AudioTrack.AudioBuffer(rate, channels, com.github.axet.androidlibrary.sound.Sound.DEFAULT_AUDIOFORMAT, stereo);
-                for (int i = 0; i < count; i++) {
-                    double sx = 2 * Math.PI * i / (rate / freqHz);
-                    short sample = (short) (Math.sin(sx) * 0x7FFF);
-                    buf.write(i * 2, sample, sample);
-                }
-                break;
-            default:
-                throw new RuntimeException("unknown audio mode");
-        }
-        AudioTrack track = AudioTrack.create(SOUND_STREAM, SOUND_CHANNEL, SOUND_TYPE, buf);
-        track.setNotificationMarkerPosition(last);
-        return track;
-    }
-
     public Silenced silencedPlaylist(VibratePreference.Config config, Playlist rr) {
         Silenced ss = silenced(config);
 
         if (ss != Silenced.NONE)
             return ss;
-
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         boolean v = config.reminders;
         boolean c = !rr.after.isEmpty() || !rr.before.isEmpty();
@@ -411,7 +387,49 @@ public class Sound extends TTS {
         BeepPrefDialogFragment.BeepConfig beep = new BeepPrefDialogFragment.BeepConfig();
         beep.load(b);
 
-        playBeep(generateTone(beep.value_f, beep.value_l), done);
+        try {
+            AudioTrack t = generateTone(beep.value_f, beep.value_l);
+            playBeep(t, done);
+        } catch (RuntimeException e) {
+            Log.d(TAG, "Unable get track", e);
+            toastTone();
+            toneLoop = new Runnable() {
+                @Override
+                public void run() {
+                    long dur = tonePlayBeep();
+                    Runnable end = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (tone != null) {
+                                tone.release();
+                                tone = null;
+                            }
+                            if (done != null)
+                                done.run();
+                        }
+                    };
+                    handler.postDelayed(end, dur); // length of tone
+                }
+            };
+            toneLoop.run();
+        }
+    }
+
+    int getToneVolume() {
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        float systemVolume = am.getStreamVolume(SOUND_STREAM) / (float) am.getStreamMaxVolume(SOUND_STREAM);
+        systemVolume = unreduce(systemVolume);
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        float alarmVolume = shared.getFloat(HourlyApplication.PREFERENCE_VOLUME, 1f);
+        return (int) (100 * systemVolume * alarmVolume);
+    }
+
+    long tonePlayBeep() {
+        if (tone != null)
+            tone.release();
+        tone = new ToneGenerator(SOUND_STREAM, getToneVolume());
+        tone.startTone(ToneGenerator.TONE_SUP_ERROR);
+        return 330;
     }
 
     public void playBeep(AudioTrack t, final Runnable done) {
@@ -465,6 +483,7 @@ public class Sound extends TTS {
             player = create(Alarm.DEFAULT_ALARM);
         }
         if (player == null) { // last resort fallback
+            toastTone();
             toneLoop = new Runnable() {
                 @Override
                 public void run() {
@@ -480,10 +499,14 @@ public class Sound extends TTS {
         startPlayer(player);
     }
 
+    void toastTone() {
+        Toast.makeText(context, "MediaPlayer init failed, fallback to Tone", Toast.LENGTH_SHORT).show();
+    }
+
     long tonePlay() {
         if (tone != null)
             tone.release();
-        tone = new ToneGenerator(SOUND_STREAM, 100);
+        tone = new ToneGenerator(SOUND_STREAM, getToneVolume());
         tone.startTone(ToneGenerator.TONE_CDMA_CALL_SIGNAL_ISDN_NORMAL);
         return 4000;
     }
@@ -501,7 +524,7 @@ public class Sound extends TTS {
         final float startVolume;
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        float systemVolume = am.getStreamMaxVolume(SOUND_STREAM) / (float) am.getStreamVolume(SOUND_STREAM);
+        float systemVolume = am.getStreamVolume(SOUND_STREAM) / (float) am.getStreamMaxVolume(SOUND_STREAM);
         float alarmVolume = getVolume();
 
         // if user trying to reduce alarms volume, then use it as start volume. else start from silence
@@ -610,9 +633,20 @@ public class Sound extends TTS {
             player = create(ReminderSet.DEFAULT_NOTIFICATION);
         }
         if (player == null) {
+            toastTone();
             long dur = tonePlay();
-            if (done != null)
-                handler.postDelayed(done, dur);
+            Runnable end = new Runnable() {
+                @Override
+                public void run() {
+                    if (tone != null) {
+                        tone.release();
+                        tone = null;
+                    }
+                    if (done != null)
+                        done.run();
+                }
+            };
+            handler.postDelayed(end, dur);
             return null;
         }
 

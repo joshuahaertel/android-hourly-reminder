@@ -30,8 +30,6 @@ public class SoundConfig {
     Context context;
     Handler handler;
 
-    Float volume;
-
     public SoundConfig(Context context) {
         this.context = context;
         this.handler = new Handler();
@@ -42,20 +40,20 @@ public class SoundConfig {
         if (Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_INCREASE_VOLUME, "0")) > 0) {
             return 0;
         }
-
         return getVolume();
     }
 
     float getVolume() {
-        if (volume != null)
-            return volume;
-
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        return (float) (Math.pow(shared.getFloat(HourlyApplication.PREFERENCE_VOLUME, 1f), 3));
+        float vol = shared.getFloat(HourlyApplication.PREFERENCE_VOLUME, 1f);
+        return reduce(vol);
     }
 
-    public void setVolume(float f) {
-        volume = f;
+    float reduce(float vol) {
+        return (float) Math.pow(vol, 3);
     }
 
+    float unreduce(float vol) {
+        return (float) Math.exp(Math.log(vol) / 3);
+    }
 }
