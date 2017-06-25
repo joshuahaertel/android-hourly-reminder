@@ -392,26 +392,17 @@ public class Sound extends TTS {
             playBeep(t, done);
         } catch (RuntimeException e) {
             Log.d(TAG, "Unable get track", e);
-            toastTone();
-            toneLoop = new Runnable() {
+            toastTone(e);
+            long dur = tonePlayBeep();
+            Runnable end = new Runnable() {
                 @Override
                 public void run() {
-                    long dur = tonePlayBeep();
-                    Runnable end = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (tone != null) {
-                                tone.release();
-                                tone = null;
-                            }
-                            if (done != null)
-                                done.run();
-                        }
-                    };
-                    handler.postDelayed(end, dur); // length of tone
+                    toneClose();
+                    if (done != null)
+                        done.run();
                 }
             };
-            toneLoop.run();
+            handler.postDelayed(end, dur); // length of tone
         }
     }
 
@@ -422,14 +413,6 @@ public class Sound extends TTS {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         float alarmVolume = shared.getFloat(HourlyApplication.PREFERENCE_VOLUME, 1f);
         return (int) (100 * systemVolume * alarmVolume);
-    }
-
-    long tonePlayBeep() {
-        if (tone != null)
-            tone.release();
-        tone = new ToneGenerator(SOUND_STREAM, getToneVolume());
-        tone.startTone(ToneGenerator.TONE_SUP_ERROR);
-        return 330;
     }
 
     public void playBeep(AudioTrack t, final Runnable done) {
@@ -483,11 +466,12 @@ public class Sound extends TTS {
             player = create(Alarm.DEFAULT_ALARM);
         }
         if (player == null) { // last resort fallback
-            toastTone();
+            toastTone(null);
             toneLoop = new Runnable() {
                 @Override
                 public void run() {
                     long dur = tonePlay();
+                    handler.removeCallbacks(toneLoop);
                     handler.postDelayed(toneLoop, dur); // length of tone
                 }
             };
@@ -499,8 +483,16 @@ public class Sound extends TTS {
         startPlayer(player);
     }
 
-    void toastTone() {
-        Toast.makeText(context, "MediaPlayer init failed, fallback to Tone", Toast.LENGTH_SHORT).show();
+    void toastTone(Throwable e) {
+        String str = "";
+        if (e != null) {
+            while (e.getCause() != null)
+                e = e.getCause();
+            str = e.getMessage();
+            if (str == null || str.isEmpty())
+                str = e.getClass().getSimpleName();
+        }
+        Toast.makeText(context, "MediaPlayer init failed, fallback to Tone " + str, Toast.LENGTH_SHORT).show();
     }
 
     long tonePlay() {
@@ -509,6 +501,24 @@ public class Sound extends TTS {
         tone = new ToneGenerator(SOUND_STREAM, getToneVolume());
         tone.startTone(ToneGenerator.TONE_CDMA_CALL_SIGNAL_ISDN_NORMAL);
         return 4000;
+    }
+
+    long tonePlayBeep() {
+        if (tone != null)
+            tone.release();
+        tone = new ToneGenerator(SOUND_STREAM, getToneVolume());
+        tone.startTone(ToneGenerator.TONE_SUP_ERROR);
+        return 330;
+    }
+
+    void toneClose() {
+        if (tone != null) {
+            tone.stopTone();
+            tone.release();
+            tone = null;
+        }
+        handler.removeCallbacks(toneLoop);
+        toneLoop = null;
     }
 
     public void startPlayer(final MediaPlayer player) {
@@ -633,15 +643,12 @@ public class Sound extends TTS {
             player = create(ReminderSet.DEFAULT_NOTIFICATION);
         }
         if (player == null) {
-            toastTone();
+            toastTone(null);
             long dur = tonePlay();
             Runnable end = new Runnable() {
                 @Override
                 public void run() {
-                    if (tone != null) {
-                        tone.release();
-                        tone = null;
-                    }
+                    toneClose();
                     if (done != null)
                         done.run();
                 }
@@ -729,16 +736,7 @@ public class Sound extends TTS {
             loop = null;
         }
 
-        if (toneLoop != null) {
-            handler.removeCallbacks(toneLoop);
-            toneLoop = null;
-        }
-
-        if (tone != null) {
-            tone.stopTone();
-            tone.release();
-            tone = null;
-        }
+        toneClose();
 
         if (player != null) {
             player.release();
