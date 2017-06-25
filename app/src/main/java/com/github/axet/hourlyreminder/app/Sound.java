@@ -55,7 +55,7 @@ public class Sound extends TTS {
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(double hz, int dur) {
         int rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(SOUND_CHANNELS, SOUND_SAMPLERATE);
-        if (rate == -1 || 1 == 1)
+        if (rate == -1)
             throw new RuntimeException("Unable to find proper audio attrs");
         int count = rate * dur / 1000; // samples count
         int last = count - 1; // last sample index
