@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Hourly Reminder</string>
-    <string name="title_activity_main">Hourly Reminder</string>
     <string name="action_settings">Settings</string>
 
     <string-array name="hour_default" translatable="false">

@@ -113,6 +113,57 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+        HashMap<Integer, Fragment> map = new HashMap<>();
+
+        public SectionsPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    return new RemindersFragment();
+                case 1:
+                    return new AlarmsFragment();
+                case 2:
+                    return new SettingsFragment();
+                default:
+                    throw new RuntimeException("bad page");
+            }
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Object o = super.instantiateItem(container, position);
+            map.put(position, (Fragment) o);
+            return o;
+        }
+
+        @Override
+        public int getCount() {
+            return 3;
+        }
+
+        public Fragment getFragment(int pos) {
+            return map.get(pos);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return getResources().getString(R.string.HourlyReminders);
+                case 1:
+                    return getResources().getString(R.string.CustomAlarms);
+                case 2:
+                    return "⋮";
+            }
+            return null;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight_NoActionBar, R.style.AppThemeDark_NoActionBar));
@@ -218,61 +269,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             finish();
             startActivity(new Intent(this, MainActivity.class).setAction(SHOW_SETTINGS_PAGE));
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        }
-    }
-
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-        HashMap<Integer, Fragment> map = new HashMap<>();
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    return new RemindersFragment();
-                case 1:
-                    return new AlarmsFragment();
-                case 2:
-                    return new SettingsFragment();
-                default:
-                    throw new RuntimeException("bad page");
-            }
-        }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            Object o = super.instantiateItem(container, position);
-            map.put(position, (Fragment) o);
-            return o;
-        }
-
-        @Override
-        public int getCount() {
-            return 3;
-        }
-
-        public Fragment getFragment(int pos) {
-            return map.get(pos);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getResources().getString(R.string.HourlyReminders);
-                case 1:
-                    return getResources().getString(R.string.CustomAlarms);
-                case 2:
-                    return "⋮";
-            }
-            return null;
         }
     }
 
