@@ -17,3 +17,9 @@ If you want to translate 'Hourly Reminder' to your language or just add new spea
 # Screenshots
 
 ![shot](/docs/shot.png)
+
+# Donations
+
+  * [PayPal EUR](https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=axet@me.com&amount=&currency_code=EUR&return=&item_name=hourly-reminder)
+  * [PayPal USD](https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=axet@me.com&amount=&currency_code=USD&return=&item_name=hourly-reminder)
+  * [PayPal RUB](https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=axet@me.com&amount=&currency_code=RUB&return=&item_name=hourly-reminder)
