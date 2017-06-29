@@ -143,5 +143,9 @@
             android:positiveButtonText="@null"
             android:summary="Первый день недели"
             android:title="Начало недели" />
+
+        <com.github.axet.androidlibrary.widgets.AboutPreferenceCompat
+            android:dialogMessage="R.raw.about"
+            android:persistent="false" />
     </PreferenceCategory>
 </PreferenceScreen>

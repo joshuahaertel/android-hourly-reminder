@@ -143,5 +143,9 @@
             android:positiveButtonText="@null"
             android:summary="Start week on specified day"
             android:title="Start Week On" />
+
+        <com.github.axet.androidlibrary.widgets.AboutPreferenceCompat
+            android:dialogMessage="R.raw.about"
+            android:persistent="false" />
     </PreferenceCategory>
 </PreferenceScreen>

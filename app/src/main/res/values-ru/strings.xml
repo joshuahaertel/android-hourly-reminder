@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Hourly Reminder</string>
+    <string name="app_name">Почасовое оповещение</string>
 
     <plurals name="hours">
         <item quantity="one">%d час</item>
@@ -160,7 +160,6 @@
     <string name="ringtone">Мелодия</string>
     <string name="speech">Голос</string>
     <string name="title_activity_alarm">Будильник</string>
-    <string name="title_activity_main">Почасовое оповещение</string>
     <string name="title_activity_settings">Настройки</string>
 
     <string name="speak_time">Текущее время %1$s</string>
