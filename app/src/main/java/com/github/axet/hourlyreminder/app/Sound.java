@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
@@ -31,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,12 +74,12 @@ public class Sound extends TTS {
     }
 
     public static class Playlist {
-        public List<String> beforeOnce = new ArrayList<>();
-        public List<String> before = new ArrayList<>();
+        public List<Uri> beforeOnce = new ArrayList<>();
+        public List<Uri> before = new ArrayList<>();
         public boolean beep;
         public boolean speech;
-        public List<String> afterOnce = new ArrayList<>();
-        public List<String> after = new ArrayList<>();
+        public List<Uri> afterOnce = new ArrayList<>();
+        public List<Uri> after = new ArrayList<>();
 
         public Playlist() {
         }
@@ -119,18 +121,27 @@ public class Sound extends TTS {
             }
         }
 
-        void add(List<String> l, String s) {
+        void add(List<Uri> l, Uri s) {
             if (l.contains(s))
                 return;
             l.add(s);
         }
 
-        ArrayList<String> load(JSONArray aa) {
-            ArrayList<String> l = new ArrayList<>();
+        ArrayList<Uri> load(JSONArray aa) {
+            ArrayList<Uri> l = new ArrayList<>();
             try {
                 if (aa != null) {
                     for (int i = 0; i < aa.length(); i++) {
-                        l.add(aa.getString(i));
+                        String s = aa.getString(i);
+                        Uri u;
+                        if (s.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                            u = Uri.parse(s);
+                        } else if (s.startsWith(ContentResolver.SCHEME_FILE)) {
+                            u = Uri.parse(s);
+                        } else {
+                            u = Uri.fromFile(new File(s));
+                        }
+                        l.add(u);
                     }
                 }
             } catch (JSONException e) {
@@ -347,11 +358,11 @@ public class Sound extends TTS {
         return playList(new Playlist(rs), time, done);
     }
 
-    public void playCustom(List<String> uu, final Runnable done) {
+    public void playCustom(List<Uri> uu, final Runnable done) {
         playCustom(uu, 0, done);
     }
 
-    public void playCustom(final List<String> uu, final int index, final Runnable done) {
+    public void playCustom(final List<Uri> uu, final int index, final Runnable done) {
         if (index >= uu.size()) {
             if (done != null)
                 done.run();
@@ -366,12 +377,12 @@ public class Sound extends TTS {
         });
     }
 
-    public void playCustom(String uri, final Runnable done) {
+    public void playCustom(Uri uri, final Runnable done) {
         playerCl();
 
         Sound.this.done.add(done);
 
-        player = playOnce(Uri.parse(uri), new Runnable() {
+        player = playOnce(uri, new Runnable() {
             @Override
             public void run() {
                 if (done != null && Sound.this.done.contains(done))
@@ -794,7 +805,7 @@ public class Sound extends TTS {
             public void run() {
                 if (!rr.after.isEmpty()) {
                     if (rr.before.isEmpty() && rr.after.size() == 1) { // do not loop sounds
-                        playRingtone(Uri.parse(rr.after.get(0)));
+                        playRingtone(rr.after.get(0));
                     } else {
                         playCustom(rr.after, restart);
                     }

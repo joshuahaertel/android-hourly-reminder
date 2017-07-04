@@ -3,6 +3,7 @@ package com.github.axet.hourlyreminder.fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -32,6 +34,7 @@ import android.widget.Toast;
 import com.github.axet.androidlibrary.animations.MarginAnimation;
 import com.github.axet.androidlibrary.animations.RemoveItemAnimation;
 import com.github.axet.androidlibrary.widgets.OpenFileDialog;
+import com.github.axet.androidlibrary.widgets.StoragePathPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Week;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
@@ -50,6 +53,12 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     public static final int TYPE_DELETED = 2;
 
     public static final int[] ALL = {TYPE_COLLAPSED, TYPE_EXPANDED};
+
+    public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+
+    public static final int RESULT_RINGTONE = 0;
+    public static final int RESULT_FILE = 1;
+    public static final int RESULT_FILE_URI = 2;
 
     WeekSet fragmentRequestRingtone;
 
@@ -125,7 +134,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     void selectRingtone(Uri uri) {
     }
 
-    String fallbackUri(Uri uri) {
+    Uri fallbackUri(Uri uri) {
         return null;
     }
 
@@ -133,20 +142,36 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (fragmentRequestRingtone == null)
-            return;
-
-        if (resultCode != Activity.RESULT_OK) {
-            fragmentRequestRingtone = null;
-            return;
-        }
-
-        if (requestCode == 0) {
-            Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-            fragmentRequestRingtone.ringtoneValue = fallbackUri(uri);
-            save(fragmentRequestRingtone);
-            fragmentRequestRingtone = null;
-            return;
+        switch (requestCode) {
+            case RESULT_RINGTONE:
+                if (fragmentRequestRingtone == null)
+                    return;
+                if (resultCode != Activity.RESULT_OK) {
+                    fragmentRequestRingtone = null;
+                    return;
+                }
+                Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                fragmentRequestRingtone.ringtoneValue = fallbackUri(uri);
+                save(fragmentRequestRingtone);
+                fragmentRequestRingtone = null;
+                break;
+            case RESULT_FILE_URI:
+                if (fragmentRequestRingtone == null)
+                    return;
+                if (resultCode != Activity.RESULT_OK) {
+                    fragmentRequestRingtone = null;
+                    return;
+                }
+                if (Build.VERSION.SDK_INT >= 21) {
+                    Uri u = data.getData();
+                    final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                    ContentResolver resolver = getContext().getContentResolver();
+                    resolver.takePersistableUriPermission(u, takeFlags);
+                    fragmentRequestRingtone.ringtoneValue = fallbackUri(u);
+                    save(fragmentRequestRingtone);
+                }
+                fragmentRequestRingtone = null;
+                break;
         }
     }
 
@@ -336,8 +361,9 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         LinearLayout weekdaysValues = (LinearLayout) view.findViewById(R.id.alarm_week);
 
         for (int i = 0; i < weekdaysValues.getChildCount(); i++) {
-            final CheckBox child = (CheckBox) weekdaysValues.getChildAt(i);
-            if (child instanceof CheckBox) {
+            final View c = weekdaysValues.getChildAt(i);
+            if (c instanceof CheckBox) {
+                final CheckBox child = (CheckBox) c;
                 child.setText(getString(Week.DAYS[startweek]).substring(0, 1));
                 final int week = Week.EVERYDAY[startweek];
 
@@ -369,9 +395,9 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         ringtone.setChecked(a.ringtone);
         if (ringtone.isChecked()) {
             TextView ringtoneValue = (TextView) view.findViewById(R.id.alarm_ringtone_value);
-            String title = HourlyApplication.getTitle(getActivity(), a.ringtoneValue);
+            String title = storage.getTitle(a.ringtoneValue);
             if (title == null)
-                title = HourlyApplication.getTitle(getActivity(), fallbackUri(null));
+                title = storage.getTitle(fallbackUri(null));
             if (title == null)
                 title = "Built-in Tone Alarm"; // fall back, when here is no ringtones installed
             ringtoneValue.setText(title);
@@ -467,10 +493,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             @Override
             public void onClick(View v) {
                 fragmentRequestRingtone = a;
-                Uri uri = null;
-                if (!a.ringtoneValue.isEmpty()) {
-                    uri = Uri.parse(a.ringtoneValue);
-                }
+                Uri uri = a.ringtoneValue;
                 selectRingtone(uri);
             }
         });
@@ -480,8 +503,19 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             @Override
             public void onClick(View v) {
                 fragmentRequestRingtone = a;
-                if (com.github.axet.androidlibrary.app.Storage.permitted(WeekSetFragment.this, PERMISSIONS, 1))
-                    selectFile();
+                Uri u = fragmentRequestRingtone.ringtoneValue;
+                if (Build.VERSION.SDK_INT >= 21 && StoragePathPreferenceCompat.showStorageAccessFramework(getContext(), u.toString(), PERMISSIONS)) {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("*/*");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+                    startActivityForResult(intent, RESULT_FILE_URI);
+                } else {
+                    if (com.github.axet.androidlibrary.app.Storage.permitted(WeekSetFragment.this, PERMISSIONS, RESULT_FILE))
+                        selectFile();
+                }
             }
         });
 
@@ -499,13 +533,10 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
             return;
         dialog = new OpenFileDialog(getActivity(), OpenFileDialog.DIALOG_TYPE.FILE_DIALOG);
 
-        String path = fragmentRequestRingtone.ringtoneValue;
+        Uri path = fragmentRequestRingtone.ringtoneValue;
 
-        if (path == null) {
-            path = "";
-        }
 
-        File sound = new File(path);
+        File sound = new File(path.getPath());
 
         while (!sound.exists()) {
             sound = sound.getParentFile();
@@ -529,7 +560,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 if (!ff.isFile())
                     return;
 
-                fragmentRequestRingtone.ringtoneValue = Uri.fromFile(ff).toString();
+                fragmentRequestRingtone.ringtoneValue = Uri.fromFile(ff);
                 save(fragmentRequestRingtone);
                 fragmentRequestRingtone = null;
             }
@@ -548,15 +579,14 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         switch (requestCode) {
-            case 1:
+            case RESULT_FILE:
                 if (Storage.permitted(getContext(), permissions))
                     selectFile();
                 else
                     Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
+                break;
         }
     }
-
-    public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
 
     void setEnable(WeekSet a, boolean e) {
         a.setEnable(e);

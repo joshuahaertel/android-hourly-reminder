@@ -54,7 +54,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, ReminderSet.DEFAULT_NOTIFICATION)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.Reminder))
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), 0);
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), RESULT_RINGTONE);
     }
 
     public RemindersFragment() {
@@ -281,11 +281,11 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     }
 
     @Override
-    String fallbackUri(Uri uri) {
+    Uri fallbackUri(Uri uri) {
         if (uri != null) {
-            return uri.toString();
+            return uri;
         } else {
-            return ReminderSet.DEFAULT_NOTIFICATION.toString();
+            return ReminderSet.DEFAULT_NOTIFICATION;
         }
     }
 

@@ -1,24 +1,20 @@
 package com.github.axet.hourlyreminder.app;
 
-import android.app.Application;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.support.v4.content.SharedPreferencesCompat;
 import android.support.v7.preference.PreferenceManager;
-import android.text.format.DateFormat;
 import android.widget.Toast;
 
 import com.github.axet.androidlibrary.app.MainApplication;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
-import com.github.axet.hourlyreminder.alarms.Reminder;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.Week;
 import com.github.axet.hourlyreminder.alarms.WeekTime;
@@ -30,11 +26,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -92,8 +85,6 @@ public class HourlyApplication extends MainApplication {
     public static final String PREFERENCE_SNOOZE_DELAY = "snooze_time";
 
     public static final String PREFERENCE_WAKEUP = "wakeup";
-
-    static HashMap<Uri, String> titles = new HashMap<>();
 
     public static final int VERSION = 1;
 
@@ -301,11 +292,35 @@ public class HourlyApplication extends MainApplication {
 
             String custom = shared.getString(HourlyApplication.PREFERENCE_CUSTOM_SOUND, "");
             if (custom.equals("ringtone")) {
-                String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, "");
-                rs.ringtoneValue = uri;
+                String uri = shared.getString(HourlyApplication.PREFERENCE_RINGTONE, null);
+                if (uri == null || uri.isEmpty()) {
+                    rs.ringtoneValue = ReminderSet.DEFAULT_NOTIFICATION;
+                } else {
+                    Uri u;
+                    if (uri.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                        u = Uri.parse(uri);
+                    } else if (uri.startsWith(ContentResolver.SCHEME_FILE)) {
+                        u = Uri.parse(uri);
+                    } else {
+                        u = Uri.fromFile(new File(uri));
+                    }
+                    rs.ringtoneValue = u;
+                }
             } else if (custom.equals("sound")) {
-                String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, "");
-                rs.ringtoneValue = uri;
+                String uri = shared.getString(HourlyApplication.PREFERENCE_SOUND, null);
+                if (uri == null || uri.isEmpty()) {
+                    rs.ringtoneValue = ReminderSet.DEFAULT_NOTIFICATION;
+                } else {
+                    Uri u;
+                    if (uri.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                        u = Uri.parse(uri);
+                    } else if (uri.startsWith(ContentResolver.SCHEME_FILE)) {
+                        u = Uri.parse(uri);
+                    } else {
+                        u = Uri.fromFile(new File(uri));
+                    }
+                    rs.ringtoneValue = u;
+                }
             }
             list.add(rs);
         } else {
@@ -357,36 +372,6 @@ public class HourlyApplication extends MainApplication {
         } else {
             return light;
         }
-    }
-
-    public static String getTitle(Context context, String file) {
-        if (file.isEmpty())
-            return null;
-
-        Uri uri = Uri.parse(file);
-
-        String s = uri.getScheme();
-
-        if (s == null || s.equals("file")) {
-            File f = new File(uri.getPath());
-            return f.getName();
-        }
-
-        String title = titles.get(uri);
-        if (title != null)
-            return title;
-        Ringtone rt = RingtoneManager.getRingtone(context, uri);
-        if (rt == null)
-            return null;
-        try {
-            title = rt.getTitle(context);
-        } catch (SecurityException e) {
-            return null;
-        } finally {
-            rt.stop();
-        }
-        titles.put(uri, title);
-        return title;
     }
 
     public static String getQuantityString(Context context, Locale locale, int id, int n, Object... formatArgs) {

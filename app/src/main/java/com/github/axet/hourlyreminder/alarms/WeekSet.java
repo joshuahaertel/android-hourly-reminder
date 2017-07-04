@@ -1,10 +1,13 @@
 package com.github.axet.hourlyreminder.alarms;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.net.Uri;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +20,7 @@ public class WeekSet extends Week {
     // alarm with ringtone?
     public boolean ringtone;
     // uri or file
-    public String ringtoneValue;
+    public Uri ringtoneValue;
     // beep?
     public boolean beep;
     // speech time?
@@ -25,7 +28,6 @@ public class WeekSet extends Week {
 
     public WeekSet(WeekSet copy) {
         super(copy);
-
         id = copy.id;
         ringtone = copy.ringtone;
         ringtoneValue = copy.ringtoneValue;
@@ -35,9 +37,7 @@ public class WeekSet extends Week {
 
     public WeekSet(Context context) {
         super(context);
-
         this.id = System.currentTimeMillis();
-
         enabled = false;
         weekdaysCheck = true;
         weekDaysValues = DEF_DAYS;
@@ -65,7 +65,20 @@ public class WeekSet extends Week {
         super.load(o);
         this.id = o.getLong("id");
         this.ringtone = o.getBoolean("ringtone");
-        this.ringtoneValue = o.optString("ringtone_value", "");
+        String s = o.optString("ringtone_value", null);
+        if (s == null || s.isEmpty()) {
+            this.ringtoneValue = defaultRingtone();
+        } else {
+            Uri u;
+            if (s.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                u = Uri.parse(s);
+            } else if (s.startsWith(ContentResolver.SCHEME_FILE)) {
+                u = Uri.parse(s);
+            } else {
+                u = Uri.fromFile(new File(s));
+            }
+            this.ringtoneValue = u;
+        }
         this.beep = o.getBoolean("beep");
         this.speech = o.getBoolean("speech");
     }
@@ -75,7 +88,10 @@ public class WeekSet extends Week {
             JSONObject o = super.save();
             o.put("id", this.id);
             o.put("ringtone", this.ringtone);
-            o.put("ringtone_value", this.ringtoneValue);
+            String s = null;
+            if (this.ringtoneValue != null)
+                s = this.ringtoneValue.toString();
+            o.put("ringtone_value", s);
             o.put("beep", this.beep);
             o.put("speech", this.speech);
             return o;
@@ -84,4 +100,7 @@ public class WeekSet extends Week {
         }
     }
 
+    protected Uri defaultRingtone() {
+        return null;
+    }
 }
