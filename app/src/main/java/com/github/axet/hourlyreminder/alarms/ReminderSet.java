@@ -33,7 +33,7 @@ public class ReminderSet extends WeekSet {
     public ReminderSet(Context context, Set<String> hours, int repeat) {
         super(context);
         this.repeat = repeat;
-        this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
+        this.ringtoneValue = DEFAULT_NOTIFICATION;
         load(hours);
     }
 
@@ -42,7 +42,7 @@ public class ReminderSet extends WeekSet {
         this.repeat = 60;
         this.enabled = true;
         this.ringtone = false;
-        this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
+        this.ringtoneValue = DEFAULT_NOTIFICATION;
         load(hours);
     }
 
@@ -51,7 +51,7 @@ public class ReminderSet extends WeekSet {
         this.beep = true;
         this.speech = true;
         this.ringtone = false;
-        this.ringtoneValue = DEFAULT_NOTIFICATION.toString();
+        this.ringtoneValue = DEFAULT_NOTIFICATION;
         this.repeat = 60;
         load(DEF_HOURS);
     }
@@ -277,5 +277,10 @@ public class ReminderSet extends WeekSet {
         }
 
         return str;
+    }
+
+    @Override
+    protected Uri defaultRingtone() {
+        return DEFAULT_NOTIFICATION;
     }
 }

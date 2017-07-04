@@ -48,7 +48,7 @@ public class AlarmsFragment extends WeekSetFragment {
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Alarm.DEFAULT_ALARM)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
                 .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.SelectAlarm)
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), 0);
+                .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), RESULT_RINGTONE);
     }
 
     List<Alarm> alarms = new ArrayList<>();
@@ -270,11 +270,11 @@ public class AlarmsFragment extends WeekSetFragment {
     }
 
     @Override
-    String fallbackUri(Uri uri) {
+    Uri fallbackUri(Uri uri) {
         if (uri != null) {
-            return uri.toString();
+            return uri;
         } else {
-            return Alarm.DEFAULT_ALARM.toString();
+            return Alarm.DEFAULT_ALARM;
         }
     }
 

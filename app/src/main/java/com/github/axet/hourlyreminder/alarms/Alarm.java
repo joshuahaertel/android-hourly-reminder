@@ -24,7 +24,7 @@ public class Alarm extends WeekTime {
         super(context);
 
         ringtone = false;
-        ringtoneValue = DEFAULT_ALARM.toString();
+        ringtoneValue = DEFAULT_ALARM;
         beep = false;
 
         setTime(9, 0);
@@ -89,5 +89,10 @@ public class Alarm extends WeekTime {
         cal.set(Calendar.HOUR_OF_DAY, hour);
         cal.set(Calendar.MINUTE, min);
         return format2412ap(context, cal.getTimeInMillis());
+    }
+
+    @Override
+    protected Uri defaultRingtone() {
+        return DEFAULT_ALARM;
     }
 }

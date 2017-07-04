@@ -58,22 +58,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     Sound sound;
     Handler handler = new Handler();
 
-    static String getTitle(Context context, String t) {
-        String s = HourlyApplication.getTitle(context, t);
-        if (s == null)
-            s = "None";
-        return s;
-    }
-
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
-
-            if (preference.getKey().equals(HourlyApplication.PREFERENCE_RINGTONE)) {
-                preference.setSummary(getTitle(preference.getContext(), stringValue));
-                return true;
-            }
 
             if (preference.getKey().equals(HourlyApplication.PREFERENCE_CUSTOM_SOUND)) {
                 CustomSoundListPreference pp = (CustomSoundListPreference) preference;
@@ -122,119 +110,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return true;
         }
     };
-
-
-    //
-    // support library 23.0.1 and api 23 failed with:
-    //
-    // https://code.google.com/p/android/issues/detail?id=85392#makechanges
-    //
-    // http://stackoverflow.com/questions/30336635
-    //
-    // To fix this, we need create our own PreferenceGroupAdapter
-    //
-    class PreferenceGroupAdapterFix extends PreferenceGroupAdapter {
-        public PreferenceGroupAdapterFix(PreferenceGroup preferenceGroup) {
-            super(preferenceGroup);
-        }
-
-        public void onBindViewHolder(PreferenceViewHolder holder, int position) {
-            super.onBindViewHolder(holder, position);
-
-            // LinerLayoutManager.onLayoutChildren() call detach(), then fill() which cause:
-            //
-            // onBindViewHolder cause SwitchCompat.setCheck() call on currently detached view !!!
-            // so no animation starts.
-            // then called RecyclerView.attachViewToParent()
-        }
-
-        public void onViewAttachedToWindow(PreferenceViewHolder holder) {
-            super.onViewAttachedToWindow(holder);
-        }
-
-        public void onViewDetachedFromWindow(PreferenceViewHolder holder) {
-            super.onViewDetachedFromWindow(holder);
-        }
-    }
-
-    // LinearLayoutManager llm;
-
-    class LinearLayoutManagerFix extends LinearLayoutManager {
-        public LinearLayoutManagerFix(Context context) {
-            super(context);
-        }
-
-        public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-            super.onLayoutChildren(recycler, state);
-        }
-
-        @Override
-        public void addView(View child) {
-            if (child.getParent() != null)
-                return;
-            super.addView(child);
-        }
-
-        @Override
-        public void addView(View child, int index) {
-            if (child.getParent() != null)
-                return;
-            super.addView(child, index);
-        }
-
-        @Override
-        public void addDisappearingView(View child) {
-            if (child.getParent() != null)
-                return;
-            super.addDisappearingView(child);
-        }
-
-        @Override
-        public void addDisappearingView(View child, int index) {
-            if (child.getParent() != null)
-                return;
-            super.addDisappearingView(child, index);
-        }
-    }
-
-    class RecyclerViewFix extends RecyclerView {
-        public RecyclerViewFix(Context context) {
-            super(context);
-        }
-
-        @Override
-        protected void attachViewToParent(View child, int index, ViewGroup.LayoutParams params) {
-            super.attachViewToParent(child, index, params);
-        }
-
-        @Override
-        protected void detachViewFromParent(View child) {
-            super.detachViewFromParent(child);
-        }
-
-        @Override
-        protected void detachViewFromParent(int index) {
-            super.detachViewFromParent(index);
-        }
-    }
-
-//    @Override
-//    public RecyclerView.LayoutManager onCreateLayoutManager() {
-//        return llm = new LinearLayoutManagerFix(this.getActivity());
-//    }
-
-//    @Override
-//    protected RecyclerView.Adapter onCreateAdapter(PreferenceScreen preferenceScreen) {
-//        return new PreferenceGroupAdapterFix(preferenceScreen);
-//    }
-
-//    @Override
-//    public RecyclerView onCreateRecyclerView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-//        //RecyclerView recyclerView = (RecyclerView)inflater.inflate(android.support.v14.preference.R.layout.preference_recyclerview, parent, false);
-//        RecyclerView recyclerView = new RecyclerViewFix(getActivity());
-//        recyclerView.setLayoutManager(this.onCreateLayoutManager());
-//        return recyclerView;
-//    }
 
     public static void bindPreferenceSummaryToValue(Preference preference) {
         // Set the listener to watch for value changes.
