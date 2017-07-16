@@ -33,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -404,16 +405,23 @@ public class Sound extends TTS {
         } catch (RuntimeException e) {
             Log.d(TAG, "Unable get track", e);
             toastTone(e);
-            long dur = tonePlayBeep();
-            Runnable end = new Runnable() {
-                @Override
-                public void run() {
-                    toneClose();
-                    if (done != null)
-                        done.run();
-                }
-            };
-            handler.postDelayed(end, dur); // length of tone
+            try {
+                MediaPlayer player = create(ReminderSet.DEFAULT_NOTIFICATION); // first fallback to system media player
+                this.player = playOnce(player, done);
+            } catch (RuntimeException ee) { // second fallback to tone (samsung phones crahes on tone native initialization (seems like some AudioTrack initialization failed)
+                Log.d(TAG, "Unable get tone", e);
+                toastTone(ee);
+                long dur = tonePlayBeep();
+                Runnable end = new Runnable() {
+                    @Override
+                    public void run() {
+                        toneClose();
+                        if (done != null)
+                            done.run();
+                    }
+                };
+                handler.postDelayed(end, dur); // length of tone
+            }
         }
     }
 
@@ -472,25 +480,30 @@ public class Sound extends TTS {
     public void playRingtone(Uri uri) {
         playerClose();
 
-        player = create(uri);
-        if (player == null) {
-            player = create(Alarm.DEFAULT_ALARM);
+        try {
+            player = create(uri);
+        } catch (RuntimeException e) {
+            Log.d(TAG, "unable to get ringtone", e);
+            toastTone(e);
+            try {
+                player = create(Alarm.DEFAULT_ALARM);
+            } catch (RuntimeException ee) { // last resort fallback
+                Log.d(TAG, "unable to get default ringtone", e);
+                toastTone(ee);
+                toneLoop = new Runnable() {
+                    @Override
+                    public void run() {
+                        long dur = tonePlay();
+                        handler.removeCallbacks(toneLoop);
+                        handler.postDelayed(toneLoop, dur); // length of tone
+                    }
+                };
+                toneLoop.run();
+                return;
+            }
         }
-        if (player == null) { // last resort fallback
-            toastTone(null);
-            toneLoop = new Runnable() {
-                @Override
-                public void run() {
-                    long dur = tonePlay();
-                    handler.removeCallbacks(toneLoop);
-                    handler.postDelayed(toneLoop, dur); // length of tone
-                }
-            };
-            toneLoop.run();
-            return;
-        }
-        player.setLooping(true);
 
+        player.setLooping(true);
         startPlayer(player);
     }
 
@@ -606,7 +619,7 @@ public class Sound extends TTS {
         t.show();
     }
 
-    MediaPlayer create(Uri uri) {
+    MediaPlayer create(Uri uri) { // MediaPlayer.create expand
         if (Build.VERSION.SDK_INT >= 21) {
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setUsage(SOUND_CHANNEL)
@@ -625,11 +638,9 @@ public class Sound extends TTS {
                 mp.setDataSource(context, uri);
                 mp.prepare();
                 return mp;
-            } catch (Exception ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
-            return null;
         } else {
             try {
                 MediaPlayer mp = new MediaPlayer();
@@ -637,11 +648,9 @@ public class Sound extends TTS {
                 mp.setAudioStreamType(SOUND_STREAM);
                 mp.prepare();
                 return mp;
-            } catch (Exception ex) {
-                Log.d(TAG, "create failed:", ex);
-                // fall through
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
-            return null;
         }
     }
 
@@ -649,25 +658,35 @@ public class Sound extends TTS {
     public MediaPlayer playOnce(Uri uri, final Runnable done) {
         Sound.this.done.add(done);
 
-        MediaPlayer player = create(uri);
-        if (player == null) {
-            player = create(ReminderSet.DEFAULT_NOTIFICATION);
-        }
-        if (player == null) {
-            toastTone(null);
-            long dur = tonePlay();
-            Runnable end = new Runnable() {
-                @Override
-                public void run() {
-                    toneClose();
-                    if (done != null)
-                        done.run();
-                }
-            };
-            handler.postDelayed(end, dur);
-            return null;
+        MediaPlayer player;
+        try {
+            player = create(uri);
+        } catch (RuntimeException e) {
+            Log.d(TAG, "failed get notification", e);
+            toastTone(e);
+            try {
+                player = create(ReminderSet.DEFAULT_NOTIFICATION);
+            } catch (RuntimeException ee) {
+                Log.d(TAG, "failed get default notification", ee);
+                toastTone(ee);
+                long dur = tonePlay();
+                Runnable end = new Runnable() {
+                    @Override
+                    public void run() {
+                        toneClose();
+                        if (done != null)
+                            done.run();
+                    }
+                };
+                handler.postDelayed(end, dur);
+                return null;
+            }
         }
 
+        return playOnce(player, done);
+    }
+
+    MediaPlayer playOnce(MediaPlayer player, final Runnable done) {
         // https://code.google.com/p/android/issues/detail?id=1314
         player.setLooping(false);
 
