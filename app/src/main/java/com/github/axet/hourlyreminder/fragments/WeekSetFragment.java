@@ -164,9 +164,8 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 }
                 if (Build.VERSION.SDK_INT >= 21) {
                     Uri u = data.getData();
-                    final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
                     ContentResolver resolver = getContext().getContentResolver();
-                    resolver.takePersistableUriPermission(u, takeFlags);
+                    resolver.takePersistableUriPermission(u, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     fragmentRequestRingtone.ringtoneValue = fallbackUri(u);
                     save(fragmentRequestRingtone);
                 }
@@ -508,9 +507,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     intent.setType("*/*");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-                            | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                     startActivityForResult(intent, RESULT_FILE_URI);
                 } else {
                     if (com.github.axet.androidlibrary.app.Storage.permitted(WeekSetFragment.this, PERMISSIONS, RESULT_FILE))
