@@ -47,7 +47,7 @@ import com.github.axet.hourlyreminder.app.Storage;
 import java.io.File;
 import java.util.ArrayList;
 
-public class WeekSetFragment extends Fragment implements ListAdapter, AbsListView.OnScrollListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public abstract class WeekSetFragment extends Fragment implements ListAdapter, AbsListView.OnScrollListener, SharedPreferences.OnSharedPreferenceChangeListener {
     public static final int TYPE_COLLAPSED = 0;
     public static final int TYPE_EXPANDED = 1;
     public static final int TYPE_DELETED = 2;
@@ -131,12 +131,9 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         }
     }
 
-    void selectRingtone(Uri uri) {
-    }
+    abstract void selectRingtone(Uri uri);
 
-    Uri fallbackUri(Uri uri) {
-        return null;
-    }
+    abstract Uri fallbackUri(Uri uri);
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -164,10 +161,14 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 }
                 if (Build.VERSION.SDK_INT >= 21) {
                     Uri u = data.getData();
-                    final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
                     ContentResolver resolver = getContext().getContentResolver();
-                    resolver.takePersistableUriPermission(u, takeFlags);
-                    fragmentRequestRingtone.ringtoneValue = fallbackUri(u);
+                    try {
+                        resolver.takePersistableUriPermission(u, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        fragmentRequestRingtone.ringtoneValue = fallbackUri(u);
+                    } catch (SecurityException e) { // remote SAF?
+                        File f = storage.storeRingtone(u);
+                        fragmentRequestRingtone.ringtoneValue = fallbackUri(Uri.fromFile(f));
+                    }
                     save(fragmentRequestRingtone);
                 }
                 fragmentRequestRingtone = null;
@@ -508,9 +509,7 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     intent.setType("*/*");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-                            | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                     startActivityForResult(intent, RESULT_FILE_URI);
                 } else {
                     if (com.github.axet.androidlibrary.app.Storage.permitted(WeekSetFragment.this, PERMISSIONS, RESULT_FILE))
