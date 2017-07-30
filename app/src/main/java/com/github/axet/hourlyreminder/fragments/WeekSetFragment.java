@@ -47,7 +47,7 @@ import com.github.axet.hourlyreminder.app.Storage;
 import java.io.File;
 import java.util.ArrayList;
 
-public class WeekSetFragment extends Fragment implements ListAdapter, AbsListView.OnScrollListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public abstract class WeekSetFragment extends Fragment implements ListAdapter, AbsListView.OnScrollListener, SharedPreferences.OnSharedPreferenceChangeListener {
     public static final int TYPE_COLLAPSED = 0;
     public static final int TYPE_EXPANDED = 1;
     public static final int TYPE_DELETED = 2;
@@ -131,12 +131,9 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
         }
     }
 
-    void selectRingtone(Uri uri) {
-    }
+    abstract void selectRingtone(Uri uri);
 
-    Uri fallbackUri(Uri uri) {
-        return null;
-    }
+    abstract Uri fallbackUri(Uri uri);
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -165,8 +162,13 @@ public class WeekSetFragment extends Fragment implements ListAdapter, AbsListVie
                 if (Build.VERSION.SDK_INT >= 21) {
                     Uri u = data.getData();
                     ContentResolver resolver = getContext().getContentResolver();
-                    resolver.takePersistableUriPermission(u, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    fragmentRequestRingtone.ringtoneValue = fallbackUri(u);
+                    try {
+                        resolver.takePersistableUriPermission(u, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        fragmentRequestRingtone.ringtoneValue = fallbackUri(u);
+                    } catch (SecurityException e) { // remote SAF?
+                        File f = storage.storeRingtone(u);
+                        fragmentRequestRingtone.ringtoneValue = fallbackUri(Uri.fromFile(f));
+                    }
                     save(fragmentRequestRingtone);
                 }
                 fragmentRequestRingtone = null;
