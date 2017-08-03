@@ -78,6 +78,11 @@ public class AlarmActivity extends AppCompatActivity {
         // bug? it haven't been called
         getResources().updateConfiguration(newConfig, null);
 
+        String action = getIntent().getAction();
+        if (action != null && action.equals(CLOSE_ACTIVITY)) {
+            return;
+        }
+
         layoutInit();
     }
 
