@@ -512,7 +512,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                     startActivityForResult(intent, RESULT_FILE_URI);
                 } else {
-                    if (com.github.axet.androidlibrary.app.Storage.permitted(WeekSetFragment.this, PERMISSIONS, RESULT_FILE))
+                    if (Storage.permitted(WeekSetFragment.this, PERMISSIONS, RESULT_FILE))
                         selectFile();
                 }
             }
