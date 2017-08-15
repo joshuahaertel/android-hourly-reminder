@@ -116,7 +116,7 @@
             android:key="optimization"
             android:persistent="false"
             android:summary="Prevent app to be removed from memory"
-            android:title="Battery Optimization" />
+            android:title="Disable Battery Optimization" />
 
         <SwitchPreferenceCompat
             android:defaultValue="true"
