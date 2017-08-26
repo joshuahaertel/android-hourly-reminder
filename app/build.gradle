@@ -46,5 +46,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:design:25.3.1'
-    compile 'com.github.axet:android-library:1.14.34' // compile project(':android-library')
+    compile 'com.github.axet:android-library:1.14.40' // compile project(':android-library')
 }

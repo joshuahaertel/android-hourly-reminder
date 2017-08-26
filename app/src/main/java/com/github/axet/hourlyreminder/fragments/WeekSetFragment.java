@@ -505,16 +505,18 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 fragmentRequestRingtone = a;
                 Uri u = fragmentRequestRingtone.ringtoneValue;
-                if (Build.VERSION.SDK_INT >= 21 && StoragePathPreferenceCompat.showStorageAccessFramework(getContext(), u.toString(), PERMISSIONS)) {
+                if (Build.VERSION.SDK_INT >= 21) {
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     intent.setType("*/*");
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                    startActivityForResult(intent, RESULT_FILE_URI);
-                } else {
-                    if (Storage.permitted(WeekSetFragment.this, PERMISSIONS, RESULT_FILE))
-                        selectFile();
+                    if (StoragePathPreferenceCompat.showStorageAccessFramework(getContext(), u.toString(), PERMISSIONS, intent)) {
+                        startActivityForResult(intent, RESULT_FILE_URI);
+                        return;
+                    }
                 }
+                if (Storage.permitted(WeekSetFragment.this, PERMISSIONS, RESULT_FILE))
+                    selectFile();
             }
         });
 
