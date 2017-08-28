@@ -91,7 +91,6 @@ public class TTS extends SoundConfig {
     }
 
     public void playSpeech(final long time, final Runnable done) {
-        TTS.this.done.clear();
         TTS.this.done.add(done);
 
         handler.removeCallbacks(delayed);

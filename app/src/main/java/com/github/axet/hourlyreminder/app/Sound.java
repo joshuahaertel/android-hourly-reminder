@@ -74,6 +74,14 @@ public class Sound extends TTS {
         return track;
     }
 
+    public static JSONArray toJSONArray(List<Uri> list) {
+        ArrayList<String> ll = new ArrayList<>();
+        for (Uri u : list) {
+            ll.add(u.toString());
+        }
+        return new JSONArray(ll);
+    }
+
     public static class Playlist {
         public List<Uri> beforeOnce = new ArrayList<>();
         public List<Uri> before = new ArrayList<>();
@@ -176,12 +184,12 @@ public class Sound extends TTS {
         public JSONObject save() {
             JSONObject o = new JSONObject();
             try {
-                o.put("beforeOnce", new JSONArray(beforeOnce));
-                o.put("before", new JSONArray(before));
+                o.put("beforeOnce", toJSONArray(beforeOnce));
+                o.put("before", toJSONArray(before));
                 o.put("beep", beep);
                 o.put("speech", speech);
-                o.put("afterOnce", new JSONArray(afterOnce));
-                o.put("after", new JSONArray(after));
+                o.put("afterOnce", toJSONArray(afterOnce));
+                o.put("after", toJSONArray(after));
                 return o;
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -478,7 +486,7 @@ public class Sound extends TTS {
 
     // called from alarm
     public void playRingtone(Uri uri) {
-        playerClose();
+        playerCl();
 
         try {
             player = create(uri);
@@ -779,11 +787,7 @@ public class Sound extends TTS {
         done.clear();
     }
 
-    public Silenced playAlarm(final Alarm a) {
-        return playAlarm(new FireAlarmService.FireAlarm(a));
-    }
-
-    public Silenced playAlarm(final FireAlarmService.FireAlarm alarm) {
+    public Silenced playAlarm(final FireAlarmService.FireAlarm alarm, final long delay, final Runnable late) {
         playerClose();
 
         final Playlist rr = alarm.list;
@@ -812,7 +816,7 @@ public class Sound extends TTS {
                     @Override
                     public void run() {
                         if (done.contains(restart)) {
-                            playAlarm(alarm);
+                            playAlarm(alarm, delay, late);
                         }
                     }
                 }, 1000);
@@ -823,10 +827,20 @@ public class Sound extends TTS {
             @Override
             public void run() {
                 if (!rr.after.isEmpty()) {
+                    done.add(late);
                     if (rr.before.isEmpty() && rr.after.size() == 1) { // do not loop sounds
                         playRingtone(rr.after.get(0));
                     } else {
                         playCustom(rr.after, restart);
+                    }
+                    if (late != null) {
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (done.contains(late))
+                                    late.run();
+                            }
+                        }, delay);
                     }
                 } else {
                     restart.run();

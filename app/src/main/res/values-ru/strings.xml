@@ -86,14 +86,16 @@
 
     <string-array name="snooze_after_text">
         <item>Выключено</item>
+        <item>1 сек</item>
+        <item>3 сек</item>
+        <item>5 сек</item>
+        <item>30 сек</item>
         <item>1 мин</item>
-        <item>2 мин</item>
-        <item>3 мин</item>
-        <item>4 мин</item>
         <item>5 мин</item>
     </string-array>
 
     <string-array name="snooze_text">
+        <item>1 мин</item>
         <item>5 мин</item>
         <item>10 мин</item>
         <item>15 мин</item>
@@ -186,4 +188,5 @@
     <string name="vibrate_reminders">Вибратор на оповещения</string>
     <string name="vibrate_alarms">Вибратор для будильника</string>
     <string name="show_30_minutes">Показать 30-минут</string>
+    <string name="snoozed_for">Будильник отложен на</string>
 </resources>

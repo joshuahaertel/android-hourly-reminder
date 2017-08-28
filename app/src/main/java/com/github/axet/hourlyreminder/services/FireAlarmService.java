@@ -292,7 +292,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
         Log.d(TAG, "time=" + Alarm.format24(alarm.settime));
 
         long fire = System.currentTimeMillis();
-        if (!alive(alarm, fire)) {
+        if (!alive(alarm, fire, 1000 * 60)) {
             stopSelf();
             AlarmService.showNotificationMissed(this, alarm.settime, alarm.isSnoozed(fire));
             SharedPreferences.Editor editor = shared.edit();
@@ -311,7 +311,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
         showNotificationAlarm(alarm);
 
         // do we have silence alarm?
-        silenced = sound.playAlarm(alarm);
+        silenced = sound.playAlarm(alarm, 1000, alive);
         sound.silencedToast(silenced, alarm.settime);
 
         showAlarmActivity(alarm, silenced);
@@ -323,9 +323,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
         Calendar cur = Calendar.getInstance();
 
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+        Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
 
-        if (m == 0)
+        if (sec == 0)
             return false;
 
         final Calendar cal = Calendar.getInstance();
@@ -333,29 +333,39 @@ public class FireAlarmService extends Service implements SensorEventListener {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
 
-        cal.add(Calendar.MINUTE, m);
+        cal.add(Calendar.SECOND, sec);
 
         return cur.after(cal);
     }
 
-    boolean alive(final FireAlarm alarm, final long fire) {
+    boolean alive(final FireAlarm alarm, final long fire, long delay) {
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
         if (!AlarmService.dismiss(this, alarm.settime, alarm.isSnoozed(fire))) { // do not check snooze on first run
+            handle.removeCallbacks(alive);
             alive = new Runnable() {
                 @Override
                 public void run() {
+                    handle.removeCallbacks(alive); // can be called not from handler, remove from handler
                     if (snooze(fire)) {
                         AlarmService.snooze(FireAlarmService.this, alarm);
                         stopSelf();
                         return;
                     }
-                    if (!alive(alarm, fire)) {
+                    Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0"));
+                    if (sec == 0 || sec > 60) // for 'off' or '1 min+' delays check every minute
+                        sec = 60;
+                    else
+                        sec = sec - 1; // for 1-5 sec snooze keep it on time minus initial 1 sec first call delay
+                    if (sec <= 0)
+                        sec = 1;
+                    if (!alive(alarm, fire, sec * 1000)) {
                         AlarmService.showNotificationMissed(FireAlarmService.this, alarm.settime, alarm.isSnoozed(fire));
                         stopSelf();
                         return;
                     }
                 }
             };
-            handle.postDelayed(alive, 1000 * 60);
+            handle.postDelayed(alive, delay); // first run 60 secs (let it sound for bit, before immediate snooze if it is snooze time)
             return true;
         }
 
