@@ -19,6 +19,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
@@ -78,6 +79,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         intent.setAction(SNOOZE);
         intent.putExtra("state", a.save().toString());
         context.startService(intent);
+
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        Integer min = Integer.valueOf(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_DELAY, "10"));
+        Toast.makeText(context, context.getString(R.string.snoozed_for) + " " + HourlyApplication.formatLeftExact(context, min * 60 * 1000), Toast.LENGTH_LONG).show();
     }
 
     Sound sound;
@@ -557,16 +562,17 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     static boolean dismiss(Context context, Calendar cur, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
+        Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
         int auto = ALARM_AUTO_OFF;
-        if (m > 0 || snoozed)
+        if (sec > 0 || snoozed)
             auto = ALARM_SNOOZE_AUTO_OFF;
 
         final Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(settime);
-        cal.add(Calendar.MINUTE, auto);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
+
+        cal.add(Calendar.MINUTE, auto);
 
         return cur.after(cal);
     }
@@ -611,9 +617,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             notificationManager.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
         } else {
             final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-            Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
+            Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
             int auto = ALARM_AUTO_OFF;
-            if (m > 0 || snoozed)
+            if (sec > 0 || snoozed)
                 auto = ALARM_SNOOZE_AUTO_OFF;
 
             PendingIntent main = PendingIntent.getActivity(context, 0,

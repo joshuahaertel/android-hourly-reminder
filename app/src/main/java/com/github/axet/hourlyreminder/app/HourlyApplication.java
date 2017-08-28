@@ -86,7 +86,7 @@ public class HourlyApplication extends MainApplication {
 
     public static final String PREFERENCE_WAKEUP = "wakeup";
 
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
 
     @Override
     public void onCreate() {
@@ -107,12 +107,21 @@ public class HourlyApplication extends MainApplication {
             int ver = shared.getInt(PREFERENCE_VERSION, 0);
             SharedPreferences.Editor edit = shared.edit();
             switch (ver) {
+                case 0:
+                case 1:
+                    version1to2(shared, edit);
+                    break;
             }
             edit.putInt(PREFERENCE_VERSION, VERSION);
             edit.commit();
         }
 
         FireAlarmService.startIfActive(this);
+    }
+
+    void version1to2(SharedPreferences shared, SharedPreferences.Editor edit) {
+        int old = Integer.valueOf(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")) * 60;
+        edit.putString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, Integer.toString(old));
     }
 
     public static int getActionbarColor(Context context) {

@@ -24,6 +24,7 @@ import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
 import com.github.axet.hourlyreminder.alarms.WeekTime;
+import com.github.axet.hourlyreminder.services.FireAlarmService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -264,7 +265,7 @@ public class AlarmsFragment extends WeekSetFragment {
 
     @Override
     Sound.Silenced playPreview(WeekSet a) {
-        Sound.Silenced s = sound.playAlarm((Alarm) a);
+        Sound.Silenced s = sound.playAlarm(new FireAlarmService.FireAlarm((Alarm) a), 0 , null);
         sound.silencedToast(s, System.currentTimeMillis());
         return s;
     }

@@ -53,14 +53,15 @@ public class Alarm extends WeekTime {
     // move current alarm +10 mins
     public void snooze() {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        String min = shared.getString(HourlyApplication.PREFERENCE_SNOOZE_DELAY, "10");
-        Integer m = Integer.parseInt(min);
+        Integer m = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_DELAY, "10"));
 
         enabled = true;
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
+
         cal.add(Calendar.MINUTE, m);
+
         time = cal.getTimeInMillis();
     }
 
