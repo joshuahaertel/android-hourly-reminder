@@ -38,7 +38,7 @@ public class TTS extends SoundConfig {
     TextToSpeech tts;
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
     boolean restart; // restart tts once if failed. on apk upgrade tts alwyas failed.
-    Set<Runnable> done = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
+    Set<Runnable> dones = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
     Runnable onInit;
 
     public TTS(Context context) {
@@ -91,7 +91,7 @@ public class TTS extends SoundConfig {
     }
 
     public void playSpeech(final long time, final Runnable done) {
-        TTS.this.done.add(done);
+        dones.add(done);
 
         handler.removeCallbacks(delayed);
         delayed = null;
@@ -106,7 +106,7 @@ public class TTS extends SoundConfig {
             public void run() {
                 handler.removeCallbacks(delayed);
                 delayed = null;
-                if (done != null && TTS.this.done.contains(done))
+                if (done != null && dones.contains(done))
                     done.run();
             }
         };

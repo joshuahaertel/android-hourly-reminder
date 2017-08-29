@@ -345,7 +345,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
             alive = new Runnable() {
                 @Override
                 public void run() {
-                    handle.removeCallbacks(alive); // can be called not from handler, remove from handler
+                    if (alive != this) // can be called from handler or standalone, one time trigger
+                        return;
+                    alive = null;
                     if (snooze(fire)) {
                         AlarmService.snooze(FireAlarmService.this, alarm);
                         stopSelf();
