@@ -812,9 +812,11 @@ public class Sound extends TTS {
             public void run() {
                 final Runnable restart = this;
                 dones.add(restart);
-                if (dones.contains(late))
-                    late.run();
-                dones.remove(late);
+                if (late != null) {
+                    if (dones.contains(late))
+                        late.run();
+                    dones.remove(late);
+                }
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
