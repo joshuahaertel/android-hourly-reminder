@@ -204,15 +204,9 @@ public class Sound extends TTS {
     public void close() {
         super.close();
 
-        if (vibrateTrack != null)
-            vibrateStop();
+        vibrateStop();
 
         playerClose();
-
-        if (track != null) {
-            track.release();
-            track = null;
-        }
     }
 
     public Silenced silencedPlaylist(VibratePreference.Config config, Playlist rr) {
@@ -401,6 +395,8 @@ public class Sound extends TTS {
     }
 
     public void playBeep(final Runnable done) {
+        beepClose();
+
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         String b = shared.getString(HourlyApplication.PREFERENCE_BEEP_CUSTOM, "1800:100");
 
@@ -414,8 +410,9 @@ public class Sound extends TTS {
             Log.d(TAG, "Unable get track", e);
             toastTone(e);
             try {
-                MediaPlayer player = create(ReminderSet.DEFAULT_NOTIFICATION); // first fallback to system media player
-                this.player = playOnce(player, done);
+                playerCl();
+                MediaPlayer p = create(ReminderSet.DEFAULT_NOTIFICATION); // first fallback to system media player
+                player = playOnce(p, done);
             } catch (RuntimeException ee) { // second fallback to tone (samsung phones crahes on tone native initialization (seems like some AudioTrack initialization failed)
                 Log.d(TAG, "Unable get tone", e);
                 toastTone(ee);
@@ -443,8 +440,7 @@ public class Sound extends TTS {
     }
 
     public void playBeep(AudioTrack t, final Runnable done) {
-        if (track != null)
-            track.release();
+        beepClose();
 
         track = t;
 
@@ -461,10 +457,8 @@ public class Sound extends TTS {
             public void run() {
                 // prevent strange android bug, with second beep when connecting android to external usb audio source.
                 // seems like this beep pushed to external audio source from sound cache.
-                if (track != null) {
-                    track.release();
-                    track = null;
-                }
+                beepClose();
+
                 if (done != null && dones.contains(done))
                     done.run();
             }
@@ -755,6 +749,8 @@ public class Sound extends TTS {
     }
 
     public void vibrateStop() {
+        if (vibrateTrack == null)
+            return;
         Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         if (v == null)
             return;
@@ -779,6 +775,15 @@ public class Sound extends TTS {
         if (player != null) {
             player.release();
             player = null;
+        }
+
+        beepClose();
+    }
+
+    void beepClose() {
+        if (track != null) {
+            track.release();
+            track = null;
         }
     }
 

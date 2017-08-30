@@ -306,5 +306,5 @@
     <string name="vibrate_reminders">Vibrate Reminders</string>
     <string name="vibrate_alarms">Vibrate Alarms</string>
     <string name="show_30_minutes">Show 30-minutes</string>
-    <string name="snoozed_for">Alarm Snoozed for</string>
+    <string name="snoozed_for">Alarm snoozed for</string>
 </resources>
