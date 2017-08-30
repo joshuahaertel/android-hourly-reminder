@@ -293,9 +293,12 @@ public class BeepPrefDialogFragment extends PreferenceDialogFragmentCompat {
                 preference.setValues(beep.save());
             }
         }
-
-        sound.close();
-
         this.mPreferenceChanged = false;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        sound.close();
     }
 }
