@@ -3,27 +3,20 @@ package com.github.axet.hourlyreminder.fragments;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PowerManager;
-import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceGroup;
-import android.support.v7.preference.PreferenceGroupAdapter;
 import android.support.v7.preference.PreferenceManager;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.ContentFrameLayout;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.Gravity;
@@ -50,11 +43,14 @@ import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
+    public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_PHONE_STATE};
+
+    public static final int RESULT_PHONE = 1;
+
     Sound sound;
     Handler handler = new Handler();
 
@@ -162,11 +158,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         PreferenceGroup app = (PreferenceGroup) findPreference("application");
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
-        // 21 SDK requires to be Alarm to be percice on time
+        // 21+ SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT < 21) {
             advanced.removePreference(alarm);
         }
-        // 23 SDK requires to be Alarm to be percice on time
+        // 23+ SDK requires to be Alarm to be percice on time
         if (Build.VERSION.SDK_INT >= 23) {
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
             alarm.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -212,8 +208,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 if (!Storage.permitted(getContext(), PERMISSIONS)) {
-                    Storage.permitted(SettingsFragment.this, PERMISSIONS, 1);
-                    return false;
+                    if (!Storage.permitted(SettingsFragment.this, PERMISSIONS, RESULT_PHONE))
+                        return false;
                 }
                 return true;
             }
@@ -235,7 +231,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case 1:
+            case RESULT_PHONE:
                 if (Storage.permitted(getContext(), PERMISSIONS))
                     setPhone();
                 else
@@ -243,8 +239,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 break;
         }
     }
-
-    public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_PHONE_STATE};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
