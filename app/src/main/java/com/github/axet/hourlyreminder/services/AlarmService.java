@@ -297,7 +297,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             } else {
                 a = am.setExact(time, reminderIntent);
             }
-            upcomingLock(time, a);
+            if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) // exact on time lock enabled only for reminders
+                huaweiLock(time, a);
         }
 
         if (alarms.isEmpty()) {
@@ -310,11 +311,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + AlarmManager.formatTime(time));
 
             AlarmManager.Alarm a = am.setAlarm(time, alarmIntent);
-            upcomingLock(time, a);
+            huaweiLock(time, a); // exact on time lock enabled always for alarms
         }
     }
 
-    void upcomingLock(long time, AlarmManager.Alarm a) {
+    void huaweiLock(long time, AlarmManager.Alarm a) {
         if (!OptimizationPreferenceCompat.isHuawei(this))
             return;
         Calendar cur = Calendar.getInstance();

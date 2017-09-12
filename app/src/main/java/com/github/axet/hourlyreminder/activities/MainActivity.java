@@ -222,9 +222,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
         shared.registerOnSharedPreferenceChangeListener(this);
 
-        if (OptimizationPreferenceCompat.needWarning(this)) {
-            OptimizationPreferenceCompat.showWarning(this);
-        }
+//        if (OptimizationPreferenceCompat.needWarning(this)) {
+//            OptimizationPreferenceCompat.showWarning(this);
+//        }
     }
 
     @Override
