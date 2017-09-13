@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         android:key="sounds"
         android:title="Звуки">
@@ -145,7 +146,7 @@
             android:title="Начало недели" />
 
         <com.github.axet.androidlibrary.widgets.AboutPreferenceCompat
-            android:dialogMessage="R.raw.about"
-            android:persistent="false" />
+            android:persistent="false"
+            app:html="@raw/about" />
     </PreferenceCategory>
 </PreferenceScreen>
