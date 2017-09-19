@@ -36,7 +36,7 @@ public class AlarmActivity extends AppCompatActivity {
 
     public static void showAlarmActivity(Context context, FireAlarmService.FireAlarm alarm, Sound.Silenced silenced) {
         Intent intent = new Intent(context, AlarmActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.putExtra("state", alarm.save().toString());
         intent.putExtra("silenced", silenced);
         context.startActivity(intent);
@@ -45,7 +45,7 @@ public class AlarmActivity extends AppCompatActivity {
     public static void closeAlarmActivity(Context context) {
         Intent intent = new Intent(context, AlarmActivity.class);
         intent.setAction(CLOSE_ACTIVITY);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
         context.startActivity(intent);
     }
 
@@ -66,7 +66,6 @@ public class AlarmActivity extends AppCompatActivity {
         layoutInit();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
     }
@@ -91,7 +90,11 @@ public class AlarmActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        final FireAlarmService.FireAlarm a = new FireAlarmService.FireAlarm(intent.getStringExtra("state"));
+        String state = intent.getStringExtra("state");
+        if (state == null)
+            return; // should never be null, open activity from recent?
+
+        final FireAlarmService.FireAlarm a = new FireAlarmService.FireAlarm(state);
 
         View alarm = findViewById(R.id.alarm);
 
@@ -103,7 +106,8 @@ public class AlarmActivity extends AppCompatActivity {
         dismiss.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                FireAlarmService.dismissActiveAlarm(AlarmActivity.this);
+                backToMain();
             }
         });
 
@@ -112,7 +116,8 @@ public class AlarmActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 AlarmService.snooze(AlarmActivity.this, a);
-                finish();
+                FireAlarmService.dismissActiveAlarm(AlarmActivity.this);
+                backToMain();
             }
         });
 
@@ -188,8 +193,6 @@ public class AlarmActivity extends AppCompatActivity {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
 
-        FireAlarmService.dismissActiveAlarm(this);
-
         if (updateClock != null) {
             handler.removeCallbacks(updateClock);
             updateClock = null;
@@ -221,7 +224,11 @@ public class AlarmActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        moveTaskToBack(false);
+        backToMain();
     }
 
+    void backToMain() {
+        MainActivity.startActivity(this);
+        finish();
+    }
 }
