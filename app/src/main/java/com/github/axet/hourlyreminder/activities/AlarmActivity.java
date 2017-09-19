@@ -92,7 +92,7 @@ public class AlarmActivity extends AppCompatActivity {
 
         String state = intent.getStringExtra("state");
         if (state == null) {
-            finish();
+            backToMain();
             return; // should never be null, open activity from recent?
         }
 
