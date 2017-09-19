@@ -67,6 +67,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     boolean is24Hours = false;
     boolean timeChanged = false;
 
+    public static void startActivity(Context context) {
+        Intent intent = new Intent(context, MainActivity.class);
+        context.startActivity(intent);
+    }
+
     public class TimeSetReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
