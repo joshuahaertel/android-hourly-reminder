@@ -36,7 +36,7 @@ public class AlarmActivity extends AppCompatActivity {
 
     public static void showAlarmActivity(Context context, FireAlarmService.FireAlarm alarm, Sound.Silenced silenced) {
         Intent intent = new Intent(context, AlarmActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS | Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.putExtra("state", alarm.save().toString());
         intent.putExtra("silenced", silenced);
         context.startActivity(intent);
@@ -45,7 +45,7 @@ public class AlarmActivity extends AppCompatActivity {
     public static void closeAlarmActivity(Context context) {
         Intent intent = new Intent(context, AlarmActivity.class);
         intent.setAction(CLOSE_ACTIVITY);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS | Intent.FLAG_ACTIVITY_NO_HISTORY);
         context.startActivity(intent);
     }
 
