@@ -91,8 +91,10 @@ public class AlarmActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         String state = intent.getStringExtra("state");
-        if (state == null)
+        if (state == null) {
+            finish();
             return; // should never be null, open activity from recent?
+        }
 
         final FireAlarmService.FireAlarm a = new FireAlarmService.FireAlarm(state);
 
