@@ -53,7 +53,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     public static final int STATE_SIDE = 2;
     public static final int STATE_DOWN = 3;
 
-    FireAlarmReceiver receiver = new FireAlarmReceiver();
+    FireAlarmReceiver receiver;
     Sound sound;
     Handler handle = new Handler();
     Runnable alive;
@@ -246,6 +246,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
 
+        receiver = new FireAlarmReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
@@ -405,7 +406,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
         showNotificationAlarm(null);
 
-        unregisterReceiver(receiver);
+        if (receiver != null) {
+            unregisterReceiver(receiver);
+            receiver = null;
+        }
 
         if (pscl != null) {
             TelephonyManager tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
