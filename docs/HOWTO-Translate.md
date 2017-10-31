@@ -53,4 +53,17 @@ In additional, you need to figure it out, which is the best way to pronounce cur
             tts.setLanguage(en);
 ```
 
+Simple set of speak rules is how you pronounce the time for, and see specifics to your language:
+
+  * 06:00
+  * 06:05
+  * 06:08
+  * 06:10
+  * 10:00
+
+Additional to AM / PM time:
+
+  * 06:00 AM
+  * 18:00
+
 Then add those files and speak engine to the repository using "New Issue" or create pull request against 'dev' branch.
