@@ -307,6 +307,7 @@
     <string name="vibrate_alarms">Vibrate Alarms</string>
     <string name="show_30_minutes">Show 30-minutes</string>
     <string name="snoozed_for">Alarm snoozed for</string>
+    
     <string name="pref_volume_title">Reduce Volume</string>
     <string name="pref_volume_summary">Set text speech volume</string>
     <string name="pref_beep_title">Custom Beep</string>
