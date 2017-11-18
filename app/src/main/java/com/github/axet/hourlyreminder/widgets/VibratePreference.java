@@ -233,9 +233,10 @@ public class VibratePreference extends SwitchPreferenceCompat {
             public void onDismiss(DialogInterface dialog) {
                 d = null;
                 stop();
-                if (sound != null)
+                if (sound != null) {
                     sound.close();
-                sound = null;
+                    sound = null;
+                }
             }
         });
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
