@@ -532,10 +532,9 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     void selectFile() {
         if (dialog != null)
             return;
-        dialog = new OpenFileDialog(getActivity(), OpenFileDialog.DIALOG_TYPE.FILE_DIALOG);
+        dialog = new OpenFileDialog(getActivity(), OpenFileDialog.DIALOG_TYPE.FILE_DIALOG, true);
 
         Uri path = fragmentRequestRingtone.ringtoneValue;
-
 
         File sound = new File(path.getPath());
 
@@ -548,7 +547,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             }
         }
 
-        dialog.setReadonly(true);
         dialog.setCurrentPath(sound);
         dialog.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
