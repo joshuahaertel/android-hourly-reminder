@@ -249,8 +249,6 @@
 
     <string name="SelectAlarm">Select Alarm</string>
 
-    <string name="NotPermitted">Not permitted</string>
-
     <string name="Reminder">Reminder</string>
     <string name="Reminders15">Set reminders repeat 15 min, check \'reminders\'.</string>
 

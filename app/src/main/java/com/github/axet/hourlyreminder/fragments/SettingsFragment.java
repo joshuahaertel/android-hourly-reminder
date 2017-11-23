@@ -235,7 +235,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 if (Storage.permitted(getContext(), PERMISSIONS))
                     setPhone();
                 else
-                    Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.not_permitted, Toast.LENGTH_SHORT).show();
                 break;
         }
     }

@@ -44,7 +44,6 @@
     <string name="HourlyReminders">Оповещения</string>
     <string name="No">Нет</string>
     <string name="NoDefaultRingtone">Нет оповещения по умолчанию</string>
-    <string name="NotPermitted">Отказано в доступе</string>
     <string name="Reminder">Оповещение</string>
     <string name="Reminders15">Оповещение установлено каждые 15 минут, проверьте настройки.</string>
     <string name="SelectAlarm">Выбрать Будильник</string>
