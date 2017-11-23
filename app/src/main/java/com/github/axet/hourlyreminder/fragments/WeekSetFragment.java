@@ -496,7 +496,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                             File f = storage.storeRingtone(uri);
                             uri = Uri.fromFile(f);
                         }
-                        String s = uri.getScheme();
                         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
                         shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, uri.toString()).commit();
                         fragmentRequestRingtone.ringtoneValue = uri;
@@ -515,17 +514,18 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
 
                 Uri path = fragmentRequestRingtone.ringtoneValue;
 
+                Uri fdef;
                 String def = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getPath())).toString();
                 SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
                 String last = shared.getString(HourlyApplication.PREFERENCE_LAST_PATH, def);
                 if (last.startsWith(ContentResolver.SCHEME_FILE)) {
-                    ;
+                    fdef = Uri.parse(last);
                 } else if (last.startsWith(ContentResolver.SCHEME_CONTENT)) {
-                    ;
+                    fdef = Uri.parse(last);
                 } else {
-                    last = ContentResolver.SCHEME_FILE + "://";
+                    File f = new File(last);
+                    fdef = Uri.fromFile(f);
                 }
-                Uri fdef = Uri.parse(last);
 
                 String a = path.getAuthority();
                 String s = path.getScheme();
