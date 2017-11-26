@@ -9,11 +9,6 @@ To translate 'Hourly Reminder' to your language you need to translate following 
 Additional file from 'android-library'
   * [https://gitlab.com/axet/android-library/.../strings.xml](https://gitlab.com/axet/android-library/blob/master/src/main/res/values/strings.xml)
 
-Also, add Google Play translation for:
-  * Title
-  * Short Description
-  * Full description
-
 In additional, you need to figure it out, which is the best way to pronounce current time. For example you may want to pronounce "hours" after hours and "minutes" after minutes. Or just prounouce time as it is. To figure it out which way is the best, try pronounce time in all combinations and learn how you do it. It may be nessesery to pronounce 'O' when here is no minutes (10:01), have different ending or skipping the words. You can find how speach time string builded here:
 
   * [TTS.java](/app/src/main/java/com/github/axet/hourlyreminder/app/TTS.java)
@@ -53,17 +48,11 @@ In additional, you need to figure it out, which is the best way to pronounce cur
             tts.setLanguage(en);
 ```
 
-Simple set of speak rules is how you pronounce the time for, and see specifics to your language:
+English rule set exmples:
 
-  * 06:00
-  * 06:05
-  * 06:08
-  * 06:10
-  * 10:00
-
-Additional to AM / PM time:
-
-  * 06:00 AM
-  * 18:00
+  * "Time is 12 O'clock"
+  * "Time is 23 hundred hours"
+  * "Current time is 10 oh 5 AM"
+  * "Current time is 14 35"
 
 Then add those files and speak engine to the repository using "New Issue" or create pull request against 'dev' branch.
