@@ -58,8 +58,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
 
     public static final int RESULT_RINGTONE = 0;
-    public static final int RESULT_FILE_PERMS = 1;
-    public static final int RESULT_FILE_URI = 2;
+    public static final int RESULT_FILE = 1;
 
     WeekSet fragmentRequestRingtone;
 
@@ -153,7 +152,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                 save(fragmentRequestRingtone);
                 fragmentRequestRingtone = null;
                 break;
-            case RESULT_FILE_URI:
+            case RESULT_FILE:
                 choicer.onActivityResult(resultCode, data);
                 break;
         }
@@ -509,8 +508,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                         choicer = null;
                     }
                 };
-                choicer.setPermissionsDialog(WeekSetFragment.this, PERMISSIONS, RESULT_FILE_PERMS);
-                choicer.setStorageAccessFramework(WeekSetFragment.this, RESULT_FILE_URI);
+                choicer.setPermissionsDialog(WeekSetFragment.this, PERMISSIONS, RESULT_FILE);
+                choicer.setStorageAccessFramework(WeekSetFragment.this, RESULT_FILE);
 
                 Uri path = fragmentRequestRingtone.ringtoneValue;
 
@@ -560,7 +559,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case RESULT_FILE_PERMS:
+            case RESULT_FILE:
                 choicer.onRequestPermissionsResult(permissions, grantResults);
                 break;
         }

@@ -14,7 +14,6 @@ import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.SurfaceHolder;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,8 +23,8 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
-import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
+import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.VibratePreference;
 
 import org.json.JSONArray;
@@ -398,9 +397,9 @@ public class Sound extends TTS {
         beepClose();
 
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        String b = shared.getString(HourlyApplication.PREFERENCE_BEEP_CUSTOM, "1800:100");
+        String b = shared.getString(HourlyApplication.PREFERENCE_BEEP_CUSTOM, BeepPreference.BeepConfig.DEFAULT);
 
-        BeepPrefDialogFragment.BeepConfig beep = new BeepPrefDialogFragment.BeepConfig();
+        BeepPreference.BeepConfig beep = new BeepPreference.BeepConfig();
         beep.load(b);
 
         try {

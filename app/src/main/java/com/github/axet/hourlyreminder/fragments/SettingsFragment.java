@@ -38,7 +38,6 @@ import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
-import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
@@ -139,7 +138,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return;
         }
         if (preference instanceof BeepPreference) {
-            BeepPrefDialogFragment f = BeepPrefDialogFragment.newInstance(preference.getKey());
+            BeepPreference.BeepPrefDialogFragment f = BeepPreference.BeepPrefDialogFragment.newInstance(preference.getKey());
             f.setTargetFragment(this, 0);
             f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
             return;
