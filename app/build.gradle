@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "27.0.1"
 
     android {
         lintOptions {
@@ -15,8 +15,8 @@ android {
         applicationId "com.github.axet.hourlyreminder"
         minSdkVersion 9
         targetSdkVersion 23
-        versionCode 320
-        versionName "3.0.68"
+        versionCode 321
+        versionName "3.1.0"
     }
     signingConfigs {
         release {
@@ -36,9 +36,7 @@ android {
     }
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
-            def file = output.packageApplication.outputFile
-            def fileName = org.apache.commons.io.FilenameUtils.getExtension(android.defaultConfig.applicationId) + "-" + android.defaultConfig.versionName + "-" + variant.buildType.name + ".apk"
-            output.packageApplication.outputFile = new File(file.parent, fileName)
+            output.outputFileName = org.apache.commons.io.FilenameUtils.getExtension(android.defaultConfig.applicationId) + "-" + android.defaultConfig.versionName + "-" + variant.buildType.name + ".apk"
         }
     }
 }
@@ -47,5 +45,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:design:25.3.1'
-    compile 'com.github.axet:android-library:1.14.51' // compile project(':android-library')
+    compile 'com.github.axet:android-library:1.15.4' // compile project(':android-library')
 }

@@ -4,4 +4,5 @@
     <attr name="alarmRing" format="reference" />
     <attr name="alarmDismiss" format="reference" />
     <attr name="round_corners" format="reference" />
+    <attr name="round_background" format="reference" />
 </resources>

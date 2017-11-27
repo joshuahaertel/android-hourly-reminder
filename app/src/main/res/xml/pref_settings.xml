@@ -7,39 +7,39 @@
         <com.github.axet.androidlibrary.widgets.SeekBarPreference
             android:defaultValue="1"
             android:key="volume"
-            android:summary="Set text speech volume"
-            android:title="Reduce Volume" />
+            android:summary="@string/pref_volume_summary"
+            android:title="@string/pref_volume_title" />
 
         <com.github.axet.hourlyreminder.widgets.BeepPreference
             android:defaultValue="1800:100"
             android:key="beep_custom"
-            android:summary="Customize beep sound"
-            android:title="Custom Beep" />
+            android:summary="@string/pref_beep_summary"
+            android:title="@string/pref_beep_title" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="callsilence"
-            android:summary="Do not play sounds during calls"
-            android:title="Silence During Calls" />
+            android:summary="@string/pref_callsilence_summary"
+            android:title="@string/pref_callsilence_title" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="musicsilence"
-            android:summary="Do not play sounds while listening music"
-            android:title="Silence During Music" />
+            android:summary="@string/pref_musicsilence_summary"
+            android:title="@string/pref_musicsilence_title" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="phonesilence"
-            android:summary="Do not play sounds while phone in silince or vibrate mode"
-            android:title="Silence While Phone Silenced" />
+            android:summary="@string/pref_phonesilnece_summary"
+            android:title="@string/pref_phonesilence_title" />
 
         <com.github.axet.hourlyreminder.widgets.VibratePreference
             android:defaultValue="false"
             android:key="vibrate"
             android:persistent="false"
-            android:summary="Vibrate while sounding an reminder / alarm"
-            android:title="Vibrate" />
+            android:summary="@string/pref_vibrate_summary"
+            android:title="@string/pref_vibrate_title" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -48,14 +48,14 @@
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="wakeup"
-            android:summary="Wake up screen on reminders"
-            android:title="Wake Up Screen" />
+            android:summary="@string/pref_wakeup_summary"
+            android:title="@string/pref_wakeup_title" />
 
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="alarm"
-            android:summary="Use 'alarm' event type for hourly chimes (wakeup phone from power saving mode)"
-            android:title="Exact Timing" />
+            android:summary="@string/pref_alarm_summary"
+            android:title="@string/pref_alarm_title" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Alarms">
@@ -66,8 +66,8 @@
             android:key="increasing_volume"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
-            android:summary="Set Increasing Alarm Volume"
-            android:title="Increasing Alarm Volume" />
+            android:summary="@string/pref_increasingvolume_summary"
+            android:title="@string/pref_increasingvolume_title" />
 
         <ListPreference
             android:defaultValue="0"
@@ -76,8 +76,8 @@
             android:key="snooze_after"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
-            android:summary="Set snooze time after minutes"
-            android:title="Alarm Snooze after..." />
+            android:summary="@string/pref_snooze_summary"
+            android:title="@string/pref_snooze_title" />
 
         <ListPreference
             android:defaultValue="10"
@@ -86,8 +86,8 @@
             android:key="snooze_time"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
-            android:summary="Set snooze time minutes"
-            android:title="Alarm Snooze minutes..." />
+            android:summary="@string/pref_snoozetime_summary"
+            android:title="@string/pref_snoozetime_title" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -100,13 +100,18 @@
             android:key="language"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
-            android:summary="Set Text-To-Speech Language"
-            android:title="TTS language" />
+            android:summary="@string/pref_tts_summary"
+            android:title="@string/pref_tts_title" />
+        <com.github.axet.hourlyreminder.widgets.TTSPreference
+            android:defaultValue=""
+            android:key="speak_custom"
+            android:summary="@string/pref_speakcustom_summary"
+            android:title="@string/pref_speakcustom_title" />
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="speak_ampm"
-            android:summary="Will speak time including AM/PM suffix"
-            android:title="Speak AM/PM" />
+            android:summary="@string/pref_ttsampm_summary"
+            android:title="@string/pref_ttsampm_title" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -116,14 +121,14 @@
             android:defaultValue="false"
             android:key="optimization"
             android:persistent="false"
-            android:summary="Prevent app to be removed from memory"
-            android:title="Disable Battery Optimization" />
+            android:summary="@string/pref_optimization_summary"
+            android:title="@string/pref_optimization_title" />
 
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="notifications"
-            android:summary="Show notifications"
-            android:title="Notifications" />
+            android:summary="@string/pref_notifications_summary"
+            android:title="@string/pref_notifications_title" />
 
         <ListPreference
             android:defaultValue="Theme_White"
@@ -132,8 +137,8 @@
             android:key="theme"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
-            android:summary="Set application theme (dark / light)"
-            android:title="Application Theme" />
+            android:summary="@string/pref_theme_summary"
+            android:title="@string/pref_theme_title" />
 
         <ListPreference
             android:defaultValue="Mon"
@@ -142,8 +147,8 @@
             android:key="weekstart"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
-            android:summary="Start week on specified day"
-            android:title="Start Week On" />
+            android:summary="@string/pref_weekstart_summary"
+            android:title="@string/pref_weekstart_title" />
 
         <com.github.axet.androidlibrary.widgets.AboutPreferenceCompat
             android:persistent="false"

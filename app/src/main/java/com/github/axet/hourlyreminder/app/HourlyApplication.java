@@ -86,6 +86,8 @@ public class HourlyApplication extends MainApplication {
 
     public static final String PREFERENCE_WAKEUP = "wakeup";
 
+    public static final String PREFERENCE_SPEAK_CUSTOM = "speak_custom";
+
     public static final int VERSION = 2;
 
     @Override

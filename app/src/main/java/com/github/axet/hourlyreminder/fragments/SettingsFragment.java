@@ -38,10 +38,10 @@ import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
-import com.github.axet.hourlyreminder.dialogs.BeepPrefDialogFragment;
 import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.widgets.BeepPreference;
 import com.github.axet.hourlyreminder.widgets.CustomSoundListPreference;
+import com.github.axet.hourlyreminder.widgets.TTSPreference;
 
 import java.util.List;
 import java.util.Set;
@@ -139,7 +139,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return;
         }
         if (preference instanceof BeepPreference) {
-            BeepPrefDialogFragment f = BeepPrefDialogFragment.newInstance(preference.getKey());
+            BeepPreference.BeepPrefDialogFragment f = BeepPreference.BeepPrefDialogFragment.newInstance(preference.getKey());
+            f.setTargetFragment(this, 0);
+            f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
+            return;
+        }
+        if (preference instanceof TTSPreference) {
+            TTSPreference.TTSPrefDialogFragment f = TTSPreference.TTSPrefDialogFragment.newInstance(preference.getKey());
             f.setTargetFragment(this, 0);
             f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
             return;
@@ -235,7 +241,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 if (Storage.permitted(getContext(), PERMISSIONS))
                     setPhone();
                 else
-                    Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.not_permitted, Toast.LENGTH_SHORT).show();
                 break;
         }
     }

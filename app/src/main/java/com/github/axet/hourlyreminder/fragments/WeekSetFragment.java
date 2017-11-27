@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import com.github.axet.androidlibrary.animations.MarginAnimation;
 import com.github.axet.androidlibrary.animations.RemoveItemAnimation;
+import com.github.axet.androidlibrary.widgets.OpenChoicer;
 import com.github.axet.androidlibrary.widgets.OpenFileDialog;
 import com.github.axet.androidlibrary.widgets.StoragePathPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
@@ -58,7 +59,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
 
     public static final int RESULT_RINGTONE = 0;
     public static final int RESULT_FILE = 1;
-    public static final int RESULT_FILE_URI = 2;
 
     WeekSet fragmentRequestRingtone;
 
@@ -75,6 +75,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     Sound sound;
     Storage storage;
     OpenFileDialog dialog;
+    OpenChoicer choicer;
 
     int startweek = 0;
 
@@ -121,7 +122,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
 
     void updateStartWeek() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
         String s = prefs.getString(HourlyApplication.PREFERENCE_WEEKSTART, "");
         for (int i = 0; i < Week.DAYS.length; i++) {
             if (s.equals(getString(Week.DAYS[i]))) {
@@ -147,31 +147,13 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                     fragmentRequestRingtone = null;
                     return;
                 }
-                Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-                fragmentRequestRingtone.ringtoneValue = fallbackUri(uri);
+                Uri url = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                fragmentRequestRingtone.ringtoneValue = fallbackUri(url);
                 save(fragmentRequestRingtone);
                 fragmentRequestRingtone = null;
                 break;
-            case RESULT_FILE_URI:
-                if (fragmentRequestRingtone == null)
-                    return;
-                if (resultCode != Activity.RESULT_OK) {
-                    fragmentRequestRingtone = null;
-                    return;
-                }
-                if (Build.VERSION.SDK_INT >= 21) {
-                    Uri u = data.getData();
-                    ContentResolver resolver = getContext().getContentResolver();
-                    try {
-                        resolver.takePersistableUriPermission(u, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        fragmentRequestRingtone.ringtoneValue = fallbackUri(u);
-                    } catch (SecurityException e) { // remote SAF?
-                        File f = storage.storeRingtone(u);
-                        fragmentRequestRingtone.ringtoneValue = fallbackUri(Uri.fromFile(f));
-                    }
-                    save(fragmentRequestRingtone);
-                }
-                fragmentRequestRingtone = null;
+            case RESULT_FILE:
+                choicer.onActivityResult(resultCode, data);
                 break;
         }
     }
@@ -504,19 +486,63 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             @Override
             public void onClick(View v) {
                 fragmentRequestRingtone = a;
-                Uri u = fragmentRequestRingtone.ringtoneValue;
-                if (Build.VERSION.SDK_INT >= 21) {
-                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    intent.setType("*/*");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                    if (StoragePathPreferenceCompat.showStorageAccessFramework(getContext(), u.toString(), PERMISSIONS, intent)) {
-                        startActivityForResult(intent, RESULT_FILE_URI);
-                        return;
+                choicer = new OpenChoicer(OpenFileDialog.DIALOG_TYPE.FILE_DIALOG, true) {
+                    @Override
+                    public void onResult(Uri uri, boolean tmp) {
+                        if (fragmentRequestRingtone == null)
+                            return;
+                        if (tmp) {
+                            File f = storage.storeRingtone(uri);
+                            uri = Uri.fromFile(f);
+                        }
+                        SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
+                        shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, uri.toString()).commit();
+                        fragmentRequestRingtone.ringtoneValue = uri;
+                        save(fragmentRequestRingtone);
+                        fragmentRequestRingtone = null;
                     }
+
+                    @Override
+                    public void onDismiss() {
+                        fragmentRequestRingtone = null;
+                        choicer = null;
+                    }
+                };
+                choicer.setPermissionsDialog(WeekSetFragment.this, PERMISSIONS, RESULT_FILE);
+                choicer.setStorageAccessFramework(WeekSetFragment.this, RESULT_FILE);
+
+                Uri path = fragmentRequestRingtone.ringtoneValue;
+
+                Uri fdef;
+                String def = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getPath())).toString();
+                SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String last = shared.getString(HourlyApplication.PREFERENCE_LAST_PATH, def);
+                if (last.startsWith(ContentResolver.SCHEME_FILE)) {
+                    fdef = Uri.parse(last);
+                } else if (last.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                    fdef = Uri.parse(last);
+                } else {
+                    File f = new File(last);
+                    fdef = Uri.fromFile(f);
                 }
-                if (Storage.permitted(WeekSetFragment.this, PERMISSIONS, RESULT_FILE))
-                    selectFile();
+
+                String a = path.getAuthority();
+                String s = path.getScheme();
+                if (s.equals(ContentResolver.SCHEME_FILE)) {
+                    File sound = new File(path.getPath());
+                    while (!sound.exists()) {
+                        sound = sound.getParentFile();
+                        if (sound == null) {
+                            path = fdef;
+                        } else {
+                            path = Uri.fromFile(sound);
+                        }
+                    }
+                } else if (s.equals(ContentResolver.SCHEME_CONTENT) && !a.startsWith(Storage.SAF)) { // uri points to ringtone, use default
+                    path = fdef;
+                }
+
+                choicer.show(path);
             }
         });
 
@@ -529,62 +555,12 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         });
     }
 
-    void selectFile() {
-        if (dialog != null)
-            return;
-        dialog = new OpenFileDialog(getActivity(), OpenFileDialog.DIALOG_TYPE.FILE_DIALOG);
-
-        Uri path = fragmentRequestRingtone.ringtoneValue;
-
-
-        File sound = new File(path.getPath());
-
-        while (!sound.exists()) {
-            sound = sound.getParentFile();
-            if (sound == null) {
-                String def = Environment.getExternalStorageDirectory().getPath();
-                SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-                sound = new File(shared.getString(HourlyApplication.PREFERENCE_LAST_PATH, def));
-            }
-        }
-
-        dialog.setReadonly(true);
-        dialog.setCurrentPath(sound);
-        dialog.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface d, int which) {
-                File ff = dialog.getCurrentPath();
-
-                SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-                shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, ff.getParent()).commit();
-
-                if (!ff.isFile())
-                    return;
-
-                fragmentRequestRingtone.ringtoneValue = Uri.fromFile(ff);
-                save(fragmentRequestRingtone);
-                fragmentRequestRingtone = null;
-            }
-        });
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface d) {
-                dialog = null;
-            }
-        });
-        dialog.show();
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         switch (requestCode) {
             case RESULT_FILE:
-                if (Storage.permitted(getContext(), permissions))
-                    selectFile();
-                else
-                    Toast.makeText(getActivity(), R.string.NotPermitted, Toast.LENGTH_SHORT).show();
+                choicer.onRequestPermissionsResult(permissions, grantResults);
                 break;
         }
     }

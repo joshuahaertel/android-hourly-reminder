@@ -33,6 +33,33 @@ public class VibratePreference extends SwitchPreferenceCompat {
 
     public static int DEFAULT_VALUE_INDEX = 1;
 
+    ArrayAdapter<CharSequence> values = ArrayAdapter.createFromResource(getContext(), R.array.patterns_values, android.R.layout.simple_spinner_item);
+
+    AlertDialog d;
+
+    Config config;
+
+    SwitchCompat remSw;
+    ImageView remPlay;
+    Spinner rem;
+    Spinner ala;
+    SwitchCompat alaSw;
+    ImageView alaPlay;
+
+    Sound sound;
+    Handler handler = new Handler();
+
+    long[] remPlaying;
+    long[] alaPlaying;
+
+    Runnable remStop = new Runnable() {
+        @Override
+        public void run() {
+            stop();
+            update();
+        }
+    };
+
     /**
      * Convert "s:1000,v:100" to android java pattern
      *
@@ -88,33 +115,6 @@ public class VibratePreference extends SwitchPreferenceCompat {
             return new Config(b, values.getItem(DEFAULT_VALUE_INDEX).toString());
         }
     }
-
-    ArrayAdapter<CharSequence> values = ArrayAdapter.createFromResource(getContext(), R.array.patterns_values, android.R.layout.simple_spinner_item);
-
-    AlertDialog d;
-
-    Config config;
-
-    SwitchCompat remSw;
-    ImageView remPlay;
-    Spinner rem;
-    Spinner ala;
-    SwitchCompat alaSw;
-    ImageView alaPlay;
-
-    Sound sound;
-    Handler handler = new Handler();
-
-    long[] remPlaying;
-    long[] alaPlaying;
-
-    Runnable remStop = new Runnable() {
-        @Override
-        public void run() {
-            stop();
-            update();
-        }
-    };
 
     public static class Config {
         public boolean alarms;
@@ -233,9 +233,10 @@ public class VibratePreference extends SwitchPreferenceCompat {
             public void onDismiss(DialogInterface dialog) {
                 d = null;
                 stop();
-                if (sound != null)
+                if (sound != null) {
                     sound.close();
-                sound = null;
+                    sound = null;
+                }
             }
         });
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {

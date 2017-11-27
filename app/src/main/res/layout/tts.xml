@@ -1,0 +1,167 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/tts_def"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Default" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <CheckBox
+            android:id="@+id/tts_show12h24h"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="Show 12h/24h" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/tts_12h_00"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:text="Time is %H O'clock" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tts_12h_00_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Time is 10 O'clock" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/tts_12h_00_play"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="?attr/round_background"
+            android:padding="5dp"
+            android:src="@drawable/play"
+            android:tint="@android:color/white" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/tts_24h_00"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:text="Time is %H AM hundred hours" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tts_24h_00_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Time is 16 hundred hours" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/tts_24h_00_play"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="?attr/round_background"
+            android:padding="5dp"
+            android:src="@drawable/play"
+            android:tint="@android:color/white" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/tts_12h_01"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:text="%H %M %A" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tts_12h_01_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10 05 AM" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/tts_12h_01_play"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="?attr/round_background"
+            android:padding="5dp"
+            android:src="@drawable/play"
+            android:tint="@android:color/white" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/tts_24h_01"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:text="%H %M" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tts_24h_01_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="16 05" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/tts_24h_01_play"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="?attr/round_background"
+            android:padding="5dp"
+            android:src="@drawable/play"
+            android:tint="@android:color/white" />
+    </LinearLayout>
+</LinearLayout>
