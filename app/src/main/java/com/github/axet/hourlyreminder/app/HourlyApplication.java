@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.v4.content.SharedPreferencesCompat;
 import android.support.v7.preference.PreferenceManager;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.github.axet.androidlibrary.app.MainApplication;
@@ -407,22 +409,27 @@ public class HourlyApplication extends MainApplication {
     }
 
     public static String getString(Context context, Locale locale, int id, Object... formatArgs) {
-        Resources res = context.getResources();
-        Configuration conf = res.getConfiguration();
-        Locale savedLocale = conf.locale;
-        if (Build.VERSION.SDK_INT >= 17)
+        Resources res;
+        if (Build.VERSION.SDK_INT >= 17) {
+            Configuration conf = context.getResources().getConfiguration();
+            conf = new Configuration(conf);
             conf.setLocale(locale);
-        else
+            Context localizedContext = context.createConfigurationContext(conf);
+            res = localizedContext.getResources();
+        } else {
+            Configuration conf = context.getResources().getConfiguration();
             conf.locale = locale;
-        res.updateConfiguration(conf, null);
+            DisplayMetrics metrics = new DisplayMetrics();
+            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            wm.getDefaultDisplay().getMetrics(metrics);
+            res = new Resources(context.getAssets(), metrics, conf);
+        }
 
-        String str = res.getString(id, formatArgs);
-
-        if (Build.VERSION.SDK_INT >= 17)
-            conf.setLocale(savedLocale);
+        String str;
+        if (formatArgs.length == 0)
+            str = res.getString(id);
         else
-            conf.locale = savedLocale;
-        res.updateConfiguration(conf, null);
+            str = res.getString(id, formatArgs);
 
         return str;
     }

@@ -163,10 +163,10 @@
     <string name="title_activity_alarm">Будильник</string>
     <string name="title_activity_settings">Настройки</string>
 
-    <string name="speak_time_12h00">Текущее время %H</string>
-    <string name="speak_time_12h01">Текущее время. %H. %M %A</string>
-    <string name="speak_time_24h00">Текущее время %H</string>
-    <string name="speak_time_24h01">Текущее время. %H. %M</string>
+    <string name="speak_time_12h00" formatted="false">Текущее время %H</string>
+    <string name="speak_time_12h01" formatted="false">Текущее время. %H. %M %A</string>
+    <string name="speak_time_24h00" formatted="false">Текущее время %H</string>
+    <string name="speak_time_24h01" formatted="false">Текущее время. %H. %M</string>
 
     <string name="not_selected">(не выбрано)</string>
     <string name="alarm_type_alarm">Включена опция \'Точное время\', проверьте настройки.</string>

@@ -208,7 +208,7 @@ public class TTS extends SoundConfig {
         return speakText(hour, min, locale, speak, is24);
     }
 
-    public Locale getTTSLocale() {
+    public Locale getUserLocale() {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         String lang = shared.getString(HourlyApplication.PREFERENCE_LANGUAGE, ""); // take user lang preferences
@@ -220,8 +220,14 @@ public class TTS extends SoundConfig {
         else
             locale = new Locale(lang);
 
+        return locale;
+    }
+
+    public Locale getTTSLocale() {
+        Locale locale = getUserLocale();
+
         if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) {
-            lang = locale.getLanguage();
+            String lang = locale.getLanguage();
             locale = new Locale(lang);
         }
 
@@ -243,12 +249,12 @@ public class TTS extends SoundConfig {
                 locale = Locale.getDefault();
             }
             if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) {
-                lang = locale.getLanguage(); // default tts voice not supported. use 'lang' "ru" of "ru_RU"
+                String lang = locale.getLanguage(); // default tts voice not supported. use 'lang' "ru" of "ru_RU"
                 locale = new Locale(lang);
             }
             if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) {
                 locale = Locale.getDefault(); // default 'lang' tts voice not supported. use 'system default lang'
-                lang = locale.getLanguage();
+                String lang = locale.getLanguage();
                 locale = new Locale(lang);
             }
             if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) {
@@ -361,12 +367,11 @@ public class TTS extends SoundConfig {
             return false;
         Log.d(TAG, speak);
 
-        tts.setLanguage(locale);
-
-        return playSpeech(speak);
+        return playSpeech(locale, speak);
     }
 
-    public boolean playSpeech(String speak) {
+    public boolean playSpeech(Locale locale, String speak) {
+        tts.setLanguage(locale);
         if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
             params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, SOUND_STREAM);

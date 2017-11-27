@@ -51,6 +51,15 @@ public class TTSPreference extends EditTextPreference {
 
         }
 
+        public TTSConfig(TTSConfig c) {
+            locale = c.locale;
+            def = c.def;
+            time12h00 = c.time12h00;
+            time24h00 = c.time24h00;
+            time12h01 = c.time12h01;
+            time24h01 = c.time24h01;
+        }
+
         public TTSConfig(Locale locale) {
             this.locale = locale;
         }
@@ -139,11 +148,6 @@ public class TTSPreference extends EditTextPreference {
             sound = new Sound(getContext()) {
                 @Override
                 public void ttsOnInit() {
-                    config.locale = sound.getTTSLocale();
-                    if (config.locale == null)
-                        config.locale = Locale.getDefault();
-                    if (config.def)
-                        config.def(getContext()); // reload defaults
                     update();
                 }
             };
@@ -157,9 +161,7 @@ public class TTSPreference extends EditTextPreference {
                 values = preference.getValues();
             }
             try {
-                Locale locale = sound.getTTSLocale();
-                if (locale == null)
-                    locale = Locale.getDefault();
+                Locale locale = sound.getUserLocale();
                 config = new TTSConfig(locale);
                 if (values == null || values.isEmpty()) {
                     config.def(getContext());
@@ -220,7 +222,7 @@ public class TTSPreference extends EditTextPreference {
             tts12h00play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    sound.playSpeech(sound.speakText(10, 0, config.locale, tts12h00.getText().toString(), false));
+                    playSpeech(10, 0, tts12h00, false);
                 }
             });
 
@@ -244,7 +246,7 @@ public class TTSPreference extends EditTextPreference {
             tts12h01play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    sound.playSpeech(sound.speakText(10, 5, config.locale, tts12h01.getText().toString(), false));
+                    playSpeech(10, 5, tts12h01, false);
                 }
             });
 
@@ -268,7 +270,7 @@ public class TTSPreference extends EditTextPreference {
             tts24h00play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    sound.playSpeech(sound.speakText(16, 0, config.locale, tts24h00.getText().toString(), true));
+                    playSpeech(16, 5, tts24h00, true);
                 }
             });
 
@@ -292,7 +294,7 @@ public class TTSPreference extends EditTextPreference {
             tts24h01play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    sound.playSpeech(sound.speakText(16, 5, config.locale, tts24h01.getText().toString(), true));
+                    playSpeech(16, 5, tts24h01, true);
                 }
             });
 
@@ -360,31 +362,38 @@ public class TTSPreference extends EditTextPreference {
             tts24h00.removeTextChangedListener(tts24h00tw);
             tts24h01.removeTextChangedListener(tts24h01tw);
 
-            if (config.def) {
-                tts12h00.setText(getString(R.string.speak_time_12h00));
-                tts12h01.setText(getString(R.string.speak_time_12h01));
-                tts24h00.setText(getString(R.string.speak_time_24h00));
-                tts24h01.setText(getString(R.string.speak_time_24h01));
-            } else {
-                tts12h00.setText(config.time12h00);
-                tts12h01.setText(config.time12h01);
-                tts24h00.setText(config.time24h00);
-                tts24h01.setText(config.time24h01);
+            TTSConfig c = getShowConfig();
 
-                tts12h00.addTextChangedListener(tts12h00tw);
-                tts12h01.addTextChangedListener(tts12h01tw);
-                tts24h00.addTextChangedListener(tts24h00tw);
-                tts24h01.addTextChangedListener(tts24h01tw);
-            }
+            tts12h00.setText(c.time12h00);
+            tts12h01.setText(c.time12h01);
+            tts24h00.setText(c.time24h00);
+            tts24h01.setText(c.time24h01);
 
-            updateText();
+            tts12h00.addTextChangedListener(tts12h00tw);
+            tts12h01.addTextChangedListener(tts12h01tw);
+            tts24h00.addTextChangedListener(tts24h00tw);
+            tts24h01.addTextChangedListener(tts24h01tw);
+
+            tts12h00text.setText(sound.speakText(10, 0, c.locale, tts12h00.getText().toString(), false));
+            tts12h01text.setText(sound.speakText(10, 5, c.locale, tts12h01.getText().toString(), false));
+            tts24h00text.setText(sound.speakText(16, 0, c.locale, tts24h00.getText().toString(), true));
+            tts24h01text.setText(sound.speakText(16, 5, c.locale, tts24h01.getText().toString(), true));
         }
 
-        void updateText() {
-            tts12h00text.setText(sound.speakText(10, 0, config.locale, tts12h00.getText().toString(), false));
-            tts12h01text.setText(sound.speakText(10, 5, config.locale, tts12h01.getText().toString(), false));
-            tts24h00text.setText(sound.speakText(16, 0, config.locale, tts24h00.getText().toString(), true));
-            tts24h01text.setText(sound.speakText(16, 5, config.locale, tts24h01.getText().toString(), true));
+        public TTSConfig getShowConfig() {
+            TTSConfig c = new TTSConfig(config);
+            if (c.def) { // if def = load speak locale
+                c.locale = sound.getTTSLocale();
+                if (c.locale == null)
+                    c.locale = sound.getUserLocale();
+                c.def(getContext());
+            }
+            return c;
+        }
+
+        public void playSpeech(int hour, int min, TextView t, boolean is24) {
+            TTSConfig c = getShowConfig();
+            sound.playSpeech(c.locale, sound.speakText(hour, min, c.locale, t.getText().toString(), is24));
         }
 
         @NonNull
@@ -398,7 +407,9 @@ public class TTSPreference extends EditTextPreference {
                     b.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            config.def(getContext());
+                            config.locale = sound.getUserLocale();
+                            config.def(getContext()); // load user selected language
+                            config.locale = sound.getTTSLocale();
                             update();
                         }
                     });
