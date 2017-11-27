@@ -58,9 +58,6 @@ public class TTSPreference extends EditTextPreference {
             time24h01 = context.getString(R.string.speak_time_24h01);
         }
 
-        public void reset() {
-        }
-
         public void load(String s) {
             try {
                 load(new JSONObject(s));
@@ -304,6 +301,12 @@ public class TTSPreference extends EditTextPreference {
             update();
 
             builder.setView(view);
+
+            builder.setNeutralButton(R.string.reset, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
         }
 
         void update() {
@@ -311,11 +314,11 @@ public class TTSPreference extends EditTextPreference {
             int s24;
 
             if (DateFormat.is24HourFormat(getContext())) {
-                show12h24h.setText("Show 12h");
+                show12h24h.setText(R.string.show_12h);
                 s12 = show12h24h.isChecked() ? View.VISIBLE : View.GONE;
                 s24 = View.VISIBLE;
             } else {
-                show12h24h.setText("Show 24h");
+                show12h24h.setText(R.string.show_24h);
                 s12 = View.VISIBLE;
                 s24 = show12h24h.isChecked() ? View.VISIBLE : View.GONE;
             }
@@ -382,6 +385,8 @@ public class TTSPreference extends EditTextPreference {
                     b.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            config.def(getContext());
+                            update();
                         }
                     });
                 }
