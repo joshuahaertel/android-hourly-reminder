@@ -11,6 +11,7 @@
         <item name="dialogTheme">@style/AppThemeDialogLight</item>
         <item name="alertDialogTheme">@style/AppThemeDialogLight</item>
         <item name="round_corners">@drawable/round_corners_light</item>
+        <item name="round_background">@drawable/round_background_light</item>
     </style>
 
     <style name="AppThemeDialogLight" parent="@style/Theme.AppCompat.Light.Dialog.Alert">
@@ -36,6 +37,7 @@
         <item name="alarmDismiss">@drawable/round_dismiss_dark</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="round_corners">@drawable/round_corners_dark</item>
+        <item name="round_background">@drawable/round_background_dark</item>
     </style>
 
     <style name="AppThemeDark.NoActionBar">

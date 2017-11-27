@@ -18,6 +18,9 @@ import android.widget.Toast;
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
+import com.github.axet.hourlyreminder.widgets.TTSPreference;
+
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -30,8 +33,6 @@ public class TTS extends SoundConfig {
     public static final String TAG = TTS.class.getSimpleName();
 
     public static final int DELAYED_DELAY = 5 * AlarmManager.SEC1;
-
-    public static final String KEY_PARAM_VOLUME = "volume"; // TextToSpeech.Engine.KEY_PARAM_VOLUME
 
     public static final String TTS_INIT = SoundConfig.class.getCanonicalName() + "_TTS_INIT";
 
@@ -67,6 +68,8 @@ public class TTS extends SoundConfig {
                     delayed = null;
                     r.run();
                 }
+
+                ttsInit();
             }
         };
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
@@ -77,6 +80,9 @@ public class TTS extends SoundConfig {
                 handler.post(onInit);
             }
         });
+    }
+
+    public void ttsInit() {
     }
 
     public void close() {
@@ -168,30 +174,55 @@ public class TTS extends SoundConfig {
         }
     }
 
-    boolean playSpeech(long time) {
-        if (onInit != null)
-            return false;
-
+    public String speakText(long time, boolean is24) {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(time);
         int hour = c.get(Calendar.HOUR_OF_DAY);
         int min = c.get(Calendar.MINUTE);
 
+        String speak;
+
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        String custom = shared.getString(HourlyApplication.PREFERENCE_SPEAK_CUSTOM, "");
+        TTSPreference.TTSConfig config = new TTSPreference.TTSConfig();
+        if (custom.isEmpty())
+            config.def(context);
+        else
+            config.load(custom);
+
+        if (config.def)
+            config.def(context);
+
+        if (min != 0) {
+            if (is24)
+                speak = config.time24h01;
+            else
+                speak = config.time12h01;
+        } else {
+            if (is24)
+                speak = config.time24h00;
+            else
+                speak = config.time12h00;
+        }
+
+        return speakText(hour, min, speak, is24);
+    }
+
+    public String speakText(int hour, int min, String speak, boolean is24) {
         int h;
-        if (DateFormat.is24HourFormat(context)) {
+        if (is24) {
             h = hour;
         } else {
-            h = c.get(Calendar.HOUR);
+            h = hour;
+            if (h >= 12)
+                h = h - 12;
             if (h == 0) { // 12
                 h = 12;
             }
         }
 
-        String speak = "";
-
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
-        boolean is24 = DateFormat.is24HourFormat(context);
         boolean speakAMPMFlag = !is24 && shared.getBoolean(HourlyApplication.PREFERENCE_SPEAK_AMPM, false);
 
         String lang = shared.getString(HourlyApplication.PREFERENCE_LANGUAGE, ""); // take user lang preferences
@@ -237,7 +268,7 @@ public class TTS extends SoundConfig {
             if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // 'system default lang' tts voice not supported. use 'en'
                 locale = new Locale("en");
                 if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_NOT_SUPPORTED) { // 'en' not supported? do not speak
-                    return false;
+                    return null;
                 }
             }
         }
@@ -261,7 +292,7 @@ public class TTS extends SoundConfig {
                     Log.d(TAG, "Unable load TTS", e1);
                 }
             }
-            return false;
+            return null;
         }
 
         String speakAMPM = "";
@@ -278,17 +309,6 @@ public class TTS extends SoundConfig {
             speakHour = HourlyApplication.getQuantityString(context, ru, R.plurals.hours, h, h);
             speakMinute = HourlyApplication.getQuantityString(context, ru, R.plurals.minutes, min, min);
 
-            if (min != 0) {
-                speak = HourlyApplication.getString(context, ru, R.string.speak_time, ". " + speakHour + ". " + speakMinute + " " + speakAMPM);
-            } else {
-                if (is24) {
-                    speak = HourlyApplication.getString(context, ru, R.string.speak_time_24, speakHour);
-                } else if (speakAMPMFlag) {
-                    speak = HourlyApplication.getString(context, ru, R.string.speak_time, ". " + speakHour + ". " + speakAMPM);
-                } else {
-                    speak = HourlyApplication.getString(context, ru, R.string.speak_time_12, speakHour);
-                }
-            }
             tts.setLanguage(ru);
         }
 
@@ -306,29 +326,37 @@ public class TTS extends SoundConfig {
             else
                 speakMinute = String.format("%d", min);
 
-            if (min != 0) {
-                speak = HourlyApplication.getString(context, en, R.string.speak_time, speakHour + " " + speakMinute + " " + speakAMPM);
-            } else {
-                if (is24) {
-                    speak = HourlyApplication.getString(context, en, R.string.speak_time_24, speakHour);
-                } else if (speakAMPMFlag) {
-                    speak = HourlyApplication.getString(context, en, R.string.speak_time, speakHour + " " + speakAMPM);
-                } else {
-                    speak = HourlyApplication.getString(context, en, R.string.speak_time_12, speakHour);
-                }
-            }
             tts.setLanguage(en);
         }
 
-        if (speak.isEmpty()) { // no adopted translation
+        if (speakHour.isEmpty()) {
             speakHour = String.format("%d", h);
-            speakMinute = String.format("%d", min);
-            speak = speakHour + " " + speakMinute;
-            tts.setLanguage(locale);
+            tts.setLanguage(locale); // no adopted translation
         }
 
+        if (speakMinute.isEmpty())
+            speakMinute = String.format("%d", min);
+
+        speak = speak.replaceAll("%H", speakHour);
+        speak = speak.replaceAll("%M", speakMinute);
+        speak = speak.replaceAll("%A", speakAMPM);
+
+        return speak;
+    }
+
+    public boolean playSpeech(long time) {
+        if (onInit != null)
+            return false;
+
+        String speak = speakText(time, DateFormat.is24HourFormat(context));
+        if (speak == null)
+            return false;
         Log.d(TAG, speak);
 
+        return playSpeech(speak);
+    }
+
+    public boolean playSpeech(String speak) {
         if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
             params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, SOUND_STREAM);
@@ -340,7 +368,7 @@ public class TTS extends SoundConfig {
         } else {
             HashMap<String, String> params = new HashMap<>();
             params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(SOUND_STREAM));
-            params.put(KEY_PARAM_VOLUME, Float.toString(getVolume()));
+            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(getVolume()));
             params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params) != TextToSpeech.SUCCESS) {
                 return false;

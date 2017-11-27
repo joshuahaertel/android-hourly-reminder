@@ -69,7 +69,7 @@ public class BeepPreference extends EditTextPreference {
         int fmin = 20;
         int fmax = 20000;
 
-        BeepConfig beep = new BeepConfig();
+        BeepConfig config = new BeepConfig();
 
         public BeepPrefDialogFragment() {
         }
@@ -90,12 +90,12 @@ public class BeepPreference extends EditTextPreference {
 
             if (savedInstanceState != null) {
                 String values = savedInstanceState.getString("values");
-                beep.load(values);
+                config.load(values);
                 mPreferenceChanged = savedInstanceState.getBoolean("changed");
             } else {
                 BeepPreference preference = (BeepPreference) getPreference();
                 String values = preference.getValues();
-                beep.load(values);
+                config.load(values);
             }
         }
 
@@ -103,7 +103,7 @@ public class BeepPreference extends EditTextPreference {
         public void onSaveInstanceState(@NonNull Bundle outState) {
             super.onSaveInstanceState(outState);
 
-            outState.putString("values", beep.save());
+            outState.putString("values", config.save());
             outState.putBoolean("changed", mPreferenceChanged);
         }
 
@@ -126,7 +126,7 @@ public class BeepPreference extends EditTextPreference {
             reset.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    beep.reset();
+                    config.reset();
                     update();
                 }
             });
@@ -152,7 +152,7 @@ public class BeepPreference extends EditTextPreference {
                         l = 5000;
                     }
 
-                    beep.value_l = l;
+                    config.value_l = l;
                     mPreferenceChanged = true;
                 }
             });
@@ -178,10 +178,10 @@ public class BeepPreference extends EditTextPreference {
                         f = fmax;
                     }
 
-                    beep.value_f = f;
+                    config.value_f = f;
                     mPreferenceChanged = true;
 
-                    int p = f2p(beep.value_f);
+                    int p = f2p(config.value_f);
                     ignore = true;
                     seek.setProgress(p);
                     ignore = false;
@@ -196,11 +196,11 @@ public class BeepPreference extends EditTextPreference {
                     if (ignore)
                         return;
 
-                    beep.value_f = p2f(progress);
+                    config.value_f = p2f(progress);
                     mPreferenceChanged = true;
 
                     ignore = true;
-                    BeepPrefDialogFragment.this.freq.setText("" + beep.value_f);
+                    BeepPrefDialogFragment.this.freq.setText("" + config.value_f);
                     ignore = false;
                 }
 
@@ -225,8 +225,8 @@ public class BeepPreference extends EditTextPreference {
         }
 
         void update() {
-            freq.setText("" + beep.value_f);
-            len.setText("" + beep.value_l);
+            freq.setText("" + config.value_f);
+            len.setText("" + config.value_l);
         }
 
         @NonNull
@@ -294,7 +294,7 @@ public class BeepPreference extends EditTextPreference {
             BeepPreference preference = (BeepPreference) getPreference();
             if (positiveResult && this.mPreferenceChanged) {
                 if (preference.callChangeListener(null)) {
-                    preference.setValues(beep.save());
+                    preference.setValues(config.save());
                 }
             }
             this.mPreferenceChanged = false;

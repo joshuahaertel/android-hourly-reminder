@@ -102,6 +102,11 @@
             android:positiveButtonText="@null"
             android:summary="@string/pref_tts_summary"
             android:title="@string/pref_tts_title" />
+        <com.github.axet.hourlyreminder.widgets.TTSPreference
+            android:defaultValue=""
+            android:key="speak_custom"
+            android:summary="@string/pref_speakcustom_summary"
+            android:title="@string/pref_speakcustom_title" />
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="speak_ampm"

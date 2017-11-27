@@ -286,9 +286,11 @@
     <string name="reminders_vibrate">Reminders set to vibrate only</string>
     <string name="reminders_silence">Reminders set to \'silence\'</string>
 
-    <string name="speak_time">Time is %1$s</string>
-    <string name="speak_time_12">%1$s o\'clock</string>
-    <string name="speak_time_24">%1$s hundred hours</string>
+    <string name="speak_time_12h00">Time is %H o\'clock</string>
+    <string name="speak_time_12h01">Time is %H %M %A</string>
+    <string name="speak_time_24h00">%H hundred hours</string>
+    <string name="speak_time_24h01">Time is %H %M</string>
+
     <string name="reset">Reset</string>
     <string name="play">Play</string>
     <string name="snoozed">Snoozed</string>
@@ -340,4 +342,6 @@
     <string name="pref_theme_summary">Set application theme (dark / light)</string>
     <string name="pref_weekstart_title">Start Week On</string>
     <string name="pref_weekstart_summary">Start week on specified day</string>
+    <string name="pref_speakcustom_title">Speak Custom</string>
+    <string name="pref_speakcustom_summary">Speak custom text</string>
 </resources>
