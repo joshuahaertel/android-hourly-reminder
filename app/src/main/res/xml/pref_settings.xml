@@ -3,7 +3,7 @@
 
     <PreferenceCategory
         android:key="sounds"
-        android:title="Sounds">
+        android:title="@string/pref_sounds">
         <com.github.axet.androidlibrary.widgets.SeekBarPreference
             android:defaultValue="1"
             android:key="volume"
@@ -44,7 +44,7 @@
 
     <PreferenceCategory
         android:key="advanced"
-        android:title="Reminders">
+        android:title="@string/pref_reminders">
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="wakeup"
@@ -58,7 +58,7 @@
             android:title="@string/pref_alarm_title" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Alarms">
+    <PreferenceCategory android:title="@string/pref_alarms">
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/increasing_volume_text"
@@ -92,7 +92,7 @@
 
     <PreferenceCategory
         android:key="speak"
-        android:title="Speak">
+        android:title="@string/pref_speak">
         <ListPreference
             android:defaultValue=""
             android:entries="@array/languages_text"
@@ -116,7 +116,7 @@
 
     <PreferenceCategory
         android:key="application"
-        android:title="Application">
+        android:title="@string/pref_application">
         <com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat
             android:defaultValue="false"
             android:key="optimization"
