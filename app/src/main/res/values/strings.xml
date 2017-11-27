@@ -133,6 +133,7 @@
         <item>Русский</item>
     </string-array>
 
+    <!-- keep locale names correspond to strings-suffix, andoid failed to correct fallback from ru_RU locale to ru -->
     <string-array name="languages_values" translatable="false">
         <item></item>
         <item>en</item>
