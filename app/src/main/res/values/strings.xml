@@ -135,8 +135,8 @@
 
     <string-array name="languages_values" translatable="false">
         <item></item>
-        <item>en_US</item>
-        <item>ru_RU</item>
+        <item>en</item>
+        <item>ru</item>
     </string-array>
 
     <string-array name="patterns_text">

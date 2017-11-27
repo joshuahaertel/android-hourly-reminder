@@ -410,7 +410,7 @@ public class HourlyApplication extends MainApplication {
     }
 
     @TargetApi(17)
-    public static Resources getStringLocale(Context context, Locale locale) { // this method fails, for locale "ru_RU" and requested string in "ru"
+    public static Resources getStringNewConfig(Context context, Locale locale, int id, Object... formatArgs) { // this method fails, for locale "ru_RU" and requested string in "ru"
         Configuration conf = context.getResources().getConfiguration();
         conf = new Configuration(conf);
         conf.setLocale(locale);
@@ -418,20 +418,15 @@ public class HourlyApplication extends MainApplication {
         return localizedContext.getResources();
     }
 
-    public static String getString(Context context, Locale locale, int id, Object... formatArgs) {
-        Locale savedLocale = null;
-        Resources res;
-        if (Build.VERSION.SDK_INT >= 17) {
-            Configuration config = new Configuration(context.getResources().getConfiguration());
-            savedLocale = config.locale;
-            config.locale = locale;
-            res = context.getResources();
-            res.updateConfiguration(config, res.getDisplayMetrics());
-        } else {
-            Configuration conf = context.getResources().getConfiguration();
+    public static String getStringUpdateConfig(Context context, Locale locale, int id, Object... formatArgs) { // this method fails, for locale "ru_RU" and requested string in "ru"
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        Locale savedLocale = conf.locale;
+        if (Build.VERSION.SDK_INT >= 17)
+            conf.setLocale(locale);
+        else
             conf.locale = locale;
-            res = new Resources(context.getAssets(), context.getResources().getDisplayMetrics(), conf);
-        }
+        res.updateConfiguration(conf, null);
 
         String str;
         if (formatArgs.length == 0)
@@ -439,15 +434,38 @@ public class HourlyApplication extends MainApplication {
         else
             str = res.getString(id, formatArgs);
 
-        if (Build.VERSION.SDK_INT >= 17) { // restore
-            Configuration config = new Configuration(context.getResources().getConfiguration());
-            config.locale = savedLocale;
-            res.updateConfiguration(config, res.getDisplayMetrics());
-        } else {
-            new Resources(context.getAssets(), context.getResources().getDisplayMetrics(), context.getResources().getConfiguration()); // restore side effect
-        }
+        if (Build.VERSION.SDK_INT >= 17)
+            conf.setLocale(savedLocale);
+        else
+            conf.locale = savedLocale;
+        res.updateConfiguration(conf, null);
 
         return str;
+    }
+
+    public static String getStringNewRes(Context context, Locale locale, int id, Object... formatArgs) {
+        Resources res;
+
+        Configuration conf = new Configuration(context.getResources().getConfiguration());
+        if (Build.VERSION.SDK_INT >= 17)
+            conf.setLocale(locale);
+        else
+            conf.locale = locale;
+        res = new Resources(context.getAssets(), context.getResources().getDisplayMetrics(), conf);
+
+        String str;
+        if (formatArgs.length == 0)
+            str = res.getString(id);
+        else
+            str = res.getString(id, formatArgs);
+
+        new Resources(context.getAssets(), context.getResources().getDisplayMetrics(), context.getResources().getConfiguration()); // restore side effect
+
+        return str;
+    }
+
+    public static String getString(Context context, Locale locale, int id, Object... formatArgs) {
+        return getStringNewRes(context, locale, id, formatArgs);
     }
 
     public static String getQuantityString(Context context, int id, int n, Object... formatArgs) {
