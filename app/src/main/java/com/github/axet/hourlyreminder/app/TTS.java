@@ -69,7 +69,7 @@ public class TTS extends SoundConfig {
                     r.run();
                 }
 
-                ttsInit();
+                ttsOnInit();
             }
         };
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
@@ -82,7 +82,7 @@ public class TTS extends SoundConfig {
         });
     }
 
-    public void ttsInit() {
+    public void ttsOnInit() {
     }
 
     public void close() {
