@@ -133,7 +133,7 @@ public class TTSPreference extends EditTextPreference {
 
             sound = new Sound(getContext()) {
                 @Override
-                public void ttsInit() {
+                public void ttsOnInit() {
                     update();
                 }
             };
@@ -408,6 +408,10 @@ public class TTSPreference extends EditTextPreference {
         @Override
         public void onDestroy() {
             super.onDestroy();
+            if (sound != null) {
+                sound.close();
+                sound = null;
+            }
         }
     }
 
@@ -430,5 +434,4 @@ public class TTSPreference extends EditTextPreference {
     public void setValues(String s) {
         setText(s);
     }
-
 }
