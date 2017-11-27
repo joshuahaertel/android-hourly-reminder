@@ -409,7 +409,6 @@ public class TTSPreference extends EditTextPreference {
                         public void onClick(View v) {
                             config.locale = sound.getUserLocale();
                             config.def(getContext()); // load user selected language
-                            config.locale = sound.getTTSLocale();
                             update();
                         }
                     });

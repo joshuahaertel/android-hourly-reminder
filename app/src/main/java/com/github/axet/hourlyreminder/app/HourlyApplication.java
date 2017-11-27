@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -408,21 +409,28 @@ public class HourlyApplication extends MainApplication {
         return str;
     }
 
+    @TargetApi(17)
+    public static Resources getStringLocale(Context context, Locale locale) { // this method fails, for locale "ru_RU" and requested string in "ru"
+        Configuration conf = context.getResources().getConfiguration();
+        conf = new Configuration(conf);
+        conf.setLocale(locale);
+        Context localizedContext = context.createConfigurationContext(conf);
+        return localizedContext.getResources();
+    }
+
     public static String getString(Context context, Locale locale, int id, Object... formatArgs) {
+        Locale savedLocale = null;
         Resources res;
         if (Build.VERSION.SDK_INT >= 17) {
-            Configuration conf = context.getResources().getConfiguration();
-            conf = new Configuration(conf);
-            conf.setLocale(locale);
-            Context localizedContext = context.createConfigurationContext(conf);
-            res = localizedContext.getResources();
+            Configuration config = new Configuration(context.getResources().getConfiguration());
+            savedLocale = config.locale;
+            config.locale = locale;
+            res = context.getResources();
+            res.updateConfiguration(config, res.getDisplayMetrics());
         } else {
             Configuration conf = context.getResources().getConfiguration();
             conf.locale = locale;
-            DisplayMetrics metrics = new DisplayMetrics();
-            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            wm.getDefaultDisplay().getMetrics(metrics);
-            res = new Resources(context.getAssets(), metrics, conf);
+            res = new Resources(context.getAssets(), context.getResources().getDisplayMetrics(), conf);
         }
 
         String str;
@@ -430,6 +438,14 @@ public class HourlyApplication extends MainApplication {
             str = res.getString(id);
         else
             str = res.getString(id, formatArgs);
+
+        if (Build.VERSION.SDK_INT >= 17) { // restore
+            Configuration config = new Configuration(context.getResources().getConfiguration());
+            config.locale = savedLocale;
+            res.updateConfiguration(config, res.getDisplayMetrics());
+        } else {
+            new Resources(context.getAssets(), context.getResources().getDisplayMetrics(), context.getResources().getConfiguration()); // restore side effect
+        }
 
         return str;
     }

@@ -351,4 +351,5 @@
     <string name="pref_application">Application</string>
     <string name="show_12h">Show 12h</string>
     <string name="show_24h">Show 24h</string>
+    <string name="default_tts">Default</string>
 </resources>

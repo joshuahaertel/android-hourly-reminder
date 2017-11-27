@@ -17,7 +17,7 @@
             android:id="@+id/tts_def"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Default" />
+            android:text="@string/default_tts" />
 
         <View
             android:layout_width="0dp"
