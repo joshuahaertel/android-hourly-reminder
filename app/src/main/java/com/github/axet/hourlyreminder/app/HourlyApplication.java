@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,6 +10,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.v4.content.SharedPreferencesCompat;
 import android.support.v7.preference.PreferenceManager;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.github.axet.androidlibrary.app.MainApplication;
@@ -406,7 +409,16 @@ public class HourlyApplication extends MainApplication {
         return str;
     }
 
-    public static String getString(Context context, Locale locale, int id, Object... formatArgs) {
+    @TargetApi(17)
+    public static Resources getStringNewConfig(Context context, Locale locale, int id, Object... formatArgs) { // this method fails, for locale "ru_RU" and requested string in "ru"
+        Configuration conf = context.getResources().getConfiguration();
+        conf = new Configuration(conf);
+        conf.setLocale(locale);
+        Context localizedContext = context.createConfigurationContext(conf);
+        return localizedContext.getResources();
+    }
+
+    public static String getStringUpdateConfig(Context context, Locale locale, int id, Object... formatArgs) { // this method fails, for locale "ru_RU" and requested string in "ru"
         Resources res = context.getResources();
         Configuration conf = res.getConfiguration();
         Locale savedLocale = conf.locale;
@@ -416,7 +428,11 @@ public class HourlyApplication extends MainApplication {
             conf.locale = locale;
         res.updateConfiguration(conf, null);
 
-        String str = res.getString(id, formatArgs);
+        String str;
+        if (formatArgs.length == 0)
+            str = res.getString(id);
+        else
+            str = res.getString(id, formatArgs);
 
         if (Build.VERSION.SDK_INT >= 17)
             conf.setLocale(savedLocale);
@@ -425,6 +441,31 @@ public class HourlyApplication extends MainApplication {
         res.updateConfiguration(conf, null);
 
         return str;
+    }
+
+    public static String getStringNewRes(Context context, Locale locale, int id, Object... formatArgs) {
+        Resources res;
+
+        Configuration conf = new Configuration(context.getResources().getConfiguration());
+        if (Build.VERSION.SDK_INT >= 17)
+            conf.setLocale(locale);
+        else
+            conf.locale = locale;
+        res = new Resources(context.getAssets(), context.getResources().getDisplayMetrics(), conf);
+
+        String str;
+        if (formatArgs.length == 0)
+            str = res.getString(id);
+        else
+            str = res.getString(id, formatArgs);
+
+        new Resources(context.getAssets(), context.getResources().getDisplayMetrics(), context.getResources().getConfiguration()); // restore side effect
+
+        return str;
+    }
+
+    public static String getString(Context context, Locale locale, int id, Object... formatArgs) {
+        return getStringNewRes(context, locale, id, formatArgs);
     }
 
     public static String getQuantityString(Context context, int id, int n, Object... formatArgs) {
