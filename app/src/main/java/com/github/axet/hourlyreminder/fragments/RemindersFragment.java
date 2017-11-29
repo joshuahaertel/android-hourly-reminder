@@ -17,10 +17,13 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.animations.MarginAnimation;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
@@ -304,5 +307,15 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         });
         sound.silencedToast(s, System.currentTimeMillis());
         return s;
+    }
+
+    @Override
+    void setWeek(WeekSet a, int week, boolean c) {
+        super.setWeek(a, week, c);
+        if (a.noDays()) {
+            a.weekdaysCheck = true;
+            a.setEveryday();
+            a.setWeek(week, false);
+        }
     }
 }

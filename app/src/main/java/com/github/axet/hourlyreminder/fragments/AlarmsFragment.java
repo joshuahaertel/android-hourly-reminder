@@ -133,9 +133,9 @@ public class AlarmsFragment extends WeekSetFragment {
 
     @Override
     void setWeek(WeekSet a, int week, boolean c) {
+        super.setWeek(a, week, c);
         WeekTime t = (WeekTime) a;
         long time = t.getTime();
-        super.setWeek(a, week, c);
         if (t.getTime() != time && a.enabled) {
             HourlyApplication.toastAlarmSet(getActivity(), t);
         }

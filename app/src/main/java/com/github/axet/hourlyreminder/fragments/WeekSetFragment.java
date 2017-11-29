@@ -79,6 +79,19 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
 
     int startweek = 0;
 
+    public static boolean checkboxAnimate(boolean checkbox, View view) {
+        boolean animate;
+        Animation a = view.getAnimation();
+        if (a != null && !a.hasEnded())
+            return true;
+        if (checkbox) {
+            animate = view.getVisibility() != View.VISIBLE;
+        } else {
+            animate = view.getVisibility() == View.VISIBLE;
+        }
+        return animate;
+    }
+
     public WeekSetFragment() {
     }
 
@@ -208,20 +221,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         return false;
     }
 
-    static boolean checkboxAnimate(CheckBox checkbox, View view) {
-        boolean animate;
-        Animation a = view.getAnimation();
-        if (a != null && !a.hasEnded())
-            return true;
-        if (checkbox.isChecked()) {
-            animate = view.getVisibility() != View.VISIBLE;
-        } else {
-            animate = view.getVisibility() == View.VISIBLE;
-        }
-        return animate;
-    }
-
-
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -252,10 +251,10 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             AlarmAnimation.apply(list, convertView, true, scrollState == SCROLL_STATE_IDLE && (int) convertView.getTag() == TYPE_COLLAPSED);
 
             MarginAnimation.apply(weekdaysValues, weekdays.isChecked(), scrollState == SCROLL_STATE_IDLE &&
-                    (int) convertView.getTag() == TYPE_EXPANDED && checkboxAnimate(weekdays, weekdaysValues));
+                    (int) convertView.getTag() == TYPE_EXPANDED && checkboxAnimate(weekdays.isChecked(), weekdaysValues));
 
             MarginAnimation.apply(alarmRingtoneLayout, alarmRingtone.isChecked(), scrollState == SCROLL_STATE_IDLE &&
-                    (int) convertView.getTag() == TYPE_EXPANDED && checkboxAnimate(alarmRingtone, alarmRingtoneLayout));
+                    (int) convertView.getTag() == TYPE_EXPANDED && checkboxAnimate(alarmRingtone.isChecked(), alarmRingtoneLayout));
 
             convertView.setTag(TYPE_EXPANDED);
 
@@ -311,7 +310,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
 
     void setWeek(WeekSet a, int week, boolean c) {
         a.setWeek(week, c);
-        save(a);
     }
 
     void previewCancel() {
@@ -354,6 +352,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                     @Override
                     public void onClick(View v) {
                         setWeek(a, week, child.isChecked());
+                        save(a);
                     }
                 });
                 child.setChecked(a.isWeek(week));
@@ -373,6 +372,9 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                 save(a);
             }
         });
+
+        TextView weektext = (TextView) view.findViewById(R.id.alarm_week_text);
+        weektext.setText("(" + a.formatDays() + ")");
 
         final CheckBox ringtone = (CheckBox) view.findViewById(R.id.alarm_ringtone);
         ringtone.setChecked(a.ringtone);
