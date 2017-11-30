@@ -326,15 +326,15 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         return SoundConfig.Silenced.NONE;
     }
 
-    public void fillDetailed(final View view, final WeekSet a, boolean animate) {
+    public void fillDetailed(final View view, final WeekSet w, boolean animate) {
         final SwitchCompat enable = (SwitchCompat) view.findViewById(R.id.alarm_enable);
         enable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setEnable(a, enable.isChecked());
+                setEnable(w, enable.isChecked());
             }
         });
-        enable.setChecked(a.getEnable());
+        enable.setChecked(w.getEnable());
         if (!animate)
             enable.jumpDrawablesToCurrentState();
 
@@ -351,36 +351,36 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                 child.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        setWeek(a, week, child.isChecked());
-                        save(a);
+                        setWeek(w, week, child.isChecked());
+                        save(w);
                     }
                 });
-                child.setChecked(a.isWeek(week));
+                child.setChecked(w.isWeek(week));
                 startweek++;
                 if (startweek >= Week.DAYS.length)
                     startweek = 0;
             }
         }
-        weekdays.setChecked(a.weekdaysCheck);
+        weekdays.setChecked(w.weekdaysCheck);
         weekdays.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.weekdaysCheck = weekdays.isChecked();
-                if (a.weekdaysCheck && a.noDays()) {
-                    a.setEveryday();
+                w.weekdaysCheck = weekdays.isChecked();
+                if (w.weekdaysCheck && w.noDays()) {
+                    w.setEveryday();
                 }
-                save(a);
+                save(w);
             }
         });
 
         TextView weektext = (TextView) view.findViewById(R.id.alarm_week_text);
-        weektext.setText("(" + a.formatDays() + ")");
+        weektext.setText("(" + w.formatDays() + ")");
 
         final CheckBox ringtone = (CheckBox) view.findViewById(R.id.alarm_ringtone);
-        ringtone.setChecked(a.ringtone);
+        ringtone.setChecked(w.ringtone);
         if (ringtone.isChecked()) {
             TextView ringtoneValue = (TextView) view.findViewById(R.id.alarm_ringtone_value);
-            String title = storage.getTitle(a.ringtoneValue);
+            String title = storage.getTitle(w.ringtoneValue);
             if (title == null)
                 title = storage.getTitle(fallbackUri(null));
             if (title == null)
@@ -392,20 +392,20 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         beep.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.beep = beep.isChecked();
-                save(a);
+                w.beep = beep.isChecked();
+                save(w);
             }
         });
-        beep.setChecked(a.beep);
+        beep.setChecked(w.beep);
         final CheckBox speech = (CheckBox) view.findViewById(R.id.alarm_speech);
         speech.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.speech = speech.isChecked();
-                save(a);
+                w.speech = speech.isChecked();
+                save(w);
             }
         });
-        speech.setChecked(a.speech);
+        speech.setChecked(w.speech);
 
         final View alarmRingtonePlay = view.findViewById(R.id.alarm_ringtone_play);
 
@@ -416,8 +416,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         ringtone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.ringtone = ringtone.isChecked();
-                save(a);
+                w.ringtone = ringtone.isChecked();
+                save(w);
             }
         });
         alarmRingtonePlay.setOnClickListener(new View.OnClickListener() {
@@ -428,7 +428,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                     return;
                 }
 
-                Sound.Silenced s = playPreview(a);
+                Sound.Silenced s = playPreview(w);
 
                 if (s == Sound.Silenced.VIBRATE) { // we can stop vibrate by clicking on image
                     WeekSetFragment.this.preview = true;
@@ -460,7 +460,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                             RemoveItemAnimation.apply(list, view.findViewById(R.id.alarm_base), new Runnable() {
                                 @Override
                                 public void run() {
-                                    remove(a);
+                                    remove(w);
                                     select(-1);
                                 }
                             });
@@ -477,8 +477,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         ringtoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fragmentRequestRingtone = a;
-                Uri uri = a.ringtoneValue;
+                fragmentRequestRingtone = w;
+                Uri uri = w.ringtoneValue;
                 selectRingtone(uri);
             }
         });
@@ -487,33 +487,28 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         ringtoneBrowse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fragmentRequestRingtone = a;
                 choicer = new OpenChoicer(OpenFileDialog.DIALOG_TYPE.FILE_DIALOG, true) {
                     @Override
                     public void onResult(Uri uri, boolean tmp) {
-                        if (fragmentRequestRingtone == null)
-                            return;
                         if (tmp) {
                             File f = storage.storeRingtone(uri);
                             uri = Uri.fromFile(f);
                         }
                         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
                         shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, uri.toString()).commit();
-                        fragmentRequestRingtone.ringtoneValue = uri;
-                        save(fragmentRequestRingtone);
-                        fragmentRequestRingtone = null;
+                        w.ringtoneValue = uri;
+                        save(w);
                     }
 
                     @Override
                     public void onDismiss() {
-                        fragmentRequestRingtone = null;
                         choicer = null;
                     }
                 };
                 choicer.setPermissionsDialog(WeekSetFragment.this, PERMISSIONS, RESULT_FILE);
                 choicer.setStorageAccessFramework(WeekSetFragment.this, RESULT_FILE);
 
-                Uri path = fragmentRequestRingtone.ringtoneValue;
+                Uri path = w.ringtoneValue;
 
                 Uri fdef;
                 String def = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getPath())).toString();
