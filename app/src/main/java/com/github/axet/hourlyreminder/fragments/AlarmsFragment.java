@@ -18,12 +18,12 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.app.HourlyApplication;
-import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
 import com.github.axet.hourlyreminder.alarms.WeekTime;
+import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class AlarmsFragment extends WeekSetFragment {
         // context.grantUriPermission("com.android.providers.media.MediaProvider", Uri.parse("content://media/external/images/media"), Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         if (uri == null) {
-            uri = ReminderSet.DEFAULT_NOTIFICATION;
+            uri = Alarm.DEFAULT_ALARM;
         }
 
         context.startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
@@ -196,13 +196,23 @@ public class AlarmsFragment extends WeekSetFragment {
     }
 
     @Override
-    public void fillDetailed(final View view, final WeekSet a, boolean animate) {
-        super.fillDetailed(view, a, animate);
+    public void fillDetailed(final View view, final WeekSet w, boolean animate) {
+        super.fillDetailed(view, w, animate);
 
-        final WeekTime t = (WeekTime) a;
+        final WeekTime t = (WeekTime) w;
+
+        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
+        ringtoneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentRequestRingtone = w;
+                Uri uri = w.ringtoneValue;
+                selectRingtone(AlarmsFragment.this, uri);
+            }
+        });
 
         final TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        updateTime(view, (Alarm) a);
+        updateTime(view, (Alarm) w);
         time.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -213,10 +223,10 @@ public class AlarmsFragment extends WeekSetFragment {
                     Runnable r = new Runnable() {
                         @Override
                         public void run() {
-                            if (a.enabled)
+                            if (w.enabled)
                                 HourlyApplication.toastAlarmSet(getActivity(), t);
-                            updateTime(view, (Alarm) a);
-                            save(a);
+                            updateTime(view, (Alarm) w);
+                            save(w);
                         }
                     };
 
@@ -265,7 +275,7 @@ public class AlarmsFragment extends WeekSetFragment {
 
     @Override
     Sound.Silenced playPreview(WeekSet a) {
-        Sound.Silenced s = sound.playAlarm(new FireAlarmService.FireAlarm((Alarm) a), 0 , null);
+        Sound.Silenced s = sound.playAlarm(new FireAlarmService.FireAlarm((Alarm) a), 0, null);
         sound.silencedToast(s, System.currentTimeMillis());
         return s;
     }
@@ -277,10 +287,5 @@ public class AlarmsFragment extends WeekSetFragment {
         } else {
             return Alarm.DEFAULT_ALARM;
         }
-    }
-
-    @Override
-    void selectRingtone(Uri uri) {
-        selectRingtone(this, uri);
     }
 }

@@ -1,7 +1,5 @@
 package com.github.axet.hourlyreminder.fragments;
 
-import android.annotation.TargetApi;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,27 +11,22 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.axet.androidlibrary.animations.MarginAnimation;
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.app.HourlyApplication;
-import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
+import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
 import com.github.axet.hourlyreminder.dialogs.RepeatDialogFragment;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RemindersFragment extends WeekSetFragment implements DialogInterface.OnDismissListener {
@@ -170,20 +163,30 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     }
 
     @Override
-    public void fillDetailed(final View view, final WeekSet a, boolean animate) {
-        super.fillDetailed(view, a, animate);
+    public void fillDetailed(final View view, final WeekSet w, boolean animate) {
+        super.fillDetailed(view, w, animate);
 
-        final ReminderSet rr = (ReminderSet) a;
+        final ReminderSet rr = (ReminderSet) w;
+
+        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
+        ringtoneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentRequestRingtone = w;
+                Uri uri = w.ringtoneValue;
+                selectRingtone(RemindersFragment.this, uri);
+            }
+        });
 
         final TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        updateTime(view, (ReminderSet) a);
+        updateTime(view, (ReminderSet) w);
         time.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 HoursDialogFragment dialog = new HoursDialogFragment();
 
                 Bundle args = new Bundle();
-                args.putInt("index", reminders.indexOf(a));
+                args.putInt("index", reminders.indexOf(w));
                 args.putStringArrayList("hours", new ArrayList<>(rr.hours));
 
                 dialog.setArguments(args);
@@ -198,14 +201,14 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 RepeatDialogFragment d = new RepeatDialogFragment();
 
                 Bundle args = new Bundle();
-                args.putInt("index", reminders.indexOf(a));
+                args.putInt("index", reminders.indexOf(w));
                 args.putInt("mins", rr.repeat);
                 d.setArguments(args);
 
                 d.show(getFragmentManager(), "");
             }
         });
-        updateEvery(every, a);
+        updateEvery(every, w);
     }
 
     @Override
@@ -290,11 +293,6 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         } else {
             return ReminderSet.DEFAULT_NOTIFICATION;
         }
-    }
-
-    @Override
-    void selectRingtone(Uri uri) {
-        selectRingtone(RemindersFragment.this, uri);
     }
 
     @Override

@@ -144,8 +144,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         }
     }
 
-    abstract void selectRingtone(Uri uri);
-
     abstract Uri fallbackUri(Uri uri);
 
     @Override
@@ -470,16 +468,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setMessage(R.string.are_you_sure).setPositiveButton(R.string.Yes, dialogClickListener)
                         .setNegativeButton(R.string.No, dialogClickListener).show();
-            }
-        });
-
-        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
-        ringtoneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fragmentRequestRingtone = w;
-                Uri uri = w.ringtoneValue;
-                selectRingtone(uri);
             }
         });
 
