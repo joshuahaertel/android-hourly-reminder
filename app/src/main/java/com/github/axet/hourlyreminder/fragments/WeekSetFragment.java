@@ -60,8 +60,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     public static final int RESULT_RINGTONE = 0;
     public static final int RESULT_FILE = 1;
 
-    WeekSet fragmentRequestRingtone;
-
     ListView list;
 
     ArrayList<DataSetObserver> listeners = new ArrayList<>();
@@ -152,17 +150,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
 
         switch (requestCode) {
             case RESULT_RINGTONE:
-                if (fragmentRequestRingtone == null)
-                    return;
-                if (resultCode != Activity.RESULT_OK) {
-                    fragmentRequestRingtone = null;
-                    return;
-                }
-                Uri url = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-                fragmentRequestRingtone.ringtoneValue = fallbackUri(url);
-                save(fragmentRequestRingtone);
-                fragmentRequestRingtone = null;
-                break;
             case RESULT_FILE:
                 choicer.onActivityResult(resultCode, data);
                 break;
@@ -544,6 +531,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
+            case RESULT_RINGTONE:
             case RESULT_FILE:
                 choicer.onRequestPermissionsResult(permissions, grantResults);
                 break;
