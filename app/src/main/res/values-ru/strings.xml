@@ -35,7 +35,6 @@
     <string name="Alarm">Будильник</string>
     <string name="AlarmMissed">Будильник пропущен</string>
     <string name="AlarmMissedAfter">Будильник пропущен %1$s после %2$d минут</string>
-    <string name="AreYouSure">Вы уверены?</string>
     <string name="Cancel">Отмена</string>
     <string name="CustomAlarms">Будильник</string>
     <string name="DefaultRingtone">Оповещение по умолчанию</string>
@@ -164,9 +163,9 @@
     <string name="title_activity_settings">Настройки</string>
 
     <string name="speak_time_12h00" formatted="false">Текущее время: %H</string>
-    <string name="speak_time_12h01" formatted="false">Текущее время: %H. %M %A</string>
+    <string name="speak_time_12h01" formatted="false">Текущее время: %H, %M %A</string>
     <string name="speak_time_24h00" formatted="false">Текущее время: %H</string>
-    <string name="speak_time_24h01" formatted="false">Текущее время: %H. %M</string>
+    <string name="speak_time_24h01" formatted="false">Текущее время: %H, %M</string>
 
     <string name="not_selected">(не выбрано)</string>
     <string name="alarm_type_alarm">Включена опция \'Точное время\', проверьте настройки.</string>

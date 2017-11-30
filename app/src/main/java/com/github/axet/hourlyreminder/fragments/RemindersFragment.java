@@ -1,64 +1,37 @@
 package com.github.axet.hourlyreminder.fragments;
 
-import android.annotation.TargetApi;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.axet.androidlibrary.animations.MarginAnimation;
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.app.HourlyApplication;
-import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
+import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
 import com.github.axet.hourlyreminder.dialogs.RepeatDialogFragment;
+import com.github.axet.androidlibrary.widgets.RingtoneChoicer;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RemindersFragment extends WeekSetFragment implements DialogInterface.OnDismissListener {
 
     List<ReminderSet> reminders = new ArrayList<>();
-
-    public static void selectRingtone(Fragment context, Uri uri) {
-        // W/MediaPlayer: Couldn't open file on client side; trying server side:
-        // java.lang.SecurityException: Permission Denial: reading com.android.providers.media.MediaProvider uri content://media/external/audio/media/17722
-        // from pid=697, uid=10204
-        // requires android.permission.READ_EXTERNAL_STORAGE, or grantUriPermission()
-        //
-        // context.grantUriPermission("com.android.providers.media.MediaProvider", Uri.parse("content://media/external/images/media"), Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        if (uri == null) {
-            uri = ReminderSet.DEFAULT_NOTIFICATION;
-        }
-
-        context.startActivityForResult(new Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, ReminderSet.TYPE_NOTIFICATION)
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, ReminderSet.DEFAULT_NOTIFICATION)
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.Reminder))
-                .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri), RESULT_RINGTONE);
-    }
 
     public RemindersFragment() {
     }
@@ -170,20 +143,53 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     }
 
     @Override
-    public void fillDetailed(final View view, final WeekSet a, boolean animate) {
-        super.fillDetailed(view, a, animate);
+    public void fillDetailed(final View view, final WeekSet w, boolean animate) {
+        super.fillDetailed(view, w, animate);
 
-        final ReminderSet rr = (ReminderSet) a;
+        final ReminderSet rr = (ReminderSet) w;
+
+        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
+        ringtoneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Uri uri = w.ringtoneValue;
+
+                if (uri == null) {
+                    uri = ReminderSet.DEFAULT_NOTIFICATION;
+                }
+
+                RingtoneChoicer r = new RingtoneChoicer() {
+                    @Override
+                    public void onResult(Uri uri, boolean tmp) {
+                        if (tmp) {
+                            File f = storage.storeRingtone(uri);
+                            uri = Uri.fromFile(f);
+                        }
+                        w.ringtoneValue = fallbackUri(uri);
+                        save(w);
+                    }
+
+                    @Override
+                    public void onDismiss() {
+                        choicer = null;
+                    }
+                };
+                r.setPermissionsDialog(RemindersFragment.this, PERMISSIONS, RESULT_RINGTONE);
+                r.setRingtone(RemindersFragment.this, ReminderSet.TYPE_NOTIFICATION, ReminderSet.DEFAULT_NOTIFICATION, getString(R.string.Reminder), RESULT_RINGTONE);
+                choicer = r;
+                choicer.show(uri);
+            }
+        });
 
         final TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        updateTime(view, (ReminderSet) a);
+        updateTime(view, (ReminderSet) w);
         time.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 HoursDialogFragment dialog = new HoursDialogFragment();
 
                 Bundle args = new Bundle();
-                args.putInt("index", reminders.indexOf(a));
+                args.putInt("index", reminders.indexOf(w));
                 args.putStringArrayList("hours", new ArrayList<>(rr.hours));
 
                 dialog.setArguments(args);
@@ -198,14 +204,18 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 RepeatDialogFragment d = new RepeatDialogFragment();
 
                 Bundle args = new Bundle();
-                args.putInt("index", reminders.indexOf(a));
+                args.putInt("index", reminders.indexOf(w));
                 args.putInt("mins", rr.repeat);
                 d.setArguments(args);
 
                 d.show(getFragmentManager(), "");
             }
         });
-        updateEvery(every, a);
+        updateEvery(every, w);
+
+        final CheckBox weekdays = (CheckBox) view.findViewById(R.id.alarm_week_days);
+        weekdays.setButtonDrawable(null);
+        weekdays.setClickable(false);
     }
 
     @Override
@@ -290,11 +300,6 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         } else {
             return ReminderSet.DEFAULT_NOTIFICATION;
         }
-    }
-
-    @Override
-    void selectRingtone(Uri uri) {
-        selectRingtone(RemindersFragment.this, uri);
     }
 
     @Override
