@@ -11,6 +11,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -211,6 +212,10 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
             }
         });
         updateEvery(every, w);
+
+        final CheckBox weekdays = (CheckBox) view.findViewById(R.id.alarm_week_days);
+        weekdays.setButtonDrawable(null);
+        weekdays.setClickable(false);
     }
 
     @Override

@@ -72,7 +72,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     View alarmRingtonePlay;
     Sound sound;
     Storage storage;
-    OpenFileDialog dialog;
     OpenChoicer choicer;
 
     int startweek = 0;
