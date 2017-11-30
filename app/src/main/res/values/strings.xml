@@ -287,9 +287,9 @@
     <string name="reminders_vibrate">Reminders set to vibrate only</string>
     <string name="reminders_silence">Reminders set to \'silence\'</string>
 
-    <string name="speak_time_12h00" formatted="false">%h o\'clock</string>
+    <string name="speak_time_12h00" formatted="false">%H o\'clock</string>
     <string name="speak_time_12h01" formatted="false">Time is %H %M %A</string>
-    <string name="speak_time_24h00" formatted="false">%h hundred hours</string>
+    <string name="speak_time_24h00" formatted="false">%H hundred hours</string>
     <string name="speak_time_24h01" formatted="false">Time is %H %M</string>
 
     <string name="reset">Reset</string>
