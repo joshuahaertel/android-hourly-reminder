@@ -35,7 +35,6 @@
     <string name="Alarm">Будильник</string>
     <string name="AlarmMissed">Будильник пропущен</string>
     <string name="AlarmMissedAfter">Будильник пропущен %1$s после %2$d минут</string>
-    <string name="AreYouSure">Вы уверены?</string>
     <string name="Cancel">Отмена</string>
     <string name="CustomAlarms">Будильник</string>
     <string name="DefaultRingtone">Оповещение по умолчанию</string>
