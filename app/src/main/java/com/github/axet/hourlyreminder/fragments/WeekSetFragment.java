@@ -582,3 +582,4 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         }
     }
 }
+
