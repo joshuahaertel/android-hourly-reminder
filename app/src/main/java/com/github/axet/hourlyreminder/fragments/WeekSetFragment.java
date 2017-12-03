@@ -110,7 +110,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
         outState.putLong("selected", selected);
     }
 
@@ -137,18 +136,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     }
 
     abstract Uri fallbackUri(Uri uri);
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-            case RESULT_RINGTONE:
-            case RESULT_FILE:
-                choicer.onActivityResult(resultCode, data);
-                break;
-        }
-    }
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
@@ -311,6 +298,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             @Override
             public void onClick(View v) {
                 setEnable(w, enable.isChecked());
+                save(w);
             }
         });
         enable.setChecked(w.getEnable());
@@ -532,9 +520,19 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case RESULT_RINGTONE:
+            case RESULT_FILE:
+                choicer.onActivityResult(resultCode, data);
+                break;
+        }
+    }
+
     void setEnable(WeekSet a, boolean e) {
         a.setEnable(e);
-        save(a);
     }
 
     public void fillCompact(final View view, final WeekSet a, boolean animate) {
@@ -546,6 +544,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             @Override
             public void onClick(View v) {
                 setEnable(a, enable.isChecked());
+                save(a);
             }
         });
         enable.setChecked(a.getEnable());
