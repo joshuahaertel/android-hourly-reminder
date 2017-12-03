@@ -40,7 +40,7 @@ public class TTS extends SoundConfig {
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
     boolean restart; // restart tts once if failed. on apk upgrade tts alwyas failed.
     Set<Runnable> dones = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
-    Runnable onInit;
+    Runnable onInit; // once
 
     public TTS(Context context) {
         super(context);
@@ -52,24 +52,7 @@ public class TTS extends SoundConfig {
         onInit = new Runnable() {
             @Override
             public void run() {
-                if (Build.VERSION.SDK_INT >= 21) {
-                    tts.setAudioAttributes(new AudioAttributes.Builder()
-                            .setUsage(SOUND_CHANNEL)
-                            .setContentType(SOUND_TYPE)
-                            .build());
-                }
-
-                handler.removeCallbacks(onInit);
-                onInit = null;
-
-                if (delayed != null) {
-                    Runnable r = delayed;
-                    handler.removeCallbacks(delayed);
-                    delayed = null;
-                    r.run();
-                }
-
-                ttsOnInit();
+                onInit();
             }
         };
         tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
@@ -82,7 +65,23 @@ public class TTS extends SoundConfig {
         });
     }
 
-    public void ttsOnInit() {
+    public void onInit() {
+        if (Build.VERSION.SDK_INT >= 21) {
+            tts.setAudioAttributes(new AudioAttributes.Builder()
+                    .setUsage(SOUND_CHANNEL)
+                    .setContentType(SOUND_TYPE)
+                    .build());
+        }
+
+        handler.removeCallbacks(onInit);
+        onInit = null;
+
+        if (delayed != null) {
+            Runnable r = delayed;
+            handler.removeCallbacks(delayed);
+            delayed = null;
+            r.run();
+        }
     }
 
     public void close() {
@@ -269,7 +268,7 @@ public class TTS extends SoundConfig {
             try {
                 Intent intent = new Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                if (intent.resolveActivity(context.getPackageManager()) != null) {
+                if (OptimizationPreferenceCompat.isCallable(context, intent)) {
                     context.startActivity(intent);
                 }
             } catch (AndroidRuntimeException e) {
@@ -277,7 +276,7 @@ public class TTS extends SoundConfig {
                 try {
                     Intent intent = new Intent(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    if (intent.resolveActivity(context.getPackageManager()) != null) {
+                    if (OptimizationPreferenceCompat.isCallable(context, intent)) {
                         context.startActivity(intent);
                     }
                 } catch (AndroidRuntimeException e1) {
