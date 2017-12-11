@@ -49,7 +49,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- singleTop instead of singleInstance http://stackoverflow.com/questions/3354955/onactivityresult-called-prematurely -->
         <activity
             android:name=".activities.MainActivity"
             android:configChanges="orientation|screenSize"

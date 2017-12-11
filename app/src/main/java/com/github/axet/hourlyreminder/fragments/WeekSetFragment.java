@@ -1,7 +1,6 @@
 package com.github.axet.hourlyreminder.fragments;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -9,9 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.DataSetObserver;
-import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -29,13 +26,11 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.axet.androidlibrary.animations.MarginAnimation;
 import com.github.axet.androidlibrary.animations.RemoveItemAnimation;
 import com.github.axet.androidlibrary.widgets.OpenChoicer;
 import com.github.axet.androidlibrary.widgets.OpenFileDialog;
-import com.github.axet.androidlibrary.widgets.StoragePathPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Week;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
@@ -115,7 +110,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
         outState.putLong("selected", selected);
     }
 
@@ -142,18 +136,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     }
 
     abstract Uri fallbackUri(Uri uri);
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-            case RESULT_RINGTONE:
-            case RESULT_FILE:
-                choicer.onActivityResult(resultCode, data);
-                break;
-        }
-    }
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
@@ -316,6 +298,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             @Override
             public void onClick(View v) {
                 setEnable(w, enable.isChecked());
+                save(w);
             }
         });
         enable.setChecked(w.getEnable());
@@ -537,9 +520,19 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case RESULT_RINGTONE:
+            case RESULT_FILE:
+                choicer.onActivityResult(resultCode, data);
+                break;
+        }
+    }
+
     void setEnable(WeekSet a, boolean e) {
         a.setEnable(e);
-        save(a);
     }
 
     public void fillCompact(final View view, final WeekSet a, boolean animate) {
@@ -551,6 +544,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             @Override
             public void onClick(View v) {
                 setEnable(a, enable.isChecked());
+                save(a);
             }
         });
         enable.setChecked(a.getEnable());
