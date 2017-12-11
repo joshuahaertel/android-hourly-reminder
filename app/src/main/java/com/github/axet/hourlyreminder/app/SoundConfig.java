@@ -43,9 +43,9 @@ public class SoundConfig {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_PHONESILENCE, false);
         if (b) {
-            s.streamType = AudioManager.STREAM_MUSIC;
-            s.usage = AudioAttributes.USAGE_MEDIA;
-            s.ct = AudioAttributes.CONTENT_TYPE_MUSIC;
+            s.streamType = AudioManager.STREAM_NOTIFICATION;
+            s.usage = AudioAttributes.USAGE_NOTIFICATION;
+            s.ct = AudioAttributes.CONTENT_TYPE_SONIFICATION;
         } else {
             s.streamType = AudioManager.STREAM_ALARM; // AudioSystem.STREAM_ALARM == AudioManager.STREAM_ALARM
             s.usage = AudioAttributes.USAGE_ALARM;
