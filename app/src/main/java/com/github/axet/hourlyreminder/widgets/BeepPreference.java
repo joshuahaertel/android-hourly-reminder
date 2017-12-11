@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.EditTextPreference;
 import android.support.v7.preference.PreferenceDialogFragmentCompat;
@@ -72,6 +73,12 @@ public class BeepPreference extends EditTextPreference {
         BeepConfig config = new BeepConfig();
 
         public BeepPrefDialogFragment() {
+        }
+
+        public static void show(Fragment f, String key) {
+            BeepPreference.BeepPrefDialogFragment d = BeepPreference.BeepPrefDialogFragment.newInstance(key);
+            d.setTargetFragment(f, 0);
+            d.show(f.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
         }
 
         public static BeepPrefDialogFragment newInstance(String key) {
