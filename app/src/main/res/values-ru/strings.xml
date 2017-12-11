@@ -197,7 +197,7 @@
     <string name="pref_callsilence_summary">Не использовать звуки вовремя разговора по телефону</string>
     <string name="pref_musicsilence_title">Тишина вовремя музыки</string>
     <string name="pref_musicsilence_summary">Не использовать звуки вовремя прослушивания музыки</string>
-    <string name="pref_phonesilence_title">Низкий приоритет для оповещений</string>
+    <string name="pref_phonesilence_title">Низкий звуковой приоритет</string>
     <string name="pref_phonesilnece_summary">Не использовать звуки если телефон переведен в беззвучный режим. Включить режим воспроизведения звуков через канал музыки</string>
     <string name="pref_vibrate_title">Вибратор</string>
     <string name="pref_vibrate_summary">Использовать вибратор для будильника и оповещений</string>
