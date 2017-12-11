@@ -131,8 +131,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onDisplayPreferenceDialog(Preference preference) {
         if (preference instanceof SeekBarPreference) {
+            SoundConfig.SoundChannel c = sound.getSoundChannel();
             AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
-            am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamVolume(AudioManager.STREAM_ALARM), AudioManager.FLAG_SHOW_UI);
+            am.setStreamVolume(c.streamType, am.getStreamVolume(c.streamType), AudioManager.FLAG_SHOW_UI);
             SeekBarPreferenceDialogFragment f = SeekBarPreferenceDialogFragment.newInstance(preference.getKey());
             f.setTargetFragment(this, 0);
             f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
