@@ -263,8 +263,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             FloatingActionButton fab = new FloatingActionButton(context);
             fab.setImageResource(R.drawable.play);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ContentFrameLayout.LayoutParams.WRAP_CONTENT, ContentFrameLayout.LayoutParams.WRAP_CONTENT);
-            lp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ContentFrameLayout.LayoutParams.WRAP_CONTENT, ContentFrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.RIGHT);
             lp.setMargins(fab_margin, fab_margin, fab_margin, fab_margin);
             fab.setLayoutParams(lp);
             layout.addView(fab);
