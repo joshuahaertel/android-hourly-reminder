@@ -131,6 +131,16 @@
             android:textColor="@android:color/white"
             android:textSize="20dp" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/alarm_snooze_button"
+            android:layout_centerHorizontal="true"
+            android:padding="10dp"
+            android:text="@string/flip_phone_to_snooze"
+            android:textColor="?android:attr/textColorHint"
+            android:textSize="12sp" />
+
         <Button
             android:id="@+id/alarm_activity_button"
             android:layout_width="wrap_content"
