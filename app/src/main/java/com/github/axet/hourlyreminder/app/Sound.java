@@ -55,7 +55,7 @@ public class Sound extends TTS {
     Runnable loop; // loop preventer
 
     // https://gist.github.com/slightfoot/6330866
-    public static AudioTrack generateTone(double hz, int dur) {
+    public static AudioTrack generateTone(SoundChannel c, double hz, int dur) {
         int rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(SOUND_CHANNELS, SOUND_SAMPLERATE);
         if (rate == -1)
             throw new RuntimeException("Unable to find proper audio attrs");
@@ -68,7 +68,7 @@ public class Sound extends TTS {
             short sample = (short) (Math.sin(sx) * 0x7FFF);
             buf.write(i * 2, sample, sample);
         }
-        AudioTrack track = AudioTrack.create(SOUND_STREAM, SOUND_CHANNEL, SOUND_TYPE, buf);
+        AudioTrack track = AudioTrack.create(c.streamType, c.usage, c.streamType, buf);
         track.setNotificationMarkerPosition(last);
         return track;
     }
@@ -403,7 +403,7 @@ public class Sound extends TTS {
         beep.load(b);
 
         try {
-            AudioTrack t = generateTone(beep.value_f, beep.value_l);
+            AudioTrack t = generateTone(getSoundChannel(), beep.value_f, beep.value_l);
             playBeep(t, done);
         } catch (RuntimeException e) {
             Log.d(TAG, "Unable get track", e);
@@ -431,7 +431,8 @@ public class Sound extends TTS {
 
     int getToneVolume() {
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        float systemVolume = am.getStreamVolume(SOUND_STREAM) / (float) am.getStreamMaxVolume(SOUND_STREAM);
+        SoundChannel c = getSoundChannel();
+        float systemVolume = am.getStreamVolume(c.streamType) / (float) am.getStreamMaxVolume(c.streamType);
         systemVolume = unreduce(systemVolume);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         float alarmVolume = shared.getFloat(HourlyApplication.PREFERENCE_VOLUME, 1f);
@@ -523,7 +524,7 @@ public class Sound extends TTS {
     long tonePlay() {
         if (tone != null)
             tone.release();
-        tone = new ToneGenerator(SOUND_STREAM, getToneVolume());
+        tone = new ToneGenerator(getSoundChannel().streamType, getToneVolume());
         tone.startTone(ToneGenerator.TONE_CDMA_CALL_SIGNAL_ISDN_NORMAL);
         return 4000;
     }
@@ -531,7 +532,7 @@ public class Sound extends TTS {
     long tonePlayBeep() {
         if (tone != null)
             tone.release();
-        tone = new ToneGenerator(SOUND_STREAM, getToneVolume());
+        tone = new ToneGenerator(getSoundChannel().streamType, getToneVolume());
         tone.startTone(ToneGenerator.TONE_SUP_ERROR);
         return 330;
     }
@@ -559,7 +560,8 @@ public class Sound extends TTS {
         final float startVolume;
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        float systemVolume = am.getStreamVolume(SOUND_STREAM) / (float) am.getStreamMaxVolume(SOUND_STREAM);
+        SoundChannel c = getSoundChannel();
+        float systemVolume = am.getStreamVolume(c.streamType) / (float) am.getStreamMaxVolume(c.streamType);
         float alarmVolume = getVolume();
 
         // if user trying to reduce alarms volume, then use it as start volume. else start from silence
@@ -622,9 +624,10 @@ public class Sound extends TTS {
 
     MediaPlayer create(Uri uri) { // MediaPlayer.create expand
         if (Build.VERSION.SDK_INT >= 21) {
+            SoundChannel c = getSoundChannel();
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                    .setUsage(SOUND_CHANNEL)
-                    .setContentType(SOUND_TYPE)
+                    .setUsage(c.usage)
+                    .setContentType(c.ct)
                     .build();
 
             AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -635,7 +638,7 @@ public class Sound extends TTS {
                 final AudioAttributes aa = audioAttributes != null ? audioAttributes : new AudioAttributes.Builder().build();
                 mp.setAudioAttributes(aa);
                 mp.setAudioSessionId(audioSessionId);
-                mp.setAudioStreamType(SOUND_STREAM);
+                mp.setAudioStreamType(getSoundChannel().streamType);
                 mp.setDataSource(context, uri);
                 mp.prepare();
                 return mp;
@@ -646,7 +649,7 @@ public class Sound extends TTS {
             try {
                 MediaPlayer mp = new MediaPlayer();
                 mp.setDataSource(context, uri);
-                mp.setAudioStreamType(SOUND_STREAM);
+                mp.setAudioStreamType(getSoundChannel().streamType);
                 mp.prepare();
                 return mp;
             } catch (IOException ex) {

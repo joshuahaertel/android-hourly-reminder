@@ -13,9 +13,6 @@ import com.github.axet.hourlyreminder.R;
 public class SoundConfig {
     public static final String TAG = SoundConfig.class.getSimpleName();
 
-    public final static int SOUND_STREAM = AudioManager.STREAM_ALARM; // AudioSystem.STREAM_ALARM == AudioManager.STREAM_ALARM;
-    public final static int SOUND_CHANNEL = AudioAttributes.USAGE_ALARM;
-    public final static int SOUND_TYPE = AudioAttributes.CONTENT_TYPE_SONIFICATION;
     public final static int SOUND_CHANNELS = AudioFormat.CHANNEL_OUT_STEREO;
     public final static int SOUND_SAMPLERATE = 44100;
 
@@ -27,12 +24,34 @@ public class SoundConfig {
         MUSIC
     }
 
+    public static class SoundChannel {
+        public int streamType; // AudioManager.STREAM_* or AudioSystem.STREAM_*
+        public int usage; // AudioAttributes.USAGE_*
+        public int ct; // AudioAttributes.CONTENT_TYPE_*
+    }
+
     Context context;
     Handler handler;
 
     public SoundConfig(Context context) {
         this.context = context;
         this.handler = new Handler();
+    }
+
+    public SoundChannel getSoundChannel() {
+        SoundChannel s = new SoundChannel();
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_PHONESILENCE, false);
+        if (b) {
+            s.streamType = AudioManager.STREAM_MUSIC;
+            s.usage = AudioAttributes.USAGE_MEDIA;
+            s.ct = AudioAttributes.CONTENT_TYPE_MUSIC;
+        } else {
+            s.streamType = AudioManager.STREAM_ALARM; // AudioSystem.STREAM_ALARM == AudioManager.STREAM_ALARM
+            s.usage = AudioAttributes.USAGE_ALARM;
+            s.ct = AudioAttributes.CONTENT_TYPE_SONIFICATION;
+        }
+        return s;
     }
 
     float getRingtoneVolume() {

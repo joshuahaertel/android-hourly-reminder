@@ -67,9 +67,10 @@ public class TTS extends SoundConfig {
 
     public void onInit() {
         if (Build.VERSION.SDK_INT >= 21) {
+            SoundChannel c = getSoundChannel();
             tts.setAudioAttributes(new AudioAttributes.Builder()
-                    .setUsage(SOUND_CHANNEL)
-                    .setContentType(SOUND_TYPE)
+                    .setUsage(c.usage)
+                    .setContentType(c.ct)
                     .build());
         }
 
@@ -373,7 +374,7 @@ public class TTS extends SoundConfig {
         tts.setLanguage(locale);
         if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
-            params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, SOUND_STREAM);
+            params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, getSoundChannel().streamType);
             params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, getVolume());
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS) {
@@ -381,7 +382,7 @@ public class TTS extends SoundConfig {
             }
         } else {
             HashMap<String, String> params = new HashMap<>();
-            params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(SOUND_STREAM));
+            params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(getSoundChannel().streamType));
             params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(getVolume()));
             params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params) != TextToSpeech.SUCCESS) {

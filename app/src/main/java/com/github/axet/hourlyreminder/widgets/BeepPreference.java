@@ -272,7 +272,7 @@ public class BeepPreference extends EditTextPreference {
         void playSound() {
             int f = getFreq();
             int l = getLen();
-            sound.playBeep(Sound.generateTone(f, l), null);
+            sound.playBeep(Sound.generateTone(sound.getSoundChannel(), f, l), null);
         }
 
         int getFreq() {
