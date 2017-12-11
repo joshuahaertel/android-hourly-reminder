@@ -8,8 +8,6 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
-import com.github.axet.hourlyreminder.R;
-
 public class SoundConfig {
     public static final String TAG = SoundConfig.class.getSimpleName();
 
@@ -25,7 +23,7 @@ public class SoundConfig {
     }
 
     public static class SoundChannel {
-        public int streamType; // AudioManager.STREAM_* or AudioSystem.STREAM_*
+        public int streamType; // AudioManager.STREAM_* == AudioSystem.STREAM_*
         public int usage; // AudioAttributes.USAGE_*
         public int ct; // AudioAttributes.CONTENT_TYPE_*
     }
@@ -47,7 +45,7 @@ public class SoundConfig {
             s.usage = AudioAttributes.USAGE_NOTIFICATION;
             s.ct = AudioAttributes.CONTENT_TYPE_SONIFICATION;
         } else {
-            s.streamType = AudioManager.STREAM_ALARM; // AudioSystem.STREAM_ALARM == AudioManager.STREAM_ALARM
+            s.streamType = AudioManager.STREAM_ALARM;
             s.usage = AudioAttributes.USAGE_ALARM;
             s.ct = AudioAttributes.CONTENT_TYPE_SONIFICATION;
         }
