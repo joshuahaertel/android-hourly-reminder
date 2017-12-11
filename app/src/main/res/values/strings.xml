@@ -316,7 +316,7 @@
     <string name="pref_callsilence_summary">Do not play sounds during calls</string>
     <string name="pref_musicsilence_title">Silence During Music</string>
     <string name="pref_musicsilence_summary">Do not play sounds while listening music</string>
-    <string name="pref_phonesilence_title">Silence While Phone Silenced</string>
+    <string name="pref_phonesilence_title">Low Sound Priority</string>
     <string name="pref_phonesilnece_summary">Do not play sounds while phone in silince or vibrate mode. Switch to default sound output (do not use alarm channel)</string>
     <string name="pref_vibrate_title">Vibrate</string>
     <string name="pref_vibrate_summary">Vibrate while sounding an reminder / alarm</string>
