@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -271,13 +272,13 @@ public class Sound extends TTS {
         if (shared.getBoolean(HourlyApplication.PREFERENCE_PHONESILENCE, false)) {
             AudioManager tm = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             int mode = tm.getRingerMode();
-            if (mode != AudioManager.RINGER_MODE_NORMAL) {
-                if (mode == AudioManager.RINGER_MODE_VIBRATE) { // phone in vibrate mode
-                    boolean v = config.isChecked();
-                    if (v) { // if vibrate enabled
-                        return Silenced.VIBRATE;
-                    }
+            if (mode == AudioManager.RINGER_MODE_VIBRATE) { // phone in vibrate mode
+                boolean v = config.isChecked();
+                if (v) { // if vibrate enabled
+                    return Silenced.VIBRATE;
                 }
+            }
+            if (mode == AudioManager.RINGER_MODE_SILENT) {
                 return Silenced.SETTINGS;
             }
         }
