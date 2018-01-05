@@ -278,6 +278,21 @@ public class Sound extends TTS {
                     return Silenced.VIBRATE;
                 }
             }
+            if (Build.VERSION.SDK_INT < 16) {
+                int t = tm.getVibrateSetting(AudioManager.VIBRATE_TYPE_RINGER);
+                if (t == AudioManager.VIBRATE_SETTING_ON) {
+                    boolean v = config.isChecked();
+                    if (v) { // if vibrate enabled
+                        return Silenced.VIBRATE;
+                    }
+                }
+                if (t == AudioManager.VIBRATE_SETTING_ONLY_SILENT && mode == AudioManager.RINGER_MODE_SILENT) {
+                    boolean v = config.isChecked();
+                    if (v) { // if vibrate enabled
+                        return Silenced.VIBRATE;
+                    }
+                }
+            }
             if (mode == AudioManager.RINGER_MODE_SILENT) {
                 return Silenced.SETTINGS;
             }
