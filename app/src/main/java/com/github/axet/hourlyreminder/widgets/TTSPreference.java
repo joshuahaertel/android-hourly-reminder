@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.EditTextPreference;
 import android.support.v7.preference.PreferenceDialogFragmentCompat;
@@ -131,6 +132,12 @@ public class TTSPreference extends EditTextPreference {
         Sound sound;
 
         public TTSPrefDialogFragment() {
+        }
+
+        public static void show(Fragment f, String key) {
+            TTSPreference.TTSPrefDialogFragment d = TTSPreference.TTSPrefDialogFragment.newInstance(key);
+            d.setTargetFragment(f, 0);
+            d.show(f.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
         }
 
         public static TTSPrefDialogFragment newInstance(String key) {

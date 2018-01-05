@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -236,7 +237,6 @@ public class Sound extends TTS {
         if (ss != Silenced.NONE)
             return ss;
 
-
         boolean v = config.alarms;
         boolean c = a.ringtone;
         boolean s = a.speech;
@@ -271,14 +271,45 @@ public class Sound extends TTS {
         if (shared.getBoolean(HourlyApplication.PREFERENCE_PHONESILENCE, false)) {
             AudioManager tm = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             int mode = tm.getRingerMode();
-            if (mode != AudioManager.RINGER_MODE_NORMAL) {
-                if (mode == AudioManager.RINGER_MODE_VIBRATE) { // phone in vibrate mode
+            if (mode == AudioManager.RINGER_MODE_VIBRATE) { // phone in vibrate mode
+                boolean v = config.isChecked();
+                if (v) { // if vibrate enabled
+                    return Silenced.VIBRATE;
+                }
+            }
+            if (Build.VERSION.SDK_INT < 16) {
+                int t = tm.getVibrateSetting(AudioManager.VIBRATE_TYPE_RINGER);
+                if (t == AudioManager.VIBRATE_SETTING_ON) {
                     boolean v = config.isChecked();
                     if (v) { // if vibrate enabled
                         return Silenced.VIBRATE;
                     }
                 }
+                if (t == AudioManager.VIBRATE_SETTING_ONLY_SILENT && mode == AudioManager.RINGER_MODE_SILENT) {
+                    boolean v = config.isChecked();
+                    if (v) { // if vibrate enabled
+                        return Silenced.VIBRATE;
+                    }
+                }
+            }
+            if (mode == AudioManager.RINGER_MODE_SILENT) {
                 return Silenced.SETTINGS;
+            }
+            // https://stackoverflow.com/questions/31387137/android-detect-do-not-disturb-status
+            if (Build.VERSION.SDK_INT >= 17) {
+                ContentResolver resolver = context.getContentResolver();
+                try {
+                    int zen = Settings.Global.getInt(resolver, "zen_mode");
+                    switch (zen) {
+                        case 0: // DND off
+                            break;
+                        case 1: // DND priority only
+                        case 2: // DND total silence
+                        case 3: // DND alarms only
+                            return Silenced.SETTINGS;
+                    }
+                } catch (Settings.SettingNotFoundException e) {
+                }
             }
         }
 

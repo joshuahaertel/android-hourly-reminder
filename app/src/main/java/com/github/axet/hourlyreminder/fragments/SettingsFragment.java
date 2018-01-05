@@ -30,7 +30,6 @@ import com.github.axet.androidlibrary.app.Storage;
 import com.github.axet.androidlibrary.widgets.FilePathPreference;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.SeekBarPreference;
-import com.github.axet.androidlibrary.widgets.SeekBarPreferenceDialogFragment;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Reminder;
@@ -134,21 +133,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             SoundConfig.SoundChannel c = sound.getSoundChannel();
             AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
             am.setStreamVolume(c.streamType, am.getStreamVolume(c.streamType), AudioManager.FLAG_SHOW_UI);
-            SeekBarPreferenceDialogFragment f = SeekBarPreferenceDialogFragment.newInstance(preference.getKey());
-            f.setTargetFragment(this, 0);
-            f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
+            SeekBarPreference.SeekBarPreferenceDialogFragment.show(this, preference.getKey());
             return;
         }
         if (preference instanceof BeepPreference) {
-            BeepPreference.BeepPrefDialogFragment f = BeepPreference.BeepPrefDialogFragment.newInstance(preference.getKey());
-            f.setTargetFragment(this, 0);
-            f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
+            BeepPreference.BeepPrefDialogFragment.show(this, preference.getKey());
             return;
         }
         if (preference instanceof TTSPreference) {
-            TTSPreference.TTSPrefDialogFragment f = TTSPreference.TTSPrefDialogFragment.newInstance(preference.getKey());
-            f.setTargetFragment(this, 0);
-            f.show(this.getFragmentManager(), "android.support.v7.preference.PreferenceFragment.DIALOG");
+            TTSPreference.TTSPrefDialogFragment.show(this, preference.getKey());
             return;
         }
         super.onDisplayPreferenceDialog(preference);
@@ -270,8 +263,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             FloatingActionButton fab = new FloatingActionButton(context);
             fab.setImageResource(R.drawable.play);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ContentFrameLayout.LayoutParams.WRAP_CONTENT, ContentFrameLayout.LayoutParams.WRAP_CONTENT);
-            lp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ContentFrameLayout.LayoutParams.WRAP_CONTENT, ContentFrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.RIGHT);
             lp.setMargins(fab_margin, fab_margin, fab_margin, fab_margin);
             fab.setLayoutParams(lp);
             layout.addView(fab);

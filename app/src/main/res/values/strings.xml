@@ -317,7 +317,7 @@
     <string name="pref_musicsilence_title">Silence During Music</string>
     <string name="pref_musicsilence_summary">Do not play sounds while listening music</string>
     <string name="pref_phonesilence_title">Low Sound Profile</string>
-    <string name="pref_phonesilnece_summary">Do not play sounds while phone in silince or vibrate mode. Switch to default sound output (do not use alarm channel)</string>
+    <string name="pref_phonesilnece_summary">Do not play sounds while phone in silince or vibrate mode. Switch to ringtone sound channel (default is alarm channel)</string>
     <string name="pref_vibrate_title">Vibrate</string>
     <string name="pref_vibrate_summary">Vibrate while sounding an reminder / alarm</string>
     <string name="pref_wakeup_title">Wake Up Screen</string>
