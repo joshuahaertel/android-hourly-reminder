@@ -40,6 +40,14 @@ import java.util.List;
 public class Sound extends TTS {
     public static final String TAG = Sound.class.getSimpleName();
 
+    // Settings.class
+    public static final String ZEN_MODE = "zen_mode";
+
+    public static final int ZEN_MODE_OFF = 0;
+    public static final int ZEN_MODE_IMPORTANT_INTERRUPTIONS = 1;
+    public static final int ZEN_MODE_NO_INTERRUPTIONS = 2;
+    public static final int ZEN_MODE_ALARMS = 3;
+
     ToneGenerator tone;
     Runnable toneLoop;
     MediaPlayer player;
@@ -299,13 +307,13 @@ public class Sound extends TTS {
             if (Build.VERSION.SDK_INT >= 17) {
                 ContentResolver resolver = context.getContentResolver();
                 try {
-                    int zen = Settings.Global.getInt(resolver, "zen_mode");
+                    int zen = Settings.Global.getInt(resolver, ZEN_MODE);
                     switch (zen) {
-                        case 0: // DND off
+                        case ZEN_MODE_OFF:
                             break;
-                        case 1: // DND priority only
-                        case 2: // DND total silence
-                        case 3: // DND alarms only
+                        case ZEN_MODE_IMPORTANT_INTERRUPTIONS:
+                        case ZEN_MODE_NO_INTERRUPTIONS:
+                        case ZEN_MODE_ALARMS:
                             return Silenced.SETTINGS;
                     }
                 } catch (Settings.SettingNotFoundException e) {
