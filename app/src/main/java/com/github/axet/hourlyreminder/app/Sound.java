@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -293,6 +294,22 @@ public class Sound extends TTS {
             }
             if (mode == AudioManager.RINGER_MODE_SILENT) {
                 return Silenced.SETTINGS;
+            }
+            // https://stackoverflow.com/questions/31387137/android-detect-do-not-disturb-status
+            if (Build.VERSION.SDK_INT >= 17) {
+                ContentResolver resolver = context.getContentResolver();
+                try {
+                    int zen = Settings.Global.getInt(resolver, "zen_mode");
+                    switch (zen) {
+                        case 0: // DND off
+                            break;
+                        case 1: // DND priority only
+                        case 2: // DND total silence
+                        case 3: // DND alarms only
+                            return Silenced.SETTINGS;
+                    }
+                } catch (Settings.SettingNotFoundException e) {
+                }
             }
         }
 
