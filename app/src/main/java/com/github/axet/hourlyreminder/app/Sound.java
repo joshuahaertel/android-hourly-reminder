@@ -1,6 +1,5 @@
 package com.github.axet.hourlyreminder.app;
 
-import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -236,7 +235,6 @@ public class Sound extends TTS {
 
         if (ss != Silenced.NONE)
             return ss;
-
 
         boolean v = config.alarms;
         boolean c = a.ringtone;
