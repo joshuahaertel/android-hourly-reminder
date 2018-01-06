@@ -130,9 +130,8 @@ public class HourlyApplication extends MainApplication {
     }
 
     public static int getActionbarColor(Context context) {
-        int colorId = getTheme(context, R.attr.colorPrimary, R.color.actionBarBackgroundDark);
-        int color = ThemeUtils.getThemeColor(context, colorId);
-        return color;
+        int prim = ThemeUtils.getThemeColor(context, R.attr.colorPrimary);
+        return getTheme(context, prim, R.color.actionBarBackgroundDark);
     }
 
     public static List<Alarm> loadAlarms(Context context) {
