@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -40,14 +41,6 @@ import java.util.List;
 public class Sound extends TTS {
     public static final String TAG = Sound.class.getSimpleName();
 
-    // Settings.class
-    public static final String ZEN_MODE = "zen_mode";
-
-    public static final int ZEN_MODE_OFF = 0;
-    public static final int ZEN_MODE_IMPORTANT_INTERRUPTIONS = 1;
-    public static final int ZEN_MODE_NO_INTERRUPTIONS = 2;
-    public static final int ZEN_MODE_ALARMS = 3;
-
     ToneGenerator tone;
     Runnable toneLoop;
     MediaPlayer player;
@@ -65,13 +58,13 @@ public class Sound extends TTS {
 
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(SoundChannel c, double hz, int dur) {
-        int rate = com.github.axet.androidlibrary.sound.Sound.getValidAudioRate(SOUND_CHANNELS, SOUND_SAMPLERATE);
+        int rate = getValidAudioRate(SOUND_CHANNELS, SOUND_SAMPLERATE);
         if (rate == -1)
             throw new RuntimeException("Unable to find proper audio attrs");
         int count = rate * dur / 1000; // samples count
         int last = count - 1; // last sample index
         int stereo = count * 2; // total actual samples count
-        AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(rate, SOUND_CHANNELS, com.github.axet.androidlibrary.sound.Sound.DEFAULT_AUDIOFORMAT, stereo);
+        AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(rate, SOUND_CHANNELS, DEFAULT_AUDIOFORMAT, stereo);
         for (int i = 0; i < count; i++) {
             double sx = 2 * Math.PI * i / (rate / hz);
             short sample = (short) (Math.sin(sx) * 0x7FFF);
@@ -305,18 +298,13 @@ public class Sound extends TTS {
             }
             // https://stackoverflow.com/questions/31387137/android-detect-do-not-disturb-status
             if (Build.VERSION.SDK_INT >= 17) {
-                ContentResolver resolver = context.getContentResolver();
-                try {
-                    int zen = Settings.Global.getInt(resolver, ZEN_MODE);
-                    switch (zen) {
-                        case ZEN_MODE_OFF:
-                            break;
-                        case ZEN_MODE_IMPORTANT_INTERRUPTIONS:
-                        case ZEN_MODE_NO_INTERRUPTIONS:
-                        case ZEN_MODE_ALARMS:
-                            return Silenced.SETTINGS;
-                    }
-                } catch (Settings.SettingNotFoundException e) {
+                switch (getDNDMode()) {
+                    case ZEN_MODE_OFF:
+                        break;
+                    case ZEN_MODE_IMPORTANT_INTERRUPTIONS:
+                    case ZEN_MODE_NO_INTERRUPTIONS:
+                    case ZEN_MODE_ALARMS:
+                        return Silenced.SETTINGS;
                 }
             }
         }
