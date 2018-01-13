@@ -451,7 +451,7 @@ public class Sound extends TTS {
                 playerCl();
                 MediaPlayer p = create(ReminderSet.DEFAULT_NOTIFICATION); // first fallback to system media player
                 player = playOnce(p, done);
-            } catch (RuntimeException ee) { // second fallback to tone (samsung phones crahes on tone native initialization (seems like some AudioTrack initialization failed)
+            } catch (RuntimeException ee) { // second fallback to tone (samsung phones crashes on tone native initialization (seems like some AudioTrack initialization failed)
                 Log.d(TAG, "Unable get tone", e);
                 toastTone(ee);
                 long dur = tonePlayBeep();
@@ -524,12 +524,12 @@ public class Sound extends TTS {
         try {
             player = create(uri);
         } catch (RuntimeException e) {
-            Log.d(TAG, "unable to get ringtone", e);
+            Log.d(TAG, "unable to get the ringtone", e);
             toastTone(e);
             try {
                 player = create(Alarm.DEFAULT_ALARM);
             } catch (RuntimeException ee) { // last resort fallback
-                Log.d(TAG, "unable to get default ringtone", e);
+                Log.d(TAG, "unable to get the default ringtone", e);
                 toastTone(ee);
                 toneLoop = new Runnable() {
                     @Override
@@ -842,7 +842,7 @@ public class Sound extends TTS {
 
         Silenced s = silencedPlaylist(config, alarm.list);
 
-        // do we have slince alarm?
+        // is the alarm silenced?
         if (s != Silenced.NONE) {
             if (s == Silenced.VIBRATE)
                 vibrateStart(config.alarmsPattern, 0);

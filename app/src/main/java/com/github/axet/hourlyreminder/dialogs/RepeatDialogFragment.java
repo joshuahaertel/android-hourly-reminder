@@ -136,7 +136,7 @@ public class RepeatDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return null; // must be null or Illigal state exception
+        return null; // must be null or Illegal state exception
     }
 
     View createView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
