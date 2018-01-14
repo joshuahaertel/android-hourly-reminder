@@ -13,7 +13,9 @@ In additional, you need to figure it out, which is the best way to pronounce cur
   * "Time is 12 O'clock"
   * "Time is 23 hundred hours"
   * "Current time is 10 oh 5 AM"
-  * "Current time is 14 35"
+  * "Current time is 14 35" (14:35)
+  * "Current time is 0 9" (00:09)
+  * "Current time is 1 5" (01:09)
 
  You can find how speech time string is built here:
 
