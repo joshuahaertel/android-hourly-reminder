@@ -42,24 +42,24 @@ import java.util.Map;
 import java.util.TreeSet;
 
 /**
- * System Alarm Manager notifes this service to create/stop alarms.
+ * System Alarm Manager notifies this service to create/stop alarms.
  * <p/>
  * All Alarm notifications clicks routed to this service.
  */
 public class AlarmService extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final String TAG = AlarmService.class.getSimpleName();
 
-    // upcoming noticiation alarm action. triggers notification upcoming.
+    // upcoming notification alarm action. Triggers notification upcoming.
     public static final String REGISTER = AlarmService.class.getCanonicalName() + ".REGISTER";
-    // upcoming noticiation alarm action. triggers notification upcoming.
+    // upcoming notification alarm action. Triggers notification upcoming.
     public static final String NOTIFICATION = AlarmService.class.getCanonicalName() + ".NOTIFICATION";
     // snooze
     public static final String SNOOZE = AlarmService.class.getCanonicalName() + ".SNOOZE";
     // cancel alarm
     public static final String CANCEL = HourlyApplication.class.getCanonicalName() + ".CANCEL";
-    // alarm broadcast, triggs sound
+    // alarm broadcast, triggers sound
     public static final String ALARM = HourlyApplication.class.getCanonicalName() + ".ALARM";
-    // reminder broadcast triggs sound
+    // reminder broadcast triggers sound
     public static final String REMINDER = HourlyApplication.class.getCanonicalName() + ".REMINDER";
     // dismiss current alarm action
     public static final String DISMISS = HourlyApplication.class.getCanonicalName() + ".DISMISS";
@@ -372,7 +372,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     int getRepeat(long time) {
         TreeSet<Integer> rep = new TreeSet<>();
-        rep.add(60); // default 60 minutes == 15 mintures before alarm
+        rep.add(60); // default 60 minutes == 15 minutes before alarm
         for (ReminderSet rr : reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
@@ -399,7 +399,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     // show upcoming alarm notification
     //
-    // time - 0 cancel notifcation
+    // time - 0 cancel notification
     // time - upcoming alarm time, show text.
     public void showNotificationUpcoming(long time) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -458,7 +458,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // alarm come from service call (System Alarm Manager) for specified time
     //
     // we have to check what 'alarms' do we have at specified time (can be reminder + alarm)
-    // and act propertly.
+    // and act properly.
     public void soundAlarm(final long time) {
         // find hourly reminder + alarm = combine proper sound notification_upcoming (can be merge beep, speech, ringtone)
         //
@@ -474,7 +474,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     alarm.merge(a);
                 }
                 if (!a.weekdaysCheck) {
-                    // disable alarm after it goes off for non rcuring alarms (!a.weekdays)
+                    // disable alarm after it goes off for non recurring alarms (!a.weekdays)
                     a.setEnable(false);
                 } else {
                     // calling setNext is more safe. if this alarm have to fire today we will reset it

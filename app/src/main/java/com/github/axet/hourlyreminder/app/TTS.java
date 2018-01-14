@@ -38,7 +38,7 @@ public class TTS extends SoundConfig {
 
     TextToSpeech tts;
     Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
-    boolean restart; // restart tts once if failed. on apk upgrade tts alwyas failed.
+    boolean restart; // restart tts once if failed. on apk upgrade tts always failed.
     Set<Runnable> dones = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
     Runnable onInit; // once
 
@@ -142,7 +142,7 @@ public class TTS extends SoundConfig {
             });
         }
 
-        // TTS may say failed, but play sounds successfuly. we need regardless or failed do not
+        // TTS may say failed, but play sounds successfully. we need regardless or failed do not
         // play speech twice if clear.run() was called.
         if (!playSpeech(time)) {
             Toast.makeText(context, context.getString(R.string.WaitTTS), Toast.LENGTH_SHORT).show();
@@ -273,7 +273,7 @@ public class TTS extends SoundConfig {
                     context.startActivity(intent);
                 }
             } catch (AndroidRuntimeException e) {
-                Log.d(TAG, "Unable load TTS", e);
+                Log.d(TAG, "Unable to load TTS", e);
                 try {
                     Intent intent = new Intent(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -281,7 +281,7 @@ public class TTS extends SoundConfig {
                         context.startActivity(intent);
                     }
                 } catch (AndroidRuntimeException e1) {
-                    Log.d(TAG, "Unable load TTS", e1);
+                    Log.d(TAG, "Unable to load TTS", e1);
                 }
             }
             return null;
@@ -321,7 +321,7 @@ public class TTS extends SoundConfig {
             speakMinute = HourlyApplication.getQuantityString(context, ru, R.plurals.minutes, min, min);
         }
 
-        // english requres zero minutes
+        // English requires zero minutes
         Locale en = new Locale("en");
         if (locale.toString().startsWith(en.toString())) {
             if (speakAMPMFlag) {
