@@ -8,7 +8,7 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
-public class SoundConfig {
+public class SoundConfig extends com.github.axet.androidlibrary.sound.Sound {
     public static final String TAG = SoundConfig.class.getSimpleName();
 
     public final static int SOUND_CHANNELS = AudioFormat.CHANNEL_OUT_STEREO;
@@ -28,11 +28,10 @@ public class SoundConfig {
         public int ct; // AudioAttributes.CONTENT_TYPE_*
     }
 
-    Context context;
     Handler handler;
 
     public SoundConfig(Context context) {
-        this.context = context;
+        super(context);
         this.handler = new Handler();
     }
 

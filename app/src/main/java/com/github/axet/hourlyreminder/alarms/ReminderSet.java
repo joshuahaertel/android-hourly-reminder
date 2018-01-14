@@ -26,7 +26,7 @@ public class ReminderSet extends WeekSet {
     public Set<String> hours; // actual hours selected
     public List<Reminder> list; // generated reminders (depend on repeat)
     public int repeat; // minutes
-    public long last; // last reminder announced, to prevent double annonunces
+    public long last; // last reminder announced, to prevent double announcements
 
     public static final Set<String> DEF_HOURS = new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"}));
 

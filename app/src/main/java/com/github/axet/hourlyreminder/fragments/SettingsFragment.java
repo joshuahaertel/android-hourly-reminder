@@ -158,11 +158,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         PreferenceGroup app = (PreferenceGroup) findPreference("application");
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
-        // 21+ SDK requires to be Alarm to be percice on time
+        // 21+ SDK requires to be Alarm to be precise on time
         if (Build.VERSION.SDK_INT < 21) {
             advanced.removePreference(alarm);
         }
-        // 23+ SDK requires to be Alarm to be percice on time
+        // 23+ SDK requires to be Alarm to be precise on time
         if (Build.VERSION.SDK_INT >= 23) {
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
             alarm.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

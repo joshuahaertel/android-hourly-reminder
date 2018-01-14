@@ -68,7 +68,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
      */
     public static long[] patternLoad(String pattern) {
         ArrayList<Long> list = new ArrayList<>();
-        String current = "s"; // start from silince
+        String current = "s"; // start from silence
         Long value = 0l;
         String[] ss = pattern.split(",");
         for (String s : ss) {

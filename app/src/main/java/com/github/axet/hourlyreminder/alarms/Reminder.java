@@ -97,8 +97,16 @@ public class Reminder extends WeekTime {
     public boolean isSoundAlarm(long time) {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(time);
+
+        if (weekdaysCheck) { // two reminders the same time but differend weekdays
+            int week = cal.get(Calendar.DAY_OF_WEEK);
+            if (!isWeek(week))
+                return false;
+        }
+
         int hour = cal.get(Calendar.HOUR_OF_DAY);
         int min = cal.get(Calendar.MINUTE);
+
         return this.hour == hour && this.min == min;
     }
 

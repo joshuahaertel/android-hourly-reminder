@@ -57,7 +57,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     Sound sound;
     Handler handle = new Handler();
     Runnable alive;
-    boolean alarmActivity = false; // if service crashed, activity willbe closed. ok to have var.
+    boolean alarmActivity = false; // if service crashed, activity will be closed. ok to have var.
     Sound.Silenced silenced = Sound.Silenced.NONE;
 
     int state = STATE_INIT;
@@ -279,7 +279,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                     return START_NOT_STICKY;
                 alarm = new FireAlarm(json);
             } else { // alarm loaded, does it interference with current running alarm?
-                if (!json.isEmpty()) { // yep, we already firering alarm, show missed
+                if (!json.isEmpty()) { // yep, we are already firing the alarm, show missed
                     FireAlarm a = new FireAlarm(json);
                     AlarmService.showNotificationMissed(this, a.settime, false); // dismiss after conflict, not time based; snooze = off
                 }

@@ -19,7 +19,7 @@ import com.github.axet.androidlibrary.R;
 import com.github.axet.androidlibrary.widgets.StateDrawable;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 
-// old phones does not allow to refer colors from xml shapes.
+// old phones do not allow to refer colors from xml shapes.
 //
 // better to create simple class. java always better then xml (note to google)
 //
