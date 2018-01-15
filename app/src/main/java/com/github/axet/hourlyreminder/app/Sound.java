@@ -286,12 +286,7 @@ public class Sound extends TTS {
                     if (v) { // if vibrate enabled
                         return Silenced.VIBRATE;
                     }
-                }
-                if (t == AudioManager.VIBRATE_SETTING_ONLY_SILENT && mode == AudioManager.RINGER_MODE_SILENT) {
-                    boolean v = config.isChecked();
-                    if (v) { // if vibrate enabled
-                        return Silenced.VIBRATE;
-                    }
+                    return Silenced.SETTINGS;
                 }
             }
             if (mode == AudioManager.RINGER_MODE_SILENT) {
