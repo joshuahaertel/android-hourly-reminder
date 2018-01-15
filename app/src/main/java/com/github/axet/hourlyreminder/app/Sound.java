@@ -277,6 +277,7 @@ public class Sound extends TTS {
                 if (v) { // if vibrate enabled
                     return Silenced.VIBRATE;
                 }
+                return Silenced.SETTINGS;
             }
             if (Build.VERSION.SDK_INT < 16) {
                 int t = tm.getVibrateSetting(AudioManager.VIBRATE_TYPE_RINGER);
