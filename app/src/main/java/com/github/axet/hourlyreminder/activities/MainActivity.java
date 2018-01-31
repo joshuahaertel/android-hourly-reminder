@@ -29,6 +29,8 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.LinearLayout;
 
+import com.github.axet.androidlibrary.widgets.AppCompatSettingsThemeActivity;
+import com.github.axet.androidlibrary.widgets.AppCompatThemeActivity;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
@@ -38,7 +40,7 @@ import com.github.axet.hourlyreminder.services.AlarmService;
 
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, DialogInterface.OnDismissListener {
+public class MainActivity extends AppCompatSettingsThemeActivity implements DialogInterface.OnDismissListener {
     // MainActivity action
     public static final String SHOW_ALARMS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_ALARMS_PAGE";
     public static final String SHOW_SETTINGS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_SETTINGS_PAGE";
@@ -166,8 +168,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     @Override
+    public int getAppTheme() {
+        return HourlyApplication.getTheme(this, R.style.AppThemeLight_NoActionBar, R.style.AppThemeDark_NoActionBar);
+    }
+
+    @Override
+    public String getAppThemeKey() {
+        return HourlyApplication.PREFERENCE_THEME;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight_NoActionBar, R.style.AppThemeDark_NoActionBar));
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -220,9 +231,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             mViewPager.setCurrentItem(2);
         }
 
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-        shared.registerOnSharedPreferenceChangeListener(this);
-
 //        if (OptimizationPreferenceCompat.needWarning(this)) {
 //            OptimizationPreferenceCompat.showWarning(this);
 //        }
@@ -258,18 +266,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (reciver != null) {
             unregisterReceiver(reciver);
             reciver = null;
-        }
-
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-        shared.unregisterOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(HourlyApplication.PREFERENCE_THEME)) {
-            finish();
-            startActivity(new Intent(this, MainActivity.class).setAction(SHOW_SETTINGS_PAGE));
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }
     }
 
