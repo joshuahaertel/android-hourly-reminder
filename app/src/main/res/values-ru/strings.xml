@@ -101,7 +101,7 @@
     </string-array>
 
     <string-array name="themes_text">
-        <item>Тема Светлый (по умолчанию)</item>
+        <item>Тема Светлый</item>
         <item>Тема Темный</item>
     </string-array>
 

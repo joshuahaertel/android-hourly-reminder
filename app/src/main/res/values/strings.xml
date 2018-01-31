@@ -223,7 +223,7 @@
     <string name="min_symbol">m</string>
 
     <string-array name="themes_text">
-        <item>Theme White (default)</item>
+        <item>Theme White</item>
         <item>Theme Dark</item>
     </string-array>
 
