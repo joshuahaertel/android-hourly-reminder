@@ -433,9 +433,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     // alarm dismiss button
     public void showNotificationAlarm(FireAlarm alarm) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (!prefs.getBoolean(HourlyApplication.PREFERENCE_NOTIFICATIONS, true))
-            return;
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//        if (!prefs.getBoolean(HourlyApplication.PREFERENCE_NOTIFICATIONS, true))
+//            return;
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
