@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.github.axet.androidlibrary.widgets.AppCompatThemeActivity;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
@@ -25,7 +26,7 @@ import java.util.Calendar;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class AlarmActivity extends AppCompatActivity {
+public class AlarmActivity extends AppCompatThemeActivity {
     public static final String TAG = AlarmActivity.class.getSimpleName();
 
     // alarm activity action. close it.
@@ -50,9 +51,13 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     @Override
+    public int getAppTheme() {
+        return HourlyApplication.getTheme(this, R.style.AppThemeLight_FullScreen, R.style.AppThemeDark_FullScreen);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
-        setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight_FullScreen, R.style.AppThemeDark_FullScreen));
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();

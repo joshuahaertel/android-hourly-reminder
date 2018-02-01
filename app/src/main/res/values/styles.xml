@@ -47,6 +47,8 @@
 
     <style name="AppThemeDark.FullScreen" parent="@android:style/Theme.NoTitleBar.Fullscreen"></style>
 
+    <style name="AppThemeDark.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark" />
+
     <style name="Hours12Block">
         <!-- 26dp / 2 -->
         <item name="android:paddingTop">13dp</item>
