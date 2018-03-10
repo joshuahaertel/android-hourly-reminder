@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.app.Storage;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
@@ -174,7 +175,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                         choicer = null;
                     }
                 };
-                r.setPermissionsDialog(RemindersFragment.this, PERMISSIONS, RESULT_RINGTONE);
+                r.setPermissionsDialog(RemindersFragment.this, Storage.PERMISSIONS_RO, RESULT_RINGTONE);
                 r.setRingtone(RemindersFragment.this, ReminderSet.TYPE_NOTIFICATION, ReminderSet.DEFAULT_NOTIFICATION, getString(R.string.Reminder), RESULT_RINGTONE);
                 choicer = r;
                 choicer.show(uri);

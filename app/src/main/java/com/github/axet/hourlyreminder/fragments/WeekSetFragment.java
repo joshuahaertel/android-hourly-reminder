@@ -1,6 +1,5 @@
 package com.github.axet.hourlyreminder.fragments;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -49,8 +48,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     public static final int TYPE_DELETED = 2;
 
     public static final int[] ALL = {TYPE_COLLAPSED, TYPE_EXPANDED};
-
-    public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
 
     public static final int RESULT_RINGTONE = 0;
     public static final int RESULT_FILE = 1;
@@ -462,7 +459,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                         choicer = null;
                     }
                 };
-                choicer.setPermissionsDialog(WeekSetFragment.this, PERMISSIONS, RESULT_FILE);
+                choicer.setPermissionsDialog(WeekSetFragment.this, Storage.PERMISSIONS_RO, RESULT_FILE);
                 choicer.setStorageAccessFramework(WeekSetFragment.this, RESULT_FILE);
 
                 Uri path = w.ringtoneValue;
@@ -515,7 +512,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         switch (requestCode) {
             case RESULT_RINGTONE:
             case RESULT_FILE:
-                choicer.onRequestPermissionsResult(permissions, grantResults);
+                if (choicer != null) // called twice? or mainactivity were recreated
+                    choicer.onRequestPermissionsResult(permissions, grantResults);
                 break;
         }
     }
@@ -526,7 +524,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         switch (requestCode) {
             case RESULT_RINGTONE:
             case RESULT_FILE:
-                choicer.onActivityResult(resultCode, data);
+                if (choicer != null) // called twice? or mainactivity were recreated
+                    choicer.onActivityResult(resultCode, data);
                 break;
         }
     }

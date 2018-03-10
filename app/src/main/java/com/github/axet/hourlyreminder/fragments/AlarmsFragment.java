@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.github.axet.androidlibrary.app.Storage;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
@@ -205,7 +206,7 @@ public class AlarmsFragment extends WeekSetFragment {
                         choicer = null;
                     }
                 };
-                r.setPermissionsDialog(AlarmsFragment.this, PERMISSIONS, RESULT_RINGTONE);
+                r.setPermissionsDialog(AlarmsFragment.this, Storage.PERMISSIONS_RO, RESULT_RINGTONE);
                 r.setRingtone(AlarmsFragment.this, Alarm.TYPE_ALARM, Alarm.DEFAULT_ALARM, getString(R.string.SelectAlarm), RESULT_RINGTONE);
                 choicer = r;
                 choicer.show(uri);
