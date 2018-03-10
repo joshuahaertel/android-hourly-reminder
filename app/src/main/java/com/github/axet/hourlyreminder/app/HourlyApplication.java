@@ -129,11 +129,6 @@ public class HourlyApplication extends MainApplication {
         edit.putString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, Integer.toString(old));
     }
 
-    public static int getActionbarColor(Context context) {
-        int prim = ThemeUtils.getThemeColor(context, R.attr.colorPrimary);
-        return getTheme(context, prim, R.color.actionBarBackgroundDark);
-    }
-
     public static List<Alarm> loadAlarms(Context context) {
         ArrayList<Alarm> alarms = new ArrayList<>();
 

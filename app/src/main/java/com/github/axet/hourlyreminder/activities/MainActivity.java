@@ -5,12 +5,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -19,7 +17,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -30,7 +27,6 @@ import android.view.ViewParent;
 import android.widget.LinearLayout;
 
 import com.github.axet.androidlibrary.widgets.AppCompatSettingsThemeActivity;
-import com.github.axet.androidlibrary.widgets.AppCompatThemeActivity;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
@@ -41,23 +37,12 @@ import com.github.axet.hourlyreminder.services.AlarmService;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatSettingsThemeActivity implements DialogInterface.OnDismissListener {
-    // MainActivity action
+
     public static final String SHOW_ALARMS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_ALARMS_PAGE";
     public static final String SHOW_SETTINGS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_SETTINGS_PAGE";
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
 
     TimeSetReceiver reciver = new TimeSetReceiver();
@@ -197,7 +182,6 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         AppBarLayout appbar = (AppBarLayout) findViewById(R.id.appbar);
-        ViewCompat.setBackground(appbar, new ColorDrawable(HourlyApplication.getActionbarColor(this)));
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
@@ -209,16 +193,6 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         SettingsTabView v = new SettingsTabView(this, tab, tabLayout.getTabTextColors());
         tab.setCustomView(v);
         v.updateLayout();
-
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                ((HourlyApplication) getApplicationContext()).soundReminder();
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
 
         AlarmService.start(this);
 
@@ -238,21 +212,14 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
         return false;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar base clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-//            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
@@ -273,9 +240,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     protected void onResume() {
         super.onResume();
         if (timeChanged) {
-            finish();
-            startActivity(new Intent(MainActivity.this, MainActivity.class));
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            restartActivity();
         }
     }
 
