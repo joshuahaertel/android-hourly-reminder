@@ -512,7 +512,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         switch (requestCode) {
             case RESULT_RINGTONE:
             case RESULT_FILE:
-                choicer.onRequestPermissionsResult(permissions, grantResults);
+                if (choicer != null) // called twice? or mainactivity were recreated
+                    choicer.onRequestPermissionsResult(permissions, grantResults);
                 break;
         }
     }
@@ -523,7 +524,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         switch (requestCode) {
             case RESULT_RINGTONE:
             case RESULT_FILE:
-                choicer.onActivityResult(resultCode, data);
+                if (choicer != null) // called twice? or mainactivity were recreated
+                    choicer.onActivityResult(resultCode, data);
                 break;
         }
     }
