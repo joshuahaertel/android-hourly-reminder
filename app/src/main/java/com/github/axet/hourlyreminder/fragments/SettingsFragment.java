@@ -84,8 +84,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             }
 
             if (preference instanceof SeekBarPreference) {
-                float f = (Float) value;
-                preference.setSummary((int) (f * 100) + "%");
+                preference.setSummary(((SeekBarPreference) preference).format((Float) value));
             } else if (preference instanceof ListPreference) {
                 // For list preferences, look up the correct display value in
                 // the preference's 'entries' list.
@@ -133,7 +132,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             SoundConfig.SoundChannel c = sound.getSoundChannel();
             AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
             am.setStreamVolume(c.streamType, am.getStreamVolume(c.streamType), AudioManager.FLAG_SHOW_UI);
-            SeekBarPreference.SeekBarPreferenceDialogFragment.show(this, preference.getKey());
+            SeekBarPreference.show(this, preference.getKey());
             return;
         }
         if (preference instanceof BeepPreference) {
