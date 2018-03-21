@@ -155,6 +155,7 @@ public class TTSPreference extends EditTextPreference {
             sound = new Sound(getContext()) {
                 @Override
                 public void onInit() {
+                    super.onInit();
                     update();
                 }
             };
