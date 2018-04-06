@@ -353,4 +353,5 @@
     <string name="show_24h">Show 24h</string>
     <string name="default_tts">Default</string>
     <string name="flip_phone_to_snooze">(Flip phone to snooze)</string>
+    <string name="fallback_text">Unable to play sounds due to lack of resources</string>
 </resources>
