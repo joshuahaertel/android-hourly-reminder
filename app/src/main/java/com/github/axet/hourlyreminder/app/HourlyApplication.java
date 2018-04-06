@@ -40,6 +40,7 @@ public class HourlyApplication extends MainApplication {
     public static final int NOTIFICATION_UPCOMING_ICON = 0;
     public static final int NOTIFICATION_ALARM_ICON = 1;
     public static final int NOTIFICATION_MISSED_ICON = 2;
+    public static final int NOTIFICATION_FALLBACK_ICON = 3;
 
     public static final String PREFERENCE_VERSION = "version";
 

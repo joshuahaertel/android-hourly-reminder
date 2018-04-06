@@ -1,6 +1,7 @@
 package com.github.axet.hourlyreminder.app;
 
-import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,7 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
+import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -434,17 +435,16 @@ public class Sound extends TTS {
         try {
             AudioTrack t = generateTone(getSoundChannel(), beep.value_f, beep.value_l);
             playBeep(t, done);
-        } catch (RuntimeException e) {
-            Log.d(TAG, "Unable get track", e);
-            toastTone(e);
+        } catch (RuntimeException e1) {
+            Log.d(TAG, "Unable get track", e1);
+            toastTone(e1);
             try {
                 playerCl();
                 MediaPlayer p = create(ReminderSet.DEFAULT_NOTIFICATION); // first fallback to system media player
                 player = playOnce(p, done);
-            } catch (RuntimeException ee) { // second fallback to tone (samsung phones crashes on tone native initialization (seems like some AudioTrack initialization failed)
-                Log.d(TAG, "Unable get tone", e);
-                toastTone(ee);
-                long dur = tonePlayBeep();
+            } catch (RuntimeException e2) { // second fallback to tone (samsung phones crashes on tone native initialization (seems like some AudioTrack initialization failed)
+                Log.d(TAG, "Unable get tone", e2);
+                toastTone(e2);
                 Runnable end = new Runnable() {
                     @Override
                     public void run() {
@@ -453,7 +453,15 @@ public class Sound extends TTS {
                             done.run();
                     }
                 };
-                handler.postDelayed(end, dur); // length of tone
+                try {
+                    long dur = tonePlayBeep();
+                    handler.postDelayed(end, dur); // length of tone
+                } catch (RuntimeException e3) {
+                    Log.d(TAG, "Unable get tone", e3);
+                    toastTone(e3);
+                    notificationAlarm();
+                    handler.postDelayed(end, 1000);
+                }
             }
         }
     }
@@ -513,14 +521,14 @@ public class Sound extends TTS {
 
         try {
             player = create(uri);
-        } catch (RuntimeException e) {
-            Log.d(TAG, "unable to get the ringtone", e);
-            toastTone(e);
+        } catch (RuntimeException e1) {
+            Log.d(TAG, "unable to get the ringtone", e1);
+            toastTone(e1);
             try {
                 player = create(Alarm.DEFAULT_ALARM);
-            } catch (RuntimeException ee) { // last resort fallback
-                Log.d(TAG, "unable to get the default ringtone", e);
-                toastTone(ee);
+            } catch (RuntimeException e2) { // last resort fallback
+                Log.d(TAG, "unable to get the default ringtone", e2);
+                toastTone(e2);
                 toneLoop = new Runnable() {
                     @Override
                     public void run() {
@@ -529,8 +537,21 @@ public class Sound extends TTS {
                         handler.postDelayed(toneLoop, dur); // length of tone
                     }
                 };
-                toneLoop.run();
-                return;
+                try {
+                    toneLoop.run();
+                    return;
+                } catch (RuntimeException e3) {
+                    toneLoop = new Runnable() {
+                        @Override
+                        public void run() {
+                            notificationAlarm();
+                            handler.removeCallbacks(toneLoop);
+                            handler.postDelayed(toneLoop, 1000);
+                        }
+                    };
+                    toneLoop.run();
+                    return;
+                }
             }
         }
 
@@ -694,15 +715,14 @@ public class Sound extends TTS {
         MediaPlayer player;
         try {
             player = create(uri);
-        } catch (RuntimeException e) {
-            Log.d(TAG, "failed get notification", e);
-            toastTone(e);
+        } catch (RuntimeException e1) {
+            Log.d(TAG, "failed get notification", e1);
+            toastTone(e1);
             try {
                 player = create(ReminderSet.DEFAULT_NOTIFICATION);
-            } catch (RuntimeException ee) {
-                Log.d(TAG, "failed get default notification", ee);
-                toastTone(ee);
-                long dur = tonePlay();
+            } catch (RuntimeException e2) {
+                Log.d(TAG, "failed get default notification", e2);
+                toastTone(e2);
                 Runnable end = new Runnable() {
                     @Override
                     public void run() {
@@ -711,7 +731,15 @@ public class Sound extends TTS {
                             done.run();
                     }
                 };
-                handler.postDelayed(end, dur);
+                try {
+                    long dur = tonePlay();
+                    handler.postDelayed(end, dur);
+                } catch (RuntimeException e3) {
+                    Log.d(TAG, "failed get default notification", e3);
+                    toastTone(e3);
+                    notificationAlarm();
+                    handler.postDelayed(end, 1000);
+                }
                 return null;
             }
         }
@@ -948,6 +976,19 @@ public class Sound extends TTS {
 
         beforeOnce.run();
         return s;
+    }
+
+    void notificationAlarm() {
+        String t = context.getString(R.string.app_name);
+        String c = context.getString(R.string.fallback_text);
+        NotificationCompat.Builder b = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                .setContentTitle(t)
+                .setContentText(c)
+                .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
+        Notification n = b.build();
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.notify(HourlyApplication.NOTIFICATION_FALLBACK_ICON, n);
     }
 
 }
