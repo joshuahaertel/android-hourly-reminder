@@ -276,9 +276,15 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         Intent reminderIntent = new Intent(this, AlarmService.class).setAction(REMINDER);
 
         if (all.isEmpty()) {
+            SharedPreferences.Editor edit = shared.edit();
+            edit.putLong(HourlyApplication.PREFERENCE_NEXT, 0);
+            edit.commit();
             updateNotificationUpcomingAlarm(0);
         } else {
             long time = all.first();
+            SharedPreferences.Editor edit = shared.edit();
+            edit.putLong(HourlyApplication.PREFERENCE_NEXT, time);
+            edit.commit();
             updateNotificationUpcomingAlarm(time);
         }
 
@@ -315,7 +321,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
     }
 
-    void huaweiLock(long time, AlarmManager.Alarm a) {
+    void huaweiLock(long time, AlarmManager.Alarm a) { // support for huawei trash phones
         if (!OptimizationPreferenceCompat.isHuawei(this))
             return;
         Calendar cur = Calendar.getInstance();
