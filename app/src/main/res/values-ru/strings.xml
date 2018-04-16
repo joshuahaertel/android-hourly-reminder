@@ -237,5 +237,4 @@
     <string name="default_tts">По умолчанию</string>
     <string name="flip_phone_to_snooze">(Переверните телефон для паузы)</string>
     <string name="fallback_text">Недостаточно системных ресурсов для проигрывания звуков</string>
-    <string name="killed">Приложение было удалено из памяти. Предудущее оповещение было пропущено. Измените системные настройки, запретив удаление этой программы.</string>
 </resources>

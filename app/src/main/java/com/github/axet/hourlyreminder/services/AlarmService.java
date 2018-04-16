@@ -109,7 +109,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass()) {
+        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass(), HourlyApplication.PREFERENCE_OPTIMIZATION) {
             @Override
             public void check() {
             }
@@ -276,15 +276,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         Intent reminderIntent = new Intent(this, AlarmService.class).setAction(REMINDER);
 
         if (all.isEmpty()) {
-            SharedPreferences.Editor edit = shared.edit();
-            edit.putLong(HourlyApplication.PREFERENCE_NEXT, 0);
-            edit.commit();
+            OptimizationPreferenceCompat.setKillCheck(this, 0, HourlyApplication.PREFERENCE_NEXT);
             updateNotificationUpcomingAlarm(0);
         } else {
             long time = all.first();
-            SharedPreferences.Editor edit = shared.edit();
-            edit.putLong(HourlyApplication.PREFERENCE_NEXT, time);
-            edit.commit();
+            OptimizationPreferenceCompat.setKillCheck(this, time, HourlyApplication.PREFERENCE_NEXT);
             updateNotificationUpcomingAlarm(time);
         }
 

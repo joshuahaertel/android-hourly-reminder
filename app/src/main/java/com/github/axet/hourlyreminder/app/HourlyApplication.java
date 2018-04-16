@@ -45,6 +45,7 @@ public class HourlyApplication extends MainApplication {
     public static final String PREFERENCE_VERSION = "version";
 
     public static final String PREFERENCE_OPTIMIZATION = "optimization";
+    public static final String PREFERENCE_OPTIMIZATION_WARNING = "optimization_warning";
     public static final String PREFERENCE_ALARM = "alarm"; // exact timing. use alarm type for reminders
     public static final String PREFERENCE_ALARMS_PREFIX = "alarm_";
 

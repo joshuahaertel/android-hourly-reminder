@@ -311,6 +311,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public void onResume() {
         super.onResume();
         OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
-        optimization.onResume();
+        optimization.onResume(HourlyApplication.PREFERENCE_OPTIMIZATION_WARNING);
     }
 }
