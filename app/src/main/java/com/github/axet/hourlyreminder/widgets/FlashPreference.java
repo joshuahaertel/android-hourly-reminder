@@ -123,7 +123,7 @@ public class FlashPreference extends SwitchPreferenceCompat {
                         camManager = null;
                     }
                 } catch (CameraAccessException e) {
-                    e.printStackTrace();
+                    Log.d(TAG, "unable to open camera", e);
                 }
             }
         }
