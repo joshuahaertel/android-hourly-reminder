@@ -18,16 +18,17 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
+import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 import com.github.axet.hourlyreminder.widgets.BeepPreference;
+import com.github.axet.hourlyreminder.widgets.FlashPreference;
 import com.github.axet.hourlyreminder.widgets.VibratePreference;
 
 import org.json.JSONArray;
@@ -56,6 +57,7 @@ public class Sound extends TTS {
     };
     FadeVolume increaseVolume;
     Runnable loop; // loop preventer
+    FlashPreference.Flash flash;
 
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(SoundChannel c, double hz, int dur) {
@@ -201,6 +203,7 @@ public class Sound extends TTS {
 
     public Sound(Context context) {
         super(context);
+        flash = new FlashPreference.Flash(context);
     }
 
     public void close() {
@@ -209,15 +212,20 @@ public class Sound extends TTS {
         vibrateStop();
 
         playerClose();
+
+        if (flash != null) {
+            flash.close();
+            flash = null;
+        }
     }
 
-    public Silenced silencedPlaylist(VibratePreference.Config config, Playlist rr) {
-        Silenced ss = silenced(config);
+    public Silenced silencedPlaylist(VibratePreference.Config flash, VibratePreference.Config config, Playlist rr) {
+        Silenced ss = silenced(flash, config);
 
         if (ss != Silenced.NONE)
             return ss;
 
-        boolean v = config.reminders;
+        boolean v = config.reminders || flash.reminders;
         boolean c = !rr.after.isEmpty() || !rr.before.isEmpty();
         boolean s = rr.speech;
         boolean b = rr.beep;
@@ -232,14 +240,16 @@ public class Sound extends TTS {
     }
 
     public Silenced silencedAlarm(WeekSet a) {
-        VibratePreference.Config config = VibratePreference.loadConfig(context);
+        VibratePreference.Config flashConfig = VibratePreference.loadConfig(context, HourlyApplication.PREFERENCE_FLASH);
 
-        Silenced ss = silenced(config);
+        VibratePreference.Config config = VibratePreference.loadConfig(context, HourlyApplication.PREFERENCE_VIBRATE);
+
+        Silenced ss = silenced(flashConfig, config);
 
         if (ss != Silenced.NONE)
             return ss;
 
-        boolean v = config.alarms;
+        boolean v = config.alarms || flashConfig.alarms;
         boolean c = a.ringtone;
         boolean s = a.speech;
         boolean b = a.beep;
@@ -253,7 +263,7 @@ public class Sound extends TTS {
         return Silenced.NONE;
     }
 
-    public Silenced silenced(VibratePreference.Config config) {
+    public Silenced silenced(VibratePreference.Config flash, VibratePreference.Config config) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (shared.getBoolean(HourlyApplication.PREFERENCE_CALLSILENCE, false)) {
@@ -274,23 +284,19 @@ public class Sound extends TTS {
             AudioManager tm = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             int mode = tm.getRingerMode();
             if (mode == AudioManager.RINGER_MODE_VIBRATE) { // phone in vibrate mode
-                boolean v = config.isChecked();
-                if (v) { // if vibrate enabled
+                if (config.isChecked() || flash.isChecked()) // if vibrate enabled
                     return Silenced.VIBRATE;
-                }
                 return Silenced.SETTINGS;
             }
             if (Build.VERSION.SDK_INT < 16) {
                 int t = tm.getVibrateSetting(AudioManager.VIBRATE_TYPE_RINGER);
                 if (t == AudioManager.VIBRATE_SETTING_ON) {
-                    boolean v = config.isChecked();
-                    if (v) { // if vibrate enabled
+                    if (config.isChecked() || flash.isChecked()) { // if vibrate enabled
                         return Silenced.VIBRATE;
                     }
                 }
                 if (t == AudioManager.VIBRATE_SETTING_ONLY_SILENT && mode == AudioManager.RINGER_MODE_SILENT) {
-                    boolean v = config.isChecked();
-                    if (v) { // if vibrate enabled
+                    if (config.isChecked() || flash.isChecked()) { // if vibrate enabled
                         return Silenced.VIBRATE;
                     }
                     return Silenced.SETTINGS;
@@ -318,22 +324,26 @@ public class Sound extends TTS {
     public Silenced playList(final Playlist rr, final long time, final Runnable done) {
         playerClose();
 
-        VibratePreference.Config config = VibratePreference.loadConfig(context);
+        VibratePreference.Config flashConfig = VibratePreference.loadConfig(context, HourlyApplication.PREFERENCE_FLASH);
 
-        Silenced s = silencedPlaylist(config, rr);
+        VibratePreference.Config config = VibratePreference.loadConfig(context, HourlyApplication.PREFERENCE_VIBRATE);
+
+        Silenced s = silencedPlaylist(flashConfig, config, rr);
+
+        if (config.reminders) {
+            vibrate(config.remindersPattern);
+        }
+
+        if (flashConfig.reminders) {
+            flash.start(flashConfig.remindersPattern);
+        }
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
-            if (s == Silenced.VIBRATE)
-                vibrate(config.remindersPattern);
             if (done != null) {
                 done.run();
             }
             return s;
-        }
-
-        if (config.reminders) {
-            vibrate(config.remindersPattern);
         }
 
         final Runnable after = new Runnable() {
@@ -665,11 +675,7 @@ public class Sound extends TTS {
         text += "\n";
         text += context.getResources().getString(R.string.ToastTime, Alarm.format2412ap(context, time));
 
-        Toast t = Toast.makeText(context, text.trim(), Toast.LENGTH_SHORT);
-        TextView v = (TextView) t.getView().findViewById(android.R.id.message);
-        if (v != null)
-            v.setGravity(Gravity.CENTER);
-        t.show();
+        Toast.makeText(context, text.trim(), Toast.LENGTH_SHORT).center().show();
     }
 
     MediaPlayer create(Uri uri) { // MediaPlayer.create expand
@@ -856,19 +862,23 @@ public class Sound extends TTS {
 
         final Playlist rr = alarm.list;
 
-        VibratePreference.Config config = VibratePreference.loadConfig(context);
+        VibratePreference.Config flashConfig = VibratePreference.loadConfig(context, HourlyApplication.PREFERENCE_FLASH);
 
-        Silenced s = silencedPlaylist(config, alarm.list);
+        VibratePreference.Config config = VibratePreference.loadConfig(context, HourlyApplication.PREFERENCE_VIBRATE);
 
-        // is the alarm silenced?
-        if (s != Silenced.NONE) {
-            if (s == Silenced.VIBRATE)
-                vibrateStart(config.alarmsPattern, 0);
-            return s;
-        }
+        Silenced s = silencedPlaylist(flashConfig, config, alarm.list);
 
         if (config.alarms) {
             vibrateStart(config.alarmsPattern, 0);
+        }
+
+        if (flashConfig.alarms) {
+            flash.start(flashConfig.alarmsPattern, 0);
+        }
+
+        // is the alarm silenced?
+        if (s != Silenced.NONE) {
+            return s;
         }
 
         final Runnable restart = new Runnable() {

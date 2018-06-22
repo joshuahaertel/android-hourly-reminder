@@ -531,7 +531,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             });
             sound.silencedToast(s, time);
             handler.removeCallbacks(wakeClose); // remove previous wakeClose actions
-            handler.postDelayed(wakeClose, AlarmManager.SEC3); // screen off after 3 seconds, even if playlist keep playing
+            handler.postDelayed(wakeClose, 3 * AlarmManager.SEC1); // screen off after 3 seconds, even if playlist keep playing
         }
 
         if (alarm != null || rlist != null) {
@@ -667,7 +667,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             wl.acquire();
             wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock");
             wlCpu.acquire();
-            handler.postDelayed(wakeClose, AlarmManager.SEC10); // old phones crash on handle wl.acquire(10000)
+            handler.postDelayed(wakeClose, 10 * AlarmManager.SEC1); // old phones crash on handle wl.acquire(10000)
         }
     }
 

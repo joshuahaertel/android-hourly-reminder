@@ -4,6 +4,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -12,6 +16,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
@@ -27,16 +32,16 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class VibratePreference extends SwitchPreferenceCompat {
-    public static final String[] PERMISSIONS_V = new String[]{Manifest.permission.VIBRATE};
+public class FlashPreference extends SwitchPreferenceCompat {
+    public static final String TAG = FlashPreference.class.getSimpleName();
 
-    public static int DEFAULT_VALUE_INDEX = 1;
+    public static final String[] PERMISSIONS_V = new String[]{Manifest.permission.VIBRATE};
 
     ArrayAdapter<CharSequence> values = ArrayAdapter.createFromResource(getContext(), R.array.patterns_values, android.R.layout.simple_spinner_item);
 
     AlertDialog d;
 
-    Config config;
+    VibratePreference.Config config;
 
     SwitchCompat remSw;
     ImageView remPlay;
@@ -45,7 +50,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
     SwitchCompat alaSw;
     ImageView alaPlay;
 
-    Sound sound;
+    Flash flash;
     Handler handler = new Handler();
 
     long[] remPlaying;
@@ -59,138 +64,138 @@ public class VibratePreference extends SwitchPreferenceCompat {
         }
     };
 
-    /**
-     * Convert "s:1000,v:100" to android java pattern
-     *
-     * @param pattern
-     * @return
-     */
-    public static long[] patternLoad(String pattern) {
-        ArrayList<Long> list = new ArrayList<>();
-        String current = "s"; // start from silence
-        Long value = 0l;
-        String[] ss = pattern.split(",");
-        for (String s : ss) {
-            String[] vv = s.split(":");
-            String k = vv[0];
-            String v = vv[1];
-            if (k.equals(current)) {
-                value += Long.parseLong(v);
-            } else {
-                list.add(value);
-                current = k;
-                value = Long.parseLong(v);
+    public static boolean supported(Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+    }
+
+    public static class Flash {
+        Context context;
+        Camera cam;
+        CameraManager camManager;
+        Handler handler = new Handler();
+        long[] pattern;
+        int index;
+        int repeat; // -1 = once, 0 = infinite
+        int count;
+        Runnable update = new Runnable() {
+            @Override
+            public void run() {
+                update();
             }
-        }
-        if (value != 0) {
-            list.add(value);
-        }
-        long[] r = new long[list.size()];
-        for (int i = 0; i < r.length; i++) {
-            r[i] = list.get(i);
-        }
-        return r;
-    }
+        };
 
-    public static long patternLength(long[] patttern) {
-        long ll = 0;
-        for (long l : patttern) {
-            ll += l;
-        }
-        return ll;
-    }
+        public void on() {
+            if (cam != null)
+                return;
+            if (camManager != null)
+                return;
 
-    public static Config loadConfig(Context context, String key) {
-        SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
-        ArrayAdapter<CharSequence> values = ArrayAdapter.createFromResource(context, R.array.patterns_values, android.R.layout.simple_spinner_item);
-        try {
-            String json = shared.getString(key, "");
-            if (json.isEmpty()) {
-                return new Config(false, values.getItem(DEFAULT_VALUE_INDEX).toString());
+            if (Build.VERSION.SDK_INT >= 23) {
+                camManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+                try {
+                    String cameraId = camManager.getCameraIdList()[0];
+                    camManager.setTorchMode(cameraId, true);   //Turn ON
+                    return;
+                } catch (CameraAccessException e) {
+                    Log.d(TAG, "unable to open camera", e);
+                }
             }
-            return new Config(json);
-        } catch (ClassCastException e) {
-            boolean b = shared.getBoolean(key, false);
-            return new Config(b, values.getItem(DEFAULT_VALUE_INDEX).toString());
+
+            cam = Camera.open();
+            Camera.Parameters p = cam.getParameters();
+            p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+            cam.setParameters(p);
+            cam.startPreview();
         }
-    }
 
-    public static boolean hasVibrator(Context context) {
-        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        if (v == null)
-            return false;
-        if (Build.VERSION.SDK_INT < 11)
-            return true;
-        return v.hasVibrator();
-    }
+        public void off() {
+            if (cam != null) {
+                cam.stopPreview();
+                cam.release();
+                cam = null;
+                return;
+            }
 
-    public static void loadDropdown(Spinner rem, int pos) {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(rem.getContext(), R.array.patterns_text, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        rem.setAdapter(adapter);
-        rem.setSelection(pos);
-    }
-
-    public static class Config {
-        public boolean alarms;
-        public String alarmsPattern;
-        public boolean reminders;
-        public String remindersPattern;
-
-        public Config(String json) {
-            try {
-                JSONObject j = new JSONObject(json);
-                reminders = j.getBoolean("reminders");
-                remindersPattern = j.getString("reminders_pattern");
-                alarms = j.getBoolean("alarms");
-                alarmsPattern = j.getString("alarms_pattern");
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
+            if (Build.VERSION.SDK_INT >= 23) {
+                try {
+                    if (camManager != null) {
+                        String cameraId = camManager.getCameraIdList()[0]; // Usually front camera is at 0 position.
+                        camManager.setTorchMode(cameraId, false);
+                        camManager = null;
+                    }
+                } catch (CameraAccessException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
-        public Config(boolean b, String p) {
-            reminders = b;
-            remindersPattern = p;
-            alarms = b;
-            alarmsPattern = p;
+        public Flash(Context context) {
+            this.context = context;
         }
 
-        public JSONObject save() {
-            try {
-                JSONObject json = new JSONObject();
-                json.put("reminders", reminders);
-                json.put("reminders_pattern", remindersPattern);
-                json.put("alarms", alarms);
-                json.put("alarms_pattern", alarmsPattern);
-                return json;
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
+        public void start(String pattern) {
+            long[] p = VibratePreference.patternLoad(pattern);
+            start(p, -1);
+        }
+
+        public void start(String pattern, int r) {
+            long[] p = VibratePreference.patternLoad(pattern);
+            start(p, r);
+        }
+
+        public void start(long[] pattern, int repeat) {
+            this.pattern = pattern;
+            this.index = 0;
+            this.repeat = repeat;
+            this.count = 0;
+            update();
+        }
+
+        void update() {
+            if (index % 2 == 0)
+                off();
+            else
+                on();
+            long d = pattern[index];
+            index++;
+            boolean loop = false;
+            if (index >= pattern.length) {
+                index = 0;
+                count++;
+                loop = true;
             }
+            if (!loop || repeat == 0 || (repeat > 0 && repeat < count))
+                handler.postDelayed(update, d);
         }
 
-        public boolean isChecked() {
-            return alarms || reminders;
+        public void stop() {
+            off();
+            handler.removeCallbacks(update);
+        }
+
+        public void close() {
+            stop();
         }
     }
 
-    public VibratePreference(Context context, AttributeSet attrs, int defStyleAttr) {
+
+    public FlashPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         create();
     }
 
-    public VibratePreference(Context context, AttributeSet attrs) {
+    public FlashPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         create();
     }
 
-    public VibratePreference(Context context) {
+    public FlashPreference(Context context) {
         this(context, null);
         create();
     }
 
     public void create() {
-        if (!hasVibrator(getContext())) {
+        if (!supported(getContext())) {
             setVisible(false);
         }
     }
@@ -216,7 +221,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
     }
 
     void read() {
-        config = loadConfig(getContext(), HourlyApplication.PREFERENCE_VIBRATE);
+        config = VibratePreference.loadConfig(getContext(), HourlyApplication.PREFERENCE_FLASH);
     }
 
     void save() {
@@ -231,15 +236,15 @@ public class VibratePreference extends SwitchPreferenceCompat {
         if (d != null)
             return;
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setView(R.layout.vibrate);
+        builder.setView(R.layout.flash);
         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 d = null;
                 stop();
-                if (sound != null) {
-                    sound.close();
-                    sound = null;
+                if (flash != null) {
+                    flash.close();
+                    flash = null;
                 }
             }
         });
@@ -249,7 +254,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 save();
                 SharedPreferences shared = getSharedPreferences();
                 SharedPreferences.Editor edit = shared.edit();
-                edit.putString(HourlyApplication.PREFERENCE_VIBRATE, config.save().toString());
+                edit.putString(HourlyApplication.PREFERENCE_FLASH, config.save().toString());
                 edit.commit();
                 onResume();
             }
@@ -265,7 +270,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
             public void onShow(DialogInterface dialog) {
                 read();
 
-                sound = new Sound(getContext());
+                flash = new Flash(getContext());
                 stop();
 
                 Window v = d.getWindow();
@@ -274,13 +279,13 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 remSw = (SwitchCompat) v.findViewById(R.id.reminders_switch);
                 remSw.setChecked(config.reminders);
                 rem = (Spinner) v.findViewById(R.id.spinner_reminders);
-                loadDropdown(rem, findPos(config.remindersPattern));
+                VibratePreference.loadDropdown(rem, findPos(config.remindersPattern));
 
                 alaPlay = (ImageView) v.findViewById(R.id.alarms_play);
                 alaSw = (SwitchCompat) v.findViewById(R.id.alarms_switch);
                 alaSw.setChecked(config.alarms);
                 ala = (Spinner) v.findViewById(R.id.spinner_alarms);
-                loadDropdown(ala, findPos(config.alarmsPattern));
+                VibratePreference.loadDropdown(ala, findPos(config.alarmsPattern));
 
                 update();
             }
@@ -305,9 +310,9 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 public void onClick(View v) {
                     save();
                     stop();
-                    remPlaying = patternLoad(config.remindersPattern);
-                    long l = patternLength(remPlaying);
-                    sound.vibrateStart(remPlaying, -1);
+                    remPlaying = VibratePreference.patternLoad(config.remindersPattern);
+                    long l = VibratePreference.patternLength(remPlaying);
+                    flash.start(remPlaying, -1);
                     update();
                     handler.postDelayed(remStop, l);
                 }
@@ -330,8 +335,8 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 public void onClick(View v) {
                     save();
                     stop();
-                    alaPlaying = patternLoad(config.alarmsPattern);
-                    sound.vibrateStart(alaPlaying, 0);
+                    alaPlaying = VibratePreference.patternLoad(config.alarmsPattern);
+                    flash.start(alaPlaying, 0);
                     update();
                 }
             });
@@ -341,11 +346,11 @@ public class VibratePreference extends SwitchPreferenceCompat {
     void stop() {
         if (remPlaying != null) {
             remPlaying = null;
-            sound.vibrateStop();
+            flash.stop();
         }
         if (alaPlaying != null) {
             alaPlaying = null;
-            sound.vibrateStop();
+            flash.stop();
         }
         handler.removeCallbacks(remStop);
     }
