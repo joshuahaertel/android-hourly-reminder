@@ -75,8 +75,7 @@ public class FlashPreference extends SwitchPreferenceCompat {
         Handler handler = new Handler();
         long[] pattern;
         int index;
-        int repeat; // -1 = once, 0 = infinite
-        int count;
+        int repeat; //  the index into pattern at which to repeat, or -1 if you don't want to repeat
         Runnable update = new Runnable() {
             @Override
             public void run() {
@@ -147,7 +146,6 @@ public class FlashPreference extends SwitchPreferenceCompat {
             this.pattern = pattern;
             this.index = 0;
             this.repeat = repeat;
-            this.count = 0;
             update();
         }
 
@@ -160,11 +158,10 @@ public class FlashPreference extends SwitchPreferenceCompat {
             index++;
             boolean loop = false;
             if (index >= pattern.length) {
-                index = 0;
-                count++;
+                index = repeat;
                 loop = true;
             }
-            if (!loop || repeat == 0 || (repeat > 0 && repeat < count))
+            if (!loop || repeat >= 0)
                 handler.postDelayed(update, d);
         }
 
