@@ -16,7 +16,7 @@ public class SoundConfig extends com.github.axet.androidlibrary.sound.Sound {
 
     public enum Silenced {
         NONE,
-        VIBRATE, // vibrate instead of sound
+        VIBRATE, // vibrate/flash instead of sound
         SETTINGS,
         CALL,
         MUSIC

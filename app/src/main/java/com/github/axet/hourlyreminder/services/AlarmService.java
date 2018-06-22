@@ -109,7 +109,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass()) {
+        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass(), HourlyApplication.PREFERENCE_OPTIMIZATION) {
             @Override
             public void check() {
             }
@@ -276,15 +276,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         Intent reminderIntent = new Intent(this, AlarmService.class).setAction(REMINDER);
 
         if (all.isEmpty()) {
-            SharedPreferences.Editor edit = shared.edit();
-            edit.putLong(HourlyApplication.PREFERENCE_NEXT, 0);
-            edit.commit();
+            OptimizationPreferenceCompat.setKillCheck(this, 0, HourlyApplication.PREFERENCE_NEXT);
             updateNotificationUpcomingAlarm(0);
         } else {
             long time = all.first();
-            SharedPreferences.Editor edit = shared.edit();
-            edit.putLong(HourlyApplication.PREFERENCE_NEXT, time);
-            edit.commit();
+            OptimizationPreferenceCompat.setKillCheck(this, time, HourlyApplication.PREFERENCE_NEXT);
             updateNotificationUpcomingAlarm(time);
         }
 
@@ -535,7 +531,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             });
             sound.silencedToast(s, time);
             handler.removeCallbacks(wakeClose); // remove previous wakeClose actions
-            handler.postDelayed(wakeClose, AlarmManager.SEC3); // screen off after 3 seconds, even if playlist keep playing
+            handler.postDelayed(wakeClose, 3 * AlarmManager.SEC1); // screen off after 3 seconds, even if playlist keep playing
         }
 
         if (alarm != null || rlist != null) {
@@ -671,7 +667,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             wl.acquire();
             wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock");
             wlCpu.acquire();
-            handler.postDelayed(wakeClose, AlarmManager.SEC10); // old phones crash on handle wl.acquire(10000)
+            handler.postDelayed(wakeClose, 10 * AlarmManager.SEC1); // old phones crash on handle wl.acquire(10000)
         }
     }
 

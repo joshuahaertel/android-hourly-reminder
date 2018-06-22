@@ -33,6 +33,11 @@
             android:key="phonesilence"
             android:summary="@string/pref_phonesilnece_summary"
             android:title="@string/pref_phonesilence_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="haptic"
+        android:title="@string/pref_haptic">
 
         <com.github.axet.hourlyreminder.widgets.VibratePreference
             android:defaultValue="false"
@@ -40,6 +45,13 @@
             android:persistent="false"
             android:summary="@string/pref_vibrate_summary"
             android:title="@string/pref_vibrate_title" />
+
+        <com.github.axet.hourlyreminder.widgets.FlashPreference
+            android:defaultValue="false"
+            android:key="flash"
+            android:persistent="false"
+            android:summary="@string/pref_flash_summary"
+            android:title="@string/pref_flash_title" />
     </PreferenceCategory>
 
     <PreferenceCategory

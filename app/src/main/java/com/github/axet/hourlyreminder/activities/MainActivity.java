@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
@@ -16,7 +15,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.PreferenceManager;
@@ -209,13 +207,8 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
             mViewPager.setCurrentItem(2);
         }
 
-        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-
-        long next = shared.getLong(HourlyApplication.PREFERENCE_NEXT, 0);
-        long time = System.currentTimeMillis();
-        if (next != 0 && next < time) {
-            AlertDialog.Builder builder = OptimizationPreferenceCompat.buildWarning(this, true);
-            builder.setMessage(R.string.killed);
+        if(OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT)) {
+            AlertDialog.Builder builder = OptimizationPreferenceCompat.buildKilledWarning(this, true);
             builder.show();
         }
     }
