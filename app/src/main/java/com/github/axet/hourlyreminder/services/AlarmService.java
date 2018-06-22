@@ -646,6 +646,42 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
     }
 
+    public static void showNotificationMissedConf(Context context, long settime) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+
+        if (settime == 0) {
+            notificationManager.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
+        } else {
+            final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+
+            PendingIntent main = PendingIntent.getActivity(context, 0,
+                    new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", settime),
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            String text = context.getString(R.string.AlarmMissedConflict, Alarm.format2412ap(context, settime));
+
+            RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            view.setOnClickPendingIntent(R.id.notification_base, main);
+            view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));
+            view.setTextViewText(R.id.notification_text, text);
+            view.setViewVisibility(R.id.notification_button, View.GONE);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+                    .setContentTitle(context.getString(R.string.Alarm))
+                    .setContentText(text)
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                    .setContent(view);
+
+            if (Build.VERSION.SDK_INT < 11)
+                builder.setContentIntent(main);
+
+            if (Build.VERSION.SDK_INT >= 21)
+                builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+
+            notificationManager.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
+        }
+    }
+
     void wakeScreen() {
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         boolean isScreenOn;

@@ -290,7 +290,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 if (!json.isEmpty()) { // yep, we are already firing the alarm, show missed
                     FireAlarm a = new FireAlarm(json);
                     if (!a.contains(alarm)) // it is same alaram currently playing?
-                        AlarmService.showNotificationMissed(this, a.settime, false); // dismiss after conflict, not time based; snooze = off
+                        AlarmService.showNotificationMissedConf(this, a.settime); // dismiss after conflict, not time based; snooze = off
                 }
             }
 
