@@ -13,10 +13,10 @@ import android.speech.tts.Voice;
 import android.text.format.DateFormat;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.widgets.TTSPreference;
 
