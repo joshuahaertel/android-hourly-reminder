@@ -186,6 +186,14 @@ public class FireAlarmService extends Service implements SensorEventListener {
             int min2 = cal2.get(Calendar.MINUTE);
             return hour != hour2 || min != min2;
         }
+
+        public boolean contains(FireAlarm a) {
+            for (Long id : ids) {
+                if (a.ids.contains(id))
+                    return true;
+            }
+            return false;
+        }
     }
 
     public static void activateAlarm(Context context, FireAlarm a) {
@@ -281,7 +289,8 @@ public class FireAlarmService extends Service implements SensorEventListener {
             } else { // alarm loaded, does it interference with current running alarm?
                 if (!json.isEmpty()) { // yep, we are already firing the alarm, show missed
                     FireAlarm a = new FireAlarm(json);
-                    AlarmService.showNotificationMissed(this, a.settime, false); // dismiss after conflict, not time based; snooze = off
+                    if (!a.contains(alarm)) // it is same alaram currently playing?
+                        AlarmService.showNotificationMissed(this, a.settime, false); // dismiss after conflict, not time based; snooze = off
                 }
             }
 
