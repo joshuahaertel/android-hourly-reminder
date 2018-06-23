@@ -6,11 +6,9 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Vibrator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.SwitchPreferenceCompat;
@@ -25,12 +23,6 @@ import android.widget.Spinner;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
-import com.github.axet.hourlyreminder.app.Sound;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 
 public class FlashPreference extends SwitchPreferenceCompat {
     public static final String TAG = FlashPreference.class.getSimpleName();
@@ -93,9 +85,9 @@ public class FlashPreference extends SwitchPreferenceCompat {
                 camManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
                 try {
                     String cameraId = camManager.getCameraIdList()[0];
-                    camManager.setTorchMode(cameraId, true);   //Turn ON
+                    camManager.setTorchMode(cameraId, true);
                     return;
-                } catch (CameraAccessException e) {
+                } catch (Exception e) {
                     Log.d(TAG, "unable to open camera", e);
                 }
             }
@@ -112,7 +104,6 @@ public class FlashPreference extends SwitchPreferenceCompat {
                 cam.stopPreview();
                 cam.release();
                 cam = null;
-                return;
             }
 
             if (Build.VERSION.SDK_INT >= 23) {
@@ -122,7 +113,7 @@ public class FlashPreference extends SwitchPreferenceCompat {
                         camManager.setTorchMode(cameraId, false);
                         camManager = null;
                     }
-                } catch (CameraAccessException e) {
+                } catch (Exception e) {
                     Log.d(TAG, "unable to open camera", e);
                 }
             }
