@@ -87,23 +87,33 @@ public class FlashPreference extends SwitchPreferenceCompat {
                     String cameraId = camManager.getCameraIdList()[0];
                     camManager.setTorchMode(cameraId, true);
                     return;
-                } catch (Exception e) {
+                } catch (Exception e) { // catching CameraAccessException, cause VerifyError on old devices
                     Log.d(TAG, "unable to open camera", e);
                 }
             }
 
-            cam = Camera.open();
-            Camera.Parameters p = cam.getParameters();
-            p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-            cam.setParameters(p);
-            cam.startPreview();
+            try {
+                cam = Camera.open();
+                if (cam != null) {
+                    Camera.Parameters p = cam.getParameters();
+                    p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                    cam.setParameters(p);
+                    cam.startPreview();
+                }
+            } catch (RuntimeException e) {
+                Log.d(TAG, "Unable to open camera", e);
+            }
         }
 
         public void off() {
             if (cam != null) {
-                cam.stopPreview();
-                cam.release();
-                cam = null;
+                try {
+                    cam.stopPreview();
+                    cam.release();
+                    cam = null;
+                } catch (Exception e) {
+                    Log.d(TAG, "Unable to close camera", e);
+                }
             }
 
             if (Build.VERSION.SDK_INT >= 23) {
@@ -113,7 +123,7 @@ public class FlashPreference extends SwitchPreferenceCompat {
                         camManager.setTorchMode(cameraId, false);
                         camManager = null;
                     }
-                } catch (Exception e) {
+                } catch (Exception e) { // catching CameraAccessException, cause VerifyError on old devices
                     Log.d(TAG, "unable to open camera", e);
                 }
             }
