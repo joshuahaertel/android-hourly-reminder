@@ -48,8 +48,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
     Sound sound;
     Handler handler = new Handler();
 
-    long[] remPlaying;
-    long[] alaPlaying;
+    String loaded;
 
     Runnable remStop = new Runnable() {
         @Override
@@ -58,47 +57,6 @@ public class VibratePreference extends SwitchPreferenceCompat {
             update();
         }
     };
-
-    /**
-     * Convert "s:1000,v:100" to android java pattern
-     *
-     * @param pattern
-     * @return
-     */
-    public static long[] patternLoad(String pattern) {
-        ArrayList<Long> list = new ArrayList<>();
-        String current = "s"; // start from silence
-        Long value = 0l;
-        String[] ss = pattern.split(",");
-        for (String s : ss) {
-            String[] vv = s.split(":");
-            String k = vv[0];
-            String v = vv[1];
-            if (k.equals(current)) {
-                value += Long.parseLong(v);
-            } else {
-                list.add(value);
-                current = k;
-                value = Long.parseLong(v);
-            }
-        }
-        if (value != 0) {
-            list.add(value);
-        }
-        long[] r = new long[list.size()];
-        for (int i = 0; i < r.length; i++) {
-            r[i] = list.get(i);
-        }
-        return r;
-    }
-
-    public static long patternLength(long[] patttern) {
-        long ll = 0;
-        for (long l : patttern) {
-            ll += l;
-        }
-        return ll;
-    }
 
     public static Config loadConfig(Context context, String key) {
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
@@ -289,7 +247,7 @@ public class VibratePreference extends SwitchPreferenceCompat {
     }
 
     void update() {
-        if (remPlaying != null) {
+        if (loaded == config.remindersPattern) {
             remPlay.setImageResource(R.drawable.ic_stop_black_24dp);
             remPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -305,16 +263,14 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 public void onClick(View v) {
                     save();
                     stop();
-                    remPlaying = patternLoad(config.remindersPattern);
-                    long l = patternLength(remPlaying);
-                    sound.vibrateStart(remPlaying, -1);
+                    long l = start(config.remindersPattern, -1);
                     update();
                     handler.postDelayed(remStop, l);
                 }
             });
         }
 
-        if (alaPlaying != null) {
+        if (loaded == config.alarmsPattern) {
             alaPlay.setImageResource(R.drawable.ic_stop_black_24dp);
             alaPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -330,23 +286,22 @@ public class VibratePreference extends SwitchPreferenceCompat {
                 public void onClick(View v) {
                     save();
                     stop();
-                    alaPlaying = patternLoad(config.alarmsPattern);
-                    sound.vibrateStart(alaPlaying, 0);
+                    start(config.alarmsPattern, 0);
                     update();
                 }
             });
         }
     }
 
+    long start(String pattern, int r) {
+        loaded = pattern;
+        long[] p = sound.vibrateStart(pattern, r);
+        return Sound.patternLength(p);
+    }
+
     void stop() {
-        if (remPlaying != null) {
-            remPlaying = null;
-            sound.vibrateStop();
-        }
-        if (alaPlaying != null) {
-            alaPlaying = null;
-            sound.vibrateStop();
-        }
+        loaded = null;
+        sound.vibrateStop();
         handler.removeCallbacks(remStop);
     }
 }

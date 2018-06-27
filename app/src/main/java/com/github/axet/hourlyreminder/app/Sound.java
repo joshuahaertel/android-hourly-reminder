@@ -86,6 +86,47 @@ public class Sound extends TTS {
         return new JSONArray(ll);
     }
 
+    /**
+     * Convert "s:1000,v:100" to android java pattern
+     *
+     * @param pattern
+     * @return
+     */
+    public static long[] patternLoad(String pattern) {
+        ArrayList<Long> list = new ArrayList<>();
+        String current = "s"; // start from silence
+        Long value = 0l;
+        String[] ss = pattern.split(",");
+        for (String s : ss) {
+            String[] vv = s.split(":");
+            String k = vv[0];
+            String v = vv[1];
+            if (k.equals(current)) {
+                value += Long.parseLong(v);
+            } else {
+                list.add(value);
+                current = k;
+                value = Long.parseLong(v);
+            }
+        }
+        if (value != 0) {
+            list.add(value);
+        }
+        long[] r = new long[list.size()];
+        for (int i = 0; i < r.length; i++) {
+            r[i] = list.get(i);
+        }
+        return r;
+    }
+
+    public static long patternLength(long[] patttern) {
+        long ll = 0;
+        for (long l : patttern) {
+            ll += l;
+        }
+        return ll;
+    }
+
     public static class Playlist {
         public List<Uri> beforeOnce = new ArrayList<>();
         public List<Uri> before = new ArrayList<>();
@@ -792,13 +833,14 @@ public class Sound extends TTS {
     }
 
     public void vibrate(String pattern) {
-        long[] p = VibratePreference.patternLoad(pattern);
+        long[] p = patternLoad(pattern);
         vibrateStart(p, -1);
     }
 
-    public void vibrateStart(String pattern, int repeat) {
-        long[] p = VibratePreference.patternLoad(pattern);
+    public long[] vibrateStart(String pattern, int repeat) {
+        long[] p = patternLoad(pattern);
         vibrateStart(p, repeat);
+        return p;
     }
 
     public void vibrateStart(long[] pattern, int repeat) {
@@ -808,7 +850,7 @@ public class Sound extends TTS {
         vibrateTrack = pattern;
         v.vibrate(vibrateTrack, repeat);
         if (repeat == -1) { // not repating? clear track, prevent vibrateorStop call twice
-            long l = VibratePreference.patternLength(vibrateTrack);
+            long l = patternLength(vibrateTrack);
             handler.postDelayed(vibrateEnd, l);
         }
     }

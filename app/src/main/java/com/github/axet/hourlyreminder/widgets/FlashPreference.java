@@ -24,6 +24,7 @@ import android.widget.Spinner;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Sound;
 
 public class FlashPreference extends SwitchPreferenceCompat {
     public static final String TAG = FlashPreference.class.getSimpleName();
@@ -129,7 +130,7 @@ public class FlashPreference extends SwitchPreferenceCompat {
         }
 
         public long[] start(String pattern, int r) {
-            long[] p = VibratePreference.patternLoad(pattern);
+            long[] p = Sound.patternLoad(pattern);
             start(p, r);
             return p;
         }
@@ -333,7 +334,7 @@ public class FlashPreference extends SwitchPreferenceCompat {
         loaded = pattern;
         try {
             long[] p = flash.start(pattern, r);
-            return VibratePreference.patternLength(p);
+            return Sound.patternLength(p);
         } catch (RuntimeException e) {
             Log.e(TAG, "unable to use flash", e);
             Toast.Error(getContext(), "Unable to use flashlight", e);
