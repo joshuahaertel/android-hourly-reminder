@@ -873,7 +873,12 @@ public class Sound extends TTS {
         }
 
         if (flashConfig.alarms) {
-            flash.start(flashConfig.alarmsPattern, 0);
+            try {
+                flash.start(flashConfig.alarmsPattern, 0);
+            } catch (RuntimeException e) {
+                Log.e(TAG, "unable to use flash", e);
+                Toast.Error(context, "Unable to use Flash", e);
+            }
         }
 
         // is the alarm silenced?
