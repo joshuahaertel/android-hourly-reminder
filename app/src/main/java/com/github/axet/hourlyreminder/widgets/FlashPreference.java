@@ -14,7 +14,6 @@ import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
@@ -162,10 +161,6 @@ public class FlashPreference extends SwitchPreferenceCompat {
             off();
             handler.removeCallbacks(update);
         }
-
-        public void close() {
-            stop();
-        }
     }
 
 
@@ -232,10 +227,6 @@ public class FlashPreference extends SwitchPreferenceCompat {
             public void onDismiss(DialogInterface dialog) {
                 d = null;
                 stop();
-                if (flash != null) {
-                    flash.close();
-                    flash = null;
-                }
             }
         });
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {

@@ -252,11 +252,6 @@ public class Sound extends TTS {
         playerClose();
 
         flashStop();
-
-        if (flash != null) {
-            flash.close();
-            flash = null;
-        }
     }
 
     public Silenced silencedPlaylist(VibratePreference.Config flash, VibratePreference.Config config, Playlist rr) {
