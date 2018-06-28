@@ -23,6 +23,8 @@ import android.widget.Spinner;
 
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.app.Toast;
 
 public class FlashPreference extends SwitchPreferenceCompat {
     public static final String TAG = FlashPreference.class.getSimpleName();
@@ -42,11 +44,9 @@ public class FlashPreference extends SwitchPreferenceCompat {
     SwitchCompat alaSw;
     ImageView alaPlay;
 
+    String loaded;
     Flash flash;
     Handler handler = new Handler();
-
-    long[] remPlaying;
-    long[] alaPlaying;
 
     Runnable remStop = new Runnable() {
         @Override
@@ -88,32 +88,24 @@ public class FlashPreference extends SwitchPreferenceCompat {
                     camManager.setTorchMode(cameraId, true);
                     return;
                 } catch (Exception e) { // catching CameraAccessException, cause VerifyError on old devices
-                    Log.d(TAG, "unable to open camera", e);
+                    throw new RuntimeException(e);
                 }
             }
 
-            try {
-                cam = Camera.open();
-                if (cam != null) {
-                    Camera.Parameters p = cam.getParameters();
-                    p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-                    cam.setParameters(p);
-                    cam.startPreview();
-                }
-            } catch (RuntimeException e) {
-                Log.d(TAG, "Unable to open camera", e);
+            cam = Camera.open();
+            if (cam != null) {
+                Camera.Parameters p = cam.getParameters();
+                p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                cam.setParameters(p);
+                cam.startPreview();
             }
         }
 
         public void off() {
             if (cam != null) {
-                try {
-                    cam.stopPreview();
-                    cam.release();
-                    cam = null;
-                } catch (Exception e) {
-                    Log.d(TAG, "Unable to close camera", e);
-                }
+                cam.stopPreview();
+                cam.release();
+                cam = null;
             }
 
             if (Build.VERSION.SDK_INT >= 23) {
@@ -124,7 +116,7 @@ public class FlashPreference extends SwitchPreferenceCompat {
                         camManager = null;
                     }
                 } catch (Exception e) { // catching CameraAccessException, cause VerifyError on old devices
-                    Log.d(TAG, "unable to open camera", e);
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -134,13 +126,13 @@ public class FlashPreference extends SwitchPreferenceCompat {
         }
 
         public void start(String pattern) {
-            long[] p = VibratePreference.patternLoad(pattern);
-            start(p, -1);
+            start(pattern, -1);
         }
 
-        public void start(String pattern, int r) {
-            long[] p = VibratePreference.patternLoad(pattern);
+        public long[] start(String pattern, int r) {
+            long[] p = Sound.patternLoad(pattern);
             start(p, r);
+            return p;
         }
 
         public void start(long[] pattern, int repeat) {
@@ -292,7 +284,7 @@ public class FlashPreference extends SwitchPreferenceCompat {
     }
 
     void update() {
-        if (remPlaying != null) {
+        if (loaded == config.remindersPattern) {
             remPlay.setImageResource(R.drawable.ic_stop_black_24dp);
             remPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -308,16 +300,14 @@ public class FlashPreference extends SwitchPreferenceCompat {
                 public void onClick(View v) {
                     save();
                     stop();
-                    remPlaying = VibratePreference.patternLoad(config.remindersPattern);
-                    long l = VibratePreference.patternLength(remPlaying);
-                    flash.start(remPlaying, -1);
+                    long l = start(config.remindersPattern, -1);
                     update();
                     handler.postDelayed(remStop, l);
                 }
             });
         }
 
-        if (alaPlaying != null) {
+        if (loaded == config.alarmsPattern) {
             alaPlay.setImageResource(R.drawable.ic_stop_black_24dp);
             alaPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -333,22 +323,30 @@ public class FlashPreference extends SwitchPreferenceCompat {
                 public void onClick(View v) {
                     save();
                     stop();
-                    alaPlaying = VibratePreference.patternLoad(config.alarmsPattern);
-                    flash.start(alaPlaying, 0);
+                    start(config.alarmsPattern, 0);
                     update();
                 }
             });
         }
     }
 
-    void stop() {
-        if (remPlaying != null) {
-            remPlaying = null;
-            flash.stop();
+    long start(String pattern, int r) {
+        loaded = pattern;
+        try {
+            long[] p = flash.start(pattern, r);
+            return Sound.patternLength(p);
+        } catch (RuntimeException e) {
+            Toast.Error(getContext(), "Unable to use flashlight", e);
+            return -1;
         }
-        if (alaPlaying != null) {
-            alaPlaying = null;
+    }
+
+    void stop() {
+        loaded = null;
+        try {
             flash.stop();
+        } catch (RuntimeException e) {
+            Toast.Error(getContext(), "Unable to use flashlight", e);
         }
         handler.removeCallbacks(remStop);
     }

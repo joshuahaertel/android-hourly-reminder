@@ -16,12 +16,9 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.Gravity;
-import android.widget.TextView;
 
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
-import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
@@ -84,6 +81,47 @@ public class Sound extends TTS {
             ll.add(u.toString());
         }
         return new JSONArray(ll);
+    }
+
+    /**
+     * Convert "s:1000,v:100" to android java pattern
+     *
+     * @param pattern
+     * @return
+     */
+    public static long[] patternLoad(String pattern) {
+        ArrayList<Long> list = new ArrayList<>();
+        String current = "s"; // start from silence
+        Long value = 0l;
+        String[] ss = pattern.split(",");
+        for (String s : ss) {
+            String[] vv = s.split(":");
+            String k = vv[0];
+            String v = vv[1];
+            if (k.equals(current)) {
+                value += Long.parseLong(v);
+            } else {
+                list.add(value);
+                current = k;
+                value = Long.parseLong(v);
+            }
+        }
+        if (value != 0) {
+            list.add(value);
+        }
+        long[] r = new long[list.size()];
+        for (int i = 0; i < r.length; i++) {
+            r[i] = list.get(i);
+        }
+        return r;
+    }
+
+    public static long patternLength(long[] patttern) {
+        long ll = 0;
+        for (long l : patttern) {
+            ll += l;
+        }
+        return ll;
     }
 
     public static class Playlist {
@@ -792,13 +830,14 @@ public class Sound extends TTS {
     }
 
     public void vibrate(String pattern) {
-        long[] p = VibratePreference.patternLoad(pattern);
+        long[] p = patternLoad(pattern);
         vibrateStart(p, -1);
     }
 
-    public void vibrateStart(String pattern, int repeat) {
-        long[] p = VibratePreference.patternLoad(pattern);
+    public long[] vibrateStart(String pattern, int repeat) {
+        long[] p = patternLoad(pattern);
         vibrateStart(p, repeat);
+        return p;
     }
 
     public void vibrateStart(long[] pattern, int repeat) {
@@ -808,7 +847,7 @@ public class Sound extends TTS {
         vibrateTrack = pattern;
         v.vibrate(vibrateTrack, repeat);
         if (repeat == -1) { // not repating? clear track, prevent vibrateorStop call twice
-            long l = VibratePreference.patternLength(vibrateTrack);
+            long l = patternLength(vibrateTrack);
             handler.postDelayed(vibrateEnd, l);
         }
     }
@@ -873,7 +912,11 @@ public class Sound extends TTS {
         }
 
         if (flashConfig.alarms) {
-            flash.start(flashConfig.alarmsPattern, 0);
+            try {
+                flash.start(flashConfig.alarmsPattern, 0);
+            } catch (RuntimeException e) {
+                Toast.Error(context, "Unable to use Flash", e);
+            }
         }
 
         // is the alarm silenced?

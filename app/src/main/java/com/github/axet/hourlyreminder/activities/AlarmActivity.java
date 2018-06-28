@@ -235,7 +235,6 @@ public class AlarmActivity extends AppCompatThemeActivity {
     }
 
     void backToMain() {
-        MainActivity.startActivity(this);
         finish();
     }
 }
