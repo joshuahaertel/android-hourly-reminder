@@ -16,12 +16,9 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.Gravity;
-import android.widget.TextView;
 
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
-import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
@@ -918,7 +915,6 @@ public class Sound extends TTS {
             try {
                 flash.start(flashConfig.alarmsPattern, 0);
             } catch (RuntimeException e) {
-                Log.e(TAG, "unable to use flash", e);
                 Toast.Error(context, "Unable to use Flash", e);
             }
         }
