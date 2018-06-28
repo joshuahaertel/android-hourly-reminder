@@ -251,6 +251,8 @@ public class Sound extends TTS {
 
         playerClose();
 
+        flashStop();
+
         if (flash != null) {
             flash.close();
             flash = null;
@@ -373,7 +375,11 @@ public class Sound extends TTS {
         }
 
         if (flashConfig.reminders) {
-            flash.start(flashConfig.remindersPattern);
+            try {
+                flash.start(flashConfig.remindersPattern);
+            } catch (RuntimeException e) {
+                Toast.Error(context, "Unable to use Flash", e);
+            }
         }
 
         // do we have slince alarm?
@@ -861,6 +867,14 @@ public class Sound extends TTS {
         v.cancel();
         vibrateTrack = null;
         handler.removeCallbacks(vibrateEnd);
+    }
+
+    public void flashStop() {
+        try {
+            flash.stop();
+        } catch (RuntimeException e) {
+            Toast.Error(context, "Unable to use Flash", e);
+        }
     }
 
     void playerCl() {
