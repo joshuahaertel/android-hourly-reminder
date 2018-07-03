@@ -217,13 +217,13 @@ public class VibratePreference extends SwitchPreferenceCompat {
             public void onClick(DialogInterface dialog, int which) {
             }
         });
+        sound = new Sound(getContext());
         d = builder.create();
         d.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
                 read();
 
-                sound = new Sound(getContext());
                 stop();
 
                 Window v = d.getWindow();

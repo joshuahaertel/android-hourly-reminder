@@ -70,7 +70,11 @@ public class FlashPreference extends SwitchPreferenceCompat {
         Runnable update = new Runnable() {
             @Override
             public void run() {
-                update();
+                try {
+                    update();
+                } catch (Exception e) {
+                    Toast.Error(context, "Unable to use flashlight", e);
+                }
             }
         };
 
@@ -153,8 +157,10 @@ public class FlashPreference extends SwitchPreferenceCompat {
                 index = repeat;
                 loop = true;
             }
-            if (!loop || repeat >= 0)
+            if (!loop || repeat >= 0) {
+                handler.removeCallbacks(update);
                 handler.postDelayed(update, d);
+            }
         }
 
         public void stop() {
@@ -245,13 +251,13 @@ public class FlashPreference extends SwitchPreferenceCompat {
             public void onClick(DialogInterface dialog, int which) {
             }
         });
+        flash = new Flash(getContext());
         d = builder.create();
         d.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
                 read();
 
-                flash = new Flash(getContext());
                 stop();
 
                 Window v = d.getWindow();
