@@ -40,6 +40,7 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatSettingsThemeActivity implements DialogInterface.OnDismissListener {
 
+    public static final String SHOW_REMINDERS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_REMINDERS_PAGE";
     public static final String SHOW_ALARMS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_ALARMS_PAGE";
     public static final String SHOW_SETTINGS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_SETTINGS_PAGE";
 
@@ -54,6 +55,12 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
 
     public static void startActivity(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
+        context.startActivity(intent);
+    }
+
+    public static void startActivity(Context context, String page) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setAction(page);
         context.startActivity(intent);
     }
 
@@ -207,7 +214,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
             mViewPager.setCurrentItem(2);
         }
 
-        if(OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT)) {
+        if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT)) {
             AlertDialog.Builder builder = OptimizationPreferenceCompat.buildKilledWarning(this, true);
             builder.show();
         }
