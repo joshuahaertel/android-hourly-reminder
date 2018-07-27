@@ -206,17 +206,26 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         AlarmService.start(this);
 
         Intent intent = getIntent();
+        onNewIntent(intent);
+
+        if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT)) {
+            AlertDialog.Builder builder = OptimizationPreferenceCompat.buildKilledWarning(this, true);
+            builder.show();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         String a = intent.getAction();
+        if (a != null && a.equals(SHOW_REMINDERS_PAGE)) {
+            mViewPager.setCurrentItem(0);
+        }
         if (a != null && a.equals(SHOW_ALARMS_PAGE)) {
             mViewPager.setCurrentItem(1);
         }
         if (a != null && a.equals(SHOW_SETTINGS_PAGE)) {
             mViewPager.setCurrentItem(2);
-        }
-
-        if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT)) {
-            AlertDialog.Builder builder = OptimizationPreferenceCompat.buildKilledWarning(this, true);
-            builder.show();
         }
     }
 
