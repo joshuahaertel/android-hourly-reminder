@@ -4,13 +4,16 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.AlarmClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.preference.PreferenceManager;
@@ -65,6 +68,41 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         Intent intent = new Intent(context, AlarmService.class);
         intent.setAction(REGISTER);
         context.startService(intent);
+    }
+
+    public static void startClock(Context context) { // https://stackoverflow.com/questions/3590955
+        PackageManager packageManager = context.getPackageManager();
+        Intent alarmClockIntent = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
+        alarmClockIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        String clockImpls[][] = {
+                {"HTC Alarm Clock", "com.htc.android.worldclock", "com.htc.android.worldclock.WorldClockTabControl"},
+                {"Standar Alarm Clock", "com.android.deskclock", "com.android.deskclock.AlarmClock"},
+                {"Froyo Nexus Alarm Clock", "com.google.android.deskclock", "com.android.deskclock.DeskClock"},
+                {"Moto Blur Alarm Clock", "com.motorola.blur.alarmclock", "com.motorola.blur.alarmclock.AlarmClock"},
+                {"Samsung Galaxy Clock", "com.sec.android.app.clockpackage", "com.sec.android.app.clockpackage.ClockPackage"},
+                {"Sony Ericsson Xperia Z", "com.sonyericsson.organizer", "com.sonyericsson.organizer.Organizer_WorldClock"},
+                {"ASUS Tablets", "com.asus.deskclock", "com.asus.deskclock.DeskClock"}
+
+        };
+
+        for (int i = 0; i < clockImpls.length; i++) {
+            String packageName = clockImpls[i][1];
+            String className = clockImpls[i][2];
+            try {
+                ComponentName c = new ComponentName(packageName, className);
+                packageManager.getActivityInfo(c, PackageManager.GET_META_DATA);
+                alarmClockIntent.setComponent(c);
+                context.startActivity(alarmClockIntent);
+                return;
+            } catch (PackageManager.NameNotFoundException e) {
+                ;
+            }
+        }
+
+        Intent openClockIntent = new Intent(AlarmClock.ACTION_SET_ALARM);
+        openClockIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(openClockIntent);
     }
 
     public static void snooze(Context context, FireAlarmService.FireAlarm a) {
@@ -153,6 +191,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             reminders = HourlyApplication.loadReminders(this);
             registerNextAlarm();
         }
+
         if (intent != null) {
             String action = intent.getAction();
             Log.d(TAG, "onStartCommand " + action);
@@ -166,12 +205,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     tomorrow(time);
                 } else if (action.equals(DISMISS)) {
                     FireAlarmService.dismissActiveAlarm(this);
-                } else if (action.equals(ALARM)) {
+                } else if (action.equals(ALARM) || action.equals(REMINDER)) {
+                    long cur = System.currentTimeMillis();
                     long time = intent.getLongExtra("time", 0);
-                    soundAlarm(time);
-                } else if (action.equals(REMINDER)) {
-                    long time = intent.getLongExtra("time", 0);
-                    soundAlarm(time);
+                    if (time > cur) { // manual click
+                        MainActivity.startActivity(this, isAlarm(time) ? MainActivity.SHOW_ALARMS_PAGE : MainActivity.SHOW_REMINDERS_PAGE);
+                    }
+                    soundAlarm(cur, time);
                 } else if (action.equals(REGISTER)) {
                     alarms = HourlyApplication.loadAlarms(this);
                     reminders = HourlyApplication.loadReminders(this);
@@ -454,7 +494,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     //
     // we have to check what 'alarms' do we have at specified time (can be reminder + alarm)
     // and act properly.
-    public void soundAlarm(final long time) {
+    public void soundAlarm(long cur, final long time) {
         // find hourly reminder + alarm = combine proper sound notification_upcoming (can be merge beep, speech, ringtone)
         //
         // then sound alarm or hourly reminder
@@ -493,7 +533,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         //
                         // also safe if we moved to another timezone.
                         r.setNext();
-                        if (System.currentTimeMillis() >= time)
+                        if (cur >= time)
                             rr.last = time; // only save current time if it has been trigged on time, not manually
                         if (alarm == null) { // do not cross alarms
                             if (rlist == null) {
