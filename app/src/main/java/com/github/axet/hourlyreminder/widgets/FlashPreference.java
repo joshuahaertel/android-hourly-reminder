@@ -157,10 +157,9 @@ public class FlashPreference extends SwitchPreferenceCompat {
                 index = repeat;
                 loop = true;
             }
-            if (!loop || repeat >= 0) {
-                handler.removeCallbacks(update);
+            handler.removeCallbacks(update);
+            if (!loop || repeat >= 0)
                 handler.postDelayed(update, d);
-            }
         }
 
         public void stop() {

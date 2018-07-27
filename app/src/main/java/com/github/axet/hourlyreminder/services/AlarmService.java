@@ -493,7 +493,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         //
                         // also safe if we moved to another timezone.
                         r.setNext();
-                        rr.last = time;
+                        if (System.currentTimeMillis() >= time)
+                            rr.last = time; // only save current time if it has been trigged on time, not manually
                         if (alarm == null) { // do not cross alarms
                             if (rlist == null) {
                                 rlist = new Sound.Playlist(rr);
