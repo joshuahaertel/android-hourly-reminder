@@ -206,12 +206,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 } else if (action.equals(DISMISS)) {
                     FireAlarmService.dismissActiveAlarm(this);
                 } else if (action.equals(ALARM) || action.equals(REMINDER)) {
-                    long cur = System.currentTimeMillis();
                     long time = intent.getLongExtra("time", 0);
-                    if (time > cur) { // manual click
-                        MainActivity.startActivity(this, isAlarm(time) ? MainActivity.SHOW_ALARMS_PAGE : MainActivity.SHOW_REMINDERS_PAGE);
-                    }
-                    soundAlarm(cur, time);
+                    soundAlarm(time);
                 } else if (action.equals(REGISTER)) {
                     alarms = HourlyApplication.loadAlarms(this);
                     reminders = HourlyApplication.loadReminders(this);
@@ -328,7 +324,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             AlarmManager.Alarm a;
             if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
-                a = am.setAlarm(time, reminderIntent);
+                a = am.setAlarm(time, reminderIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_REMINDERS_PAGE));
             } else {
                 a = am.setExact(time, reminderIntent);
             }
@@ -345,7 +341,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + AlarmManager.formatTime(time));
 
-            AlarmManager.Alarm a = am.setAlarm(time, alarmIntent);
+            AlarmManager.Alarm a = am.setAlarm(time, alarmIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE));
             huaweiLock(time, a); // exact on time lock enabled always for alarms
         }
     }
@@ -494,7 +490,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     //
     // we have to check what 'alarms' do we have at specified time (can be reminder + alarm)
     // and act properly.
-    public void soundAlarm(long cur, final long time) {
+    public void soundAlarm(final long time) {
         // find hourly reminder + alarm = combine proper sound notification_upcoming (can be merge beep, speech, ringtone)
         //
         // then sound alarm or hourly reminder
@@ -533,8 +529,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         //
                         // also safe if we moved to another timezone.
                         r.setNext();
-                        if (cur >= time)
-                            rr.last = time; // only save current time if it has been trigged on time, not manually
+                        rr.last = time;
                         if (alarm == null) { // do not cross alarms
                             if (rlist == null) {
                                 rlist = new Sound.Playlist(rr);
