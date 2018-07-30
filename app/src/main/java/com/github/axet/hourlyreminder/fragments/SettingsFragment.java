@@ -219,6 +219,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.registerOnSharedPreferenceChangeListener(this);
+
+        PreferenceGroup haptic = (PreferenceGroup) findPreference("haptic");
+        boolean empty = true;
+        for (int i = 0; i < haptic.getPreferenceCount(); i++) {
+            if (haptic.getPreference(i).isVisible())
+                empty = false;
+        }
+        if (empty)
+            haptic.setVisible(false);
     }
 
     void setPhone() {
