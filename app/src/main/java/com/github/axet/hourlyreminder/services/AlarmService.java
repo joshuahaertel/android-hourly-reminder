@@ -60,6 +60,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // dismiss current alarm action
     public static final String DISMISS = HourlyApplication.class.getCanonicalName() + ".DISMISS";
 
+    public static final String ALARMINFO = "alarminfo";
+
     // minutes
     public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
     public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
@@ -324,7 +326,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             AlarmManager.Alarm a;
             if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
-                a = am.setAlarm(time, reminderIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_REMINDERS_PAGE));
+                a = am.setAlarm(time, reminderIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true));
             } else {
                 a = am.setExact(time, reminderIntent);
             }
@@ -341,7 +343,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + AlarmManager.formatTime(time));
 
-            AlarmManager.Alarm a = am.setAlarm(time, alarmIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE));
+            AlarmManager.Alarm a = am.setAlarm(time, alarmIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra(ALARMINFO, true));
             huaweiLock(time, a); // exact on time lock enabled always for alarms
         }
     }

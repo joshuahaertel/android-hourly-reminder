@@ -358,4 +358,5 @@
     <string name="pref_flash_summary">Flashlight while sounding an reminder / alarm</string>
     <string name="pref_flash_title">Flashlight</string>
     <string name="pref_haptic">Haptic\'s</string>
+    <string name="open_from_notificationbar_warning">Disable \'%s\' to open default Alarm Clock application</string>
 </resources>

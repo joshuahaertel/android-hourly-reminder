@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.activities;
 
+import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,6 +32,7 @@ import com.github.axet.androidlibrary.widgets.AppCompatSettingsThemeActivity;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Toast;
 import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
 import com.github.axet.hourlyreminder.fragments.RemindersFragment;
 import com.github.axet.hourlyreminder.fragments.SettingsFragment;
@@ -218,15 +220,19 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         String a = intent.getAction();
-        if (a != null && a.equals(SHOW_REMINDERS_PAGE)) {
+        if (a == null)
+            return;
+        if (a.equals(SHOW_REMINDERS_PAGE)) {
             mViewPager.setCurrentItem(0);
         }
-        if (a != null && a.equals(SHOW_ALARMS_PAGE)) {
+        if (a.equals(SHOW_ALARMS_PAGE)) {
             mViewPager.setCurrentItem(1);
         }
-        if (a != null && a.equals(SHOW_SETTINGS_PAGE)) {
+        if (a.equals(SHOW_SETTINGS_PAGE)) {
             mViewPager.setCurrentItem(2);
         }
+        if (intent.getBooleanExtra(AlarmService.ALARMINFO, false))
+            Toast.makeText(this, getString(R.string.open_from_notificationbar_warning, getString(R.string.pref_alarm_title)), com.github.axet.androidlibrary.widgets.Toast.LENGTH_LONG).show();
     }
 
     @Override
