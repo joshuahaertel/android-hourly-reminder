@@ -371,7 +371,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         } else {
             Calendar cur = Calendar.getInstance();
 
-            Calendar cal = upcomingTime(time);
+            int sec = upcomingSec(time);
+            Calendar cal = upcomingTime(time, sec);
 
             if (cur.after(cal)) { // we already 15 before alarm, show notification_upcoming
                 am.cancel(upcomingIntent);
@@ -382,7 +383,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
                     am.setAlarm(time15, upcomingIntent, time, new Intent(this, MainActivity.class).setAction(isAlarm(time) ? MainActivity.SHOW_ALARMS_PAGE : MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true));
                 } else {
-                    am.setExact(time15, upcomingIntent);
+                    if (Build.VERSION.SDK_INT >= 23 && sec < 15 * 60) { // 15 min interval
+                        am.checkPost(time15, upcomingIntent); // post intent, do not create alarm
+                    }else {
+                        am.setExact(time15, upcomingIntent);
+                    }
                 }
             }
         }
@@ -425,14 +430,27 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         return rep.first(); // sorted smallest first
     }
 
+    int upcomingSec(long time) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+        int repeat = getRepeat(time) * 60; // make seconds
+        int sec;
+        if (Build.VERSION.SDK_INT >= 23 && !shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) { // 15 min interval
+            sec = repeat / 4; // 60 / 4 = 15min
+        } else {
+            sec = repeat / 12; // 60 / 12 = 5min
+        }
+        return sec;
+    }
+
     Calendar upcomingTime(long time) {
+        int sec = upcomingSec(time);
+        return upcomingTime(time, sec);
+    }
+
+    Calendar upcomingTime(long time, int sec) {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(time);
-
-        int repeat = getRepeat(time) * 60; // make seconds
-        int sec = repeat / 12; // 60 / 4 = 15min; 60 / 12 = 5min
         cal.add(Calendar.SECOND, -sec);
-
         return cal;
     }
 
