@@ -381,11 +381,16 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 showNotificationUpcoming(0);
                 long time15 = cal.getTimeInMillis(); // time to wait before show notification_upcoming
                 if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
-                    am.setAlarm(time15, upcomingIntent, time, new Intent(this, MainActivity.class).setAction(isAlarm(time) ? MainActivity.SHOW_ALARMS_PAGE : MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true));
+                    Intent showIntent = new Intent(this, MainActivity.class);
+                    if (isAlarm(time))
+                        showIntent.setAction(MainActivity.SHOW_ALARMS_PAGE);
+                    else
+                        showIntent.setAction(MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true);
+                    am.setAlarm(time15, upcomingIntent, time, showIntent);
                 } else {
                     if (Build.VERSION.SDK_INT >= 23 && sec < 15 * 60) { // 15 min interval
                         am.checkPost(time15, upcomingIntent); // post intent, do not create alarm
-                    }else {
+                    } else {
                         am.setExact(time15, upcomingIntent);
                     }
                 }
