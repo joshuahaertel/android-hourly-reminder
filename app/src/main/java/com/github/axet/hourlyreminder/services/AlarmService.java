@@ -343,7 +343,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + AlarmManager.formatTime(time));
 
-            AlarmManager.Alarm a = am.setAlarm(time, alarmIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra(ALARMINFO, true));
+            AlarmManager.Alarm a = am.setAlarm(time, alarmIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE));
             huaweiLock(time, a); // exact on time lock enabled always for alarms
         }
     }
@@ -362,6 +362,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // service will call showNotificationUpcoming(time)
     //
     void updateNotificationUpcomingAlarm(long time) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+
         Intent upcomingIntent = new Intent(this, AlarmService.class).setAction(NOTIFICATION).putExtra("time", time);
         if (time == 0) {
             am.cancel(upcomingIntent);
@@ -376,8 +378,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 showNotificationUpcoming(time);
             } else {
                 showNotificationUpcoming(0);
-                time = cal.getTimeInMillis(); // time to wait before show notification_upcoming
-                am.setExact(time, upcomingIntent);
+                long time15 = cal.getTimeInMillis(); // time to wait before show notification_upcoming
+                if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
+                    am.setAlarm(time15, upcomingIntent, time, new Intent(this, MainActivity.class).setAction(isAlarm(time) ? MainActivity.SHOW_ALARMS_PAGE : MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true));
+                } else {
+                    am.setExact(time15, upcomingIntent);
+                }
             }
         }
     }
