@@ -430,7 +430,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         cal.setTimeInMillis(time);
 
         int repeat = getRepeat(time) * 60; // make seconds
-        int sec = repeat / 4;
+        int sec = repeat / 12; // 60 / 4 = 15min; 60 / 12 = 5min
         cal.add(Calendar.SECOND, -sec);
 
         return cal;
