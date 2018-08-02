@@ -1,16 +1,14 @@
 package com.github.axet.hourlyreminder.activities;
 
-import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
+import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,10 +16,10 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -38,8 +36,6 @@ import com.github.axet.hourlyreminder.fragments.RemindersFragment;
 import com.github.axet.hourlyreminder.fragments.SettingsFragment;
 import com.github.axet.hourlyreminder.services.AlarmService;
 
-import java.util.HashMap;
-
 public class MainActivity extends AppCompatSettingsThemeActivity implements DialogInterface.OnDismissListener {
 
     public static final String SHOW_REMINDERS_PAGE = MainActivity.class.getCanonicalName() + ".SHOW_REMINDERS_PAGE";
@@ -51,6 +47,14 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     private ViewPager mViewPager;
 
     TimeSetReceiver reciver = new TimeSetReceiver();
+
+    Handler handler = new Handler();
+    Runnable onNewIntent = new Runnable() { // API23 can open and close app instantly when opened from NotificationBar
+        @Override
+        public void run() {
+            openIntent();
+        }
+    };
 
     boolean is24Hours = false;
     boolean timeChanged = false;
@@ -113,7 +117,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
-        HashMap<Integer, Fragment> map = new HashMap<>();
+        SparseArray<Fragment> map = new SparseArray<>();
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -185,16 +189,8 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         filter.addAction(Intent.ACTION_TIME_CHANGED);
         registerReceiver(reciver, filter);
 
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        AppBarLayout appbar = (AppBarLayout) findViewById(R.id.appbar);
-
-        // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
@@ -207,8 +203,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
 
         AlarmService.start(this);
 
-        Intent intent = getIntent();
-        onNewIntent(intent);
+        openIntent();
 
         if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT)) {
             AlertDialog.Builder builder = OptimizationPreferenceCompat.buildKilledWarning(this, true);
@@ -219,20 +214,32 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        Log.d(TAG, "onNewIntent");
+        setIntent(intent);
+        handler.postDelayed(onNewIntent, 100);
+    }
+
+    public void openIntent() {
+        Log.d(TAG, "openIntent");
+        Intent intent = getIntent();
         String a = intent.getAction();
         if (a == null)
             return;
-        if (a.equals(SHOW_REMINDERS_PAGE)) {
+        if (a.equals(SHOW_REMINDERS_PAGE))
             mViewPager.setCurrentItem(0);
-        }
-        if (a.equals(SHOW_ALARMS_PAGE)) {
+        if (a.equals(SHOW_ALARMS_PAGE))
             mViewPager.setCurrentItem(1);
-        }
-        if (a.equals(SHOW_SETTINGS_PAGE)) {
+        if (a.equals(SHOW_SETTINGS_PAGE))
             mViewPager.setCurrentItem(2);
-        }
         if (intent.getBooleanExtra(AlarmService.ALARMINFO, false))
-            Toast.makeText(this, getString(R.string.open_from_notificationbar_warning, getString(R.string.pref_alarm_title)), com.github.axet.androidlibrary.widgets.Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.open_from_notificationbar_warning, getString(R.string.pref_alarm_title)), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+        handler.removeCallbacks(onNewIntent);
     }
 
     @Override
@@ -254,7 +261,6 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         if (reciver != null) {
             unregisterReceiver(reciver);
             reciver = null;
@@ -264,6 +270,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume");
         if (timeChanged) {
             restartActivity();
         }
