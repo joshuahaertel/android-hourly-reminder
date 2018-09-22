@@ -1,7 +1,6 @@
 package com.github.axet.hourlyreminder.services;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -19,18 +18,19 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.AlarmActivity;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
-import com.github.axet.hourlyreminder.widgets.VibratePreference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -233,6 +233,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     @Override
     public void onCreate() {
+        setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark));
         super.onCreate();
         Log.d(TAG, "onCreate");
         sound = new Sound(this);
@@ -442,14 +443,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     // alarm dismiss button
     public void showNotificationAlarm(FireAlarm alarm) {
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//        if (!prefs.getBoolean(HourlyApplication.PREFERENCE_NOTIFICATIONS, true))
-//            return;
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
 
         if (alarm == null) {
-            notificationManager.cancel(HourlyApplication.NOTIFICATION_ALARM_ICON);
+            nm.cancel(HourlyApplication.NOTIFICATION_ALARM_ICON);
         } else {
             PendingIntent button = PendingIntent.getService(this, 0,
                     new Intent(this, AlarmService.class).setAction(AlarmService.DISMISS).putExtra("alarm", alarm.save().toString()),
@@ -461,7 +458,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
             String text = Alarm.format2412(this, alarm.settime);
 
-            RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(getBaseContext(), R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+
+            view.setInt(R.id.icon_circle, "setColorFilter", ThemeUtils.getThemeColor(this, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+
             view.setOnClickPendingIntent(R.id.notification_base, main);
             view.setOnClickPendingIntent(R.id.notification_button, button);
             view.setTextViewText(R.id.notification_text, text);
@@ -479,7 +479,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
             if (Build.VERSION.SDK_INT >= 21)
                 builder.setVisibility(Notification.VISIBILITY_PUBLIC);
 
-            notificationManager.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, builder.build());
+            Notification n = builder.build();
+            ((HourlyApplication) getApplication()).channelAlarms.apply(n);
+            nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
         }
     }
 

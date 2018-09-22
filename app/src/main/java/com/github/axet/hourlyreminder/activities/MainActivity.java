@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     Runnable onNewIntent = new Runnable() { // API23 can open and close app instantly when opened from NotificationBar
         @Override
         public void run() {
-            openIntent();
+            openIntent(getIntent());
         }
     };
 
@@ -203,12 +203,10 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
 
         AlarmService.start(this);
 
-        openIntent();
+        openIntent(getIntent());
 
-        if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT)) {
-            AlertDialog.Builder builder = OptimizationPreferenceCompat.buildKilledWarning(this, true);
-            builder.show();
-        }
+        if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
+            OptimizationPreferenceCompat.buildKilledWarning(this, true, HourlyApplication.PREFERENCE_OPTIMIZATION).show();
     }
 
     @Override
@@ -219,9 +217,8 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         handler.postDelayed(onNewIntent, 100);
     }
 
-    public void openIntent() {
+    public void openIntent(Intent intent) {
         Log.d(TAG, "openIntent");
-        Intent intent = getIntent();
         String a = intent.getAction();
         if (a == null)
             return;

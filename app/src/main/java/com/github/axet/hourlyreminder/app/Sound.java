@@ -1,7 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -14,6 +13,7 @@ import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -1049,7 +1049,8 @@ public class Sound extends TTS {
                 .setContentText(c)
                 .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
         Notification n = b.build();
-        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        ((HourlyApplication) context.getApplicationContext()).channelErrors.apply(n);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
         nm.notify(HourlyApplication.NOTIFICATION_FALLBACK_ICON, n);
     }
 

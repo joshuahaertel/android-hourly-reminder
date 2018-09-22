@@ -8,13 +8,12 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.SharedPreferencesCompat;
 import android.support.v7.preference.PreferenceManager;
-import android.util.DisplayMetrics;
-import android.view.WindowManager;
 
 import com.github.axet.androidlibrary.app.MainApplication;
-import com.github.axet.androidlibrary.widgets.ThemeUtils;
+import com.github.axet.androidlibrary.widgets.NotificationChannelCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
@@ -97,6 +96,18 @@ public class HourlyApplication extends MainApplication {
     public static final String PREFERENCE_FLASH = "flash";
 
     public static final int VERSION = 2;
+
+    public NotificationChannelCompat channelAlarms;
+    public NotificationChannelCompat channelErrors;
+    public NotificationChannelCompat channelUpcoming;
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        channelAlarms = new NotificationChannelCompat(this, "alarms", "Alarms", NotificationManagerCompat.IMPORTANCE_LOW);
+        channelErrors = new NotificationChannelCompat(this, "errors", "Errors", NotificationManagerCompat.IMPORTANCE_HIGH);
+        channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
+    }
 
     @Override
     public void onCreate() {
