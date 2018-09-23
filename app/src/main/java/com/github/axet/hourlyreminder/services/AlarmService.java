@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.services;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -17,12 +18,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.widgets.RemoteViewsCompat;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
@@ -139,7 +142,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     @Override
     public void onCreate() {
-        setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark));
         super.onCreate();
         Log.d(TAG, "onCreate");
 
@@ -464,6 +466,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     //
     // time - 0 cancel notification
     // time - upcoming alarm time, show text.
+    @SuppressLint("RestrictedApi")
     public void showNotificationUpcoming(long time) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean(HourlyApplication.PREFERENCE_NOTIFICATIONS, true))
@@ -501,7 +504,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            view.setInt(R.id.icon_circle, "setColorFilter", ThemeUtils.getThemeColor(this, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+            ContextThemeWrapper theme = new ContextThemeWrapper(this, HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark));
+            RemoteViewsCompat.setImageViewTint(view, R.id.icon_circle, ThemeUtils.getThemeColor(theme, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+            RemoteViewsCompat.applyTheme(theme, view);
 
             view.setOnClickPendingIntent(R.id.notification_button, button);
             view.setOnClickPendingIntent(R.id.notification_base, main);
@@ -628,8 +633,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             registerNextAlarm();
         }
         if (key.equals(HourlyApplication.PREFERENCE_THEME)) {
-            stopService(new Intent(this, getClass()));
-            startService(new Intent(this, getClass()));
         }
     }
 
@@ -688,6 +691,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     // show notification about missed alarm
+    @SuppressLint("RestrictedApi")
     public static void showNotificationMissed(Context context, long settime, boolean snoozed) {
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
 
@@ -708,7 +712,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            view.setInt(R.id.icon_circle, "setColorFilter", ThemeUtils.getThemeColor(context, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+            ContextThemeWrapper theme = new ContextThemeWrapper(context, HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark));
+            RemoteViewsCompat.setImageViewTint(view, R.id.icon_circle, ThemeUtils.getThemeColor(theme, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+            RemoteViewsCompat.applyTheme(theme, view);
 
             view.setOnClickPendingIntent(R.id.notification_base, main);
             view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));
@@ -733,6 +739,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
     }
 
+    @SuppressLint("RestrictedApi")
     public static void showNotificationMissedConf(Context context, long settime) {
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
 
@@ -747,7 +754,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            view.setInt(R.id.icon_circle, "setColorFilter", ThemeUtils.getThemeColor(context, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+            ContextThemeWrapper theme = new ContextThemeWrapper(context, HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark));
+            RemoteViewsCompat.setImageViewTint(view, R.id.icon_circle, ThemeUtils.getThemeColor(theme, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+            RemoteViewsCompat.applyTheme(theme, view);
 
             view.setOnClickPendingIntent(R.id.notification_base, main);
             view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));

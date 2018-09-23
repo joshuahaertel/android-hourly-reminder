@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.services;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -19,11 +20,13 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v7.view.ContextThemeWrapper;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.github.axet.androidlibrary.widgets.RemoteViewsCompat;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.AlarmActivity;
@@ -442,6 +445,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     }
 
     // alarm dismiss button
+    @SuppressLint("RestrictedApi")
     public void showNotificationAlarm(FireAlarm alarm) {
         NotificationManagerCompat nm = NotificationManagerCompat.from(this);
 
@@ -460,7 +464,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
             RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            view.setInt(R.id.icon_circle, "setColorFilter", ThemeUtils.getThemeColor(this, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+            ContextThemeWrapper theme = new ContextThemeWrapper(this, HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark));
+            RemoteViewsCompat.setImageViewTint(view, R.id.icon_circle, ThemeUtils.getThemeColor(theme, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+            RemoteViewsCompat.applyTheme(theme, view);
 
             view.setOnClickPendingIntent(R.id.notification_base, main);
             view.setOnClickPendingIntent(R.id.notification_button, button);
