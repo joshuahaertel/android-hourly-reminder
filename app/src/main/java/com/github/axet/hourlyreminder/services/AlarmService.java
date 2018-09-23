@@ -1,7 +1,6 @@
 package com.github.axet.hourlyreminder.services;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
@@ -16,6 +15,7 @@ import android.os.PowerManager;
 import android.provider.AlarmClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +23,7 @@ import android.widget.RemoteViews;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.MainActivity;
@@ -97,8 +98,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 alarmClockIntent.setComponent(c);
                 context.startActivity(alarmClockIntent);
                 return;
-            } catch (PackageManager.NameNotFoundException e) {
-                ;
+            } catch (PackageManager.NameNotFoundException ignore) {
             }
         }
 
@@ -139,12 +139,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     @Override
     public void onCreate() {
+        setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark));
         super.onCreate();
         Log.d(TAG, "onCreate");
 
         optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass(), HourlyApplication.PREFERENCE_OPTIMIZATION) {
             @Override
-            public void check() {
+            public void check() { // disable ping
             }
         };
         sound = new Sound(this);
@@ -468,22 +469,27 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         if (!prefs.getBoolean(HourlyApplication.PREFERENCE_NOTIFICATIONS, true))
             return;
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
 
         if (time == 0) {
-            notificationManager.cancel(HourlyApplication.NOTIFICATION_UPCOMING_ICON);
+            nm.cancel(HourlyApplication.NOTIFICATION_UPCOMING_ICON);
         } else {
             PendingIntent button = PendingIntent.getService(this, 0,
                     new Intent(this, AlarmService.class).setAction(CANCEL).putExtra("time", time),
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
-            PendingIntent main = PendingIntent.getActivity(this, 0,
-                    new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", time),
-                    PendingIntent.FLAG_UPDATE_CURRENT);
+            String action = MainActivity.SHOW_REMINDERS_PAGE;
 
             String subject = getString(R.string.UpcomingChime);
-            if (isAlarm(time))
+            if (isAlarm(time)) {
                 subject = getString(R.string.UpcomingAlarm);
+                action = MainActivity.SHOW_ALARMS_PAGE;
+            }
+
+            PendingIntent main = PendingIntent.getActivity(this, 0,
+                    new Intent(this, MainActivity.class).setAction(action).putExtra("time", time),
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
             String text = Alarm.format2412ap(this, time);
             for (Alarm a : alarms) {
                 if (a.getTime() == time) {
@@ -493,7 +499,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             }
 
-            RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(getBaseContext(), R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+
+            view.setInt(R.id.icon_circle, "setColorFilter", ThemeUtils.getThemeColor(this, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+
             view.setOnClickPendingIntent(R.id.notification_button, button);
             view.setOnClickPendingIntent(R.id.notification_base, main);
             view.setTextViewText(R.id.notification_subject, subject);
@@ -513,7 +522,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (Build.VERSION.SDK_INT >= 21)
                 builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
-            notificationManager.notify(HourlyApplication.NOTIFICATION_UPCOMING_ICON, builder.build());
+            Notification n = builder.build();
+            ((HourlyApplication) getApplicationContext()).channelUpcoming.apply(n);
+            nm.notify(HourlyApplication.NOTIFICATION_UPCOMING_ICON, n);
         }
     }
 
@@ -616,6 +627,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         if (key.equals(HourlyApplication.PREFERENCE_ALARM)) {
             registerNextAlarm();
         }
+        if (key.equals(HourlyApplication.PREFERENCE_THEME)) {
+            stopService(new Intent(this, getClass()));
+            startService(new Intent(this, getClass()));
+        }
     }
 
     static boolean dismiss(Context context, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
@@ -674,10 +689,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     // show notification about missed alarm
     public static void showNotificationMissed(Context context, long settime, boolean snoozed) {
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
 
         if (settime == 0) {
-            notificationManager.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
+            nm.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
         } else {
             final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
             Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
@@ -692,6 +707,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             String text = context.getString(R.string.AlarmMissedAfter, Alarm.format2412ap(context, settime), auto);
 
             RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+
+            view.setInt(R.id.icon_circle, "setColorFilter", ThemeUtils.getThemeColor(context, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+
             view.setOnClickPendingIntent(R.id.notification_base, main);
             view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));
             view.setTextViewText(R.id.notification_text, text);
@@ -709,18 +727,18 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (Build.VERSION.SDK_INT >= 21)
                 builder.setVisibility(Notification.VISIBILITY_PUBLIC);
 
-            notificationManager.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
+            Notification n = builder.build();
+            ((HourlyApplication) context.getApplicationContext()).channelAlarms.apply(n);
+            nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, n);
         }
     }
 
     public static void showNotificationMissedConf(Context context, long settime) {
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
 
         if (settime == 0) {
-            notificationManager.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
+            nm.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
         } else {
-            final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-
             PendingIntent main = PendingIntent.getActivity(context, 0,
                     new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", settime),
                     PendingIntent.FLAG_UPDATE_CURRENT);
@@ -728,6 +746,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             String text = context.getString(R.string.AlarmMissedConflict, Alarm.format2412ap(context, settime));
 
             RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+
+            view.setInt(R.id.icon_circle, "setColorFilter", ThemeUtils.getThemeColor(context, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
+
             view.setOnClickPendingIntent(R.id.notification_base, main);
             view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));
             view.setTextViewText(R.id.notification_text, text);
@@ -745,7 +766,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (Build.VERSION.SDK_INT >= 21)
                 builder.setVisibility(Notification.VISIBILITY_PUBLIC);
 
-            notificationManager.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
+            Notification n = builder.build();
+            ((HourlyApplication) context.getApplicationContext()).channelAlarms.apply(n);
+            nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, n);
         }
     }
 
