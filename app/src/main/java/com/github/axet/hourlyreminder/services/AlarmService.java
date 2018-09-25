@@ -25,6 +25,7 @@ import android.widget.RemoteViews;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.androidlibrary.widgets.RemoteViewsCompat;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.androidlibrary.widgets.Toast;
@@ -502,34 +503,21 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             }
 
-            RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            ContextThemeWrapper theme = new ContextThemeWrapper(this, HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark));
-            RemoteViewsCompat.setImageViewTint(view, R.id.icon_circle, ThemeUtils.getThemeColor(theme, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
-            RemoteViewsCompat.applyTheme(theme, view);
+            builder.view.setOnClickPendingIntent(R.id.notification_button, button);
+            builder.view.setTextViewText(R.id.notification_button, getString(R.string.Cancel));
 
-            view.setOnClickPendingIntent(R.id.notification_button, button);
-            view.setOnClickPendingIntent(R.id.notification_base, main);
-            view.setTextViewText(R.id.notification_subject, subject);
-            view.setTextViewText(R.id.notification_text, text);
-            view.setTextViewText(R.id.notification_button, getString(R.string.Cancel));
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+            builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
+                    .setChannel(((HourlyApplication) getApplicationContext()).channelUpcoming)
+                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                    .setMainIntent(main)
+                    .setTitle(subject)
+                    .setText(text)
                     .setOngoing(true)
-                    .setContentTitle(subject)
-                    .setContentText(text)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-                    .setContent(view);
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
-            if (Build.VERSION.SDK_INT < 11)
-                builder.setContentIntent(main);
-
-            if (Build.VERSION.SDK_INT >= 21)
-                builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-
-            Notification n = builder.build();
-            ((HourlyApplication) getApplicationContext()).channelUpcoming.apply(n);
-            nm.notify(HourlyApplication.NOTIFICATION_UPCOMING_ICON, n);
+            nm.notify(HourlyApplication.NOTIFICATION_UPCOMING_ICON, builder.build());
         }
     }
 
@@ -710,32 +698,19 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             String text = context.getString(R.string.AlarmMissedAfter, Alarm.format2412ap(context, settime), auto);
 
-            RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            ContextThemeWrapper theme = new ContextThemeWrapper(context, HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark));
-            RemoteViewsCompat.setImageViewTint(view, R.id.icon_circle, ThemeUtils.getThemeColor(theme, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
-            RemoteViewsCompat.applyTheme(theme, view);
+            builder.view.setViewVisibility(R.id.notification_button, View.GONE);
 
-            view.setOnClickPendingIntent(R.id.notification_base, main);
-            view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));
-            view.setTextViewText(R.id.notification_text, text);
-            view.setViewVisibility(R.id.notification_button, View.GONE);
+            builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
+                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                    .setMainIntent(main)
+                    .setTitle(context.getString(R.string.AlarmMissed))
+                    .setText(text)
+                    .setChannel(((HourlyApplication) context.getApplicationContext()).channelAlarms)
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-                    .setContentTitle(context.getString(R.string.Alarm))
-                    .setContentText(text)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-                    .setContent(view);
-
-            if (Build.VERSION.SDK_INT < 11)
-                builder.setContentIntent(main);
-
-            if (Build.VERSION.SDK_INT >= 21)
-                builder.setVisibility(Notification.VISIBILITY_PUBLIC);
-
-            Notification n = builder.build();
-            ((HourlyApplication) context.getApplicationContext()).channelAlarms.apply(n);
-            nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, n);
+            nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
     }
 
@@ -752,32 +727,19 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             String text = context.getString(R.string.AlarmMissedConflict, Alarm.format2412ap(context, settime));
 
-            RemoteViews view = new RemoteViews(context.getPackageName(), HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            ContextThemeWrapper theme = new ContextThemeWrapper(context, HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark));
-            RemoteViewsCompat.setImageViewTint(view, R.id.icon_circle, ThemeUtils.getThemeColor(theme, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
-            RemoteViewsCompat.applyTheme(theme, view);
+            builder.view.setViewVisibility(R.id.notification_button, View.GONE);
 
-            view.setOnClickPendingIntent(R.id.notification_base, main);
-            view.setTextViewText(R.id.notification_subject, context.getString(R.string.AlarmMissed));
-            view.setTextViewText(R.id.notification_text, text);
-            view.setViewVisibility(R.id.notification_button, View.GONE);
+            builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
+                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                    .setMainIntent(main)
+                    .setTitle(context.getString(R.string.AlarmMissed))
+                    .setText(text)
+                    .setChannel(((HourlyApplication) context.getApplicationContext()).channelAlarms)
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-                    .setContentTitle(context.getString(R.string.Alarm))
-                    .setContentText(text)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-                    .setContent(view);
-
-            if (Build.VERSION.SDK_INT < 11)
-                builder.setContentIntent(main);
-
-            if (Build.VERSION.SDK_INT >= 21)
-                builder.setVisibility(Notification.VISIBILITY_PUBLIC);
-
-            Notification n = builder.build();
-            ((HourlyApplication) context.getApplicationContext()).channelAlarms.apply(n);
-            nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, n);
+            nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
     }
 

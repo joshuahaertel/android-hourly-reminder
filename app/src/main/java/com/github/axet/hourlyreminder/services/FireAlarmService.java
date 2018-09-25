@@ -26,6 +26,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.androidlibrary.widgets.RemoteViewsCompat;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
@@ -462,32 +463,20 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
             String text = Alarm.format2412(this, alarm.settime);
 
-            RemoteViews view = new RemoteViews(getPackageName(), HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            ContextThemeWrapper theme = new ContextThemeWrapper(this, HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark));
-            RemoteViewsCompat.setImageViewTint(view, R.id.icon_circle, ThemeUtils.getThemeColor(theme, R.attr.colorButtonNormal)); // android:tint="?attr/colorButtonNormal" not working API16
-            RemoteViewsCompat.applyTheme(theme, view);
+            builder.view.setOnClickPendingIntent(R.id.notification_button, button);
 
-            view.setOnClickPendingIntent(R.id.notification_base, main);
-            view.setOnClickPendingIntent(R.id.notification_button, button);
-            view.setTextViewText(R.id.notification_text, text);
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+            builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
+                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                    .setTitle(getString(R.string.Alarm))
+                    .setText(text)
+                    .setMainIntent(main)
+                    .setChannel(((HourlyApplication) getApplication()).channelAlarms)
                     .setOngoing(true)
-                    .setContentTitle(getString(R.string.Alarm))
-                    .setContentText(text)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-                    .setContent(view);
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
-            if (Build.VERSION.SDK_INT < 11)
-                builder.setContentIntent(main);
-
-            if (Build.VERSION.SDK_INT >= 21)
-                builder.setVisibility(Notification.VISIBILITY_PUBLIC);
-
-            Notification n = builder.build();
-            ((HourlyApplication) getApplication()).channelAlarms.apply(n);
-            nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
+            nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, builder.build());
         }
     }
 
