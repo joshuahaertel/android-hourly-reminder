@@ -95,8 +95,6 @@ public class HourlyApplication extends MainApplication {
 
     public static final String PREFERENCE_FLASH = "flash";
 
-    public static final int VERSION = 2;
-
     public NotificationChannelCompat channelAlarms;
     public NotificationChannelCompat channelErrors;
     public NotificationChannelCompat channelUpcoming;
@@ -115,34 +113,28 @@ public class HourlyApplication extends MainApplication {
 
         setTheme(getUserTheme());
 
-        SharedPreferences defaultValueSp = getSharedPreferences("_has_set_default_values", 0);
-        if (!defaultValueSp.getBoolean("_has_set_default_values", false)) {
-            PreferenceManager.setDefaultValues(this, R.xml.pref_settings, true);
-            SharedPreferences.Editor editor = defaultValueSp.edit().putBoolean("_has_set_default_values", true);
-            SharedPreferencesCompat.EditorCompat.getInstance().apply(editor);
-        }
-
-        // version settings upgrade
-        {
-            SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-            int ver = shared.getInt(PREFERENCE_VERSION, 0);
-            SharedPreferences.Editor edit = shared.edit();
-            switch (ver) {
-                case 0:
-                case 1:
-                    version1to2(shared, edit);
-                    break;
-            }
-            edit.putInt(PREFERENCE_VERSION, VERSION);
-            edit.commit();
+        switch (getVersion(PREFERENCE_VERSION, R.xml.pref_settings)) {
+            case -1:
+                SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+                SharedPreferences.Editor edit = shared.edit();
+                edit.putInt(PREFERENCE_VERSION, 2);
+                SharedPreferencesCompat.EditorCompat.getInstance().apply(edit);
+                break;
+            case 0:
+            case 1:
+                version1to2();
+                break;
         }
 
         FireAlarmService.startIfActive(this);
     }
 
-    void version1to2(SharedPreferences shared, SharedPreferences.Editor edit) {
+    void version1to2() {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor edit = shared.edit();
         int old = Integer.valueOf(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")) * 60;
         edit.putString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, Integer.toString(old));
+        SharedPreferencesCompat.EditorCompat.getInstance().apply(edit);
     }
 
     public static List<Alarm> loadAlarms(Context context) {

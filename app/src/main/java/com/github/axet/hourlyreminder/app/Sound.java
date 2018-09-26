@@ -1047,8 +1047,7 @@ public class Sound extends TTS {
         NotificationCompat.Builder b = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                 .setContentTitle(t)
-                .setContentText(c)
-                .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
+                .setContentText(c);
         Notification n = b.build();
         ((HourlyApplication) context.getApplicationContext()).channelErrors.apply(n);
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
