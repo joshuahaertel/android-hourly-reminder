@@ -1,7 +1,6 @@
 package com.github.axet.hourlyreminder.services;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
@@ -15,19 +14,14 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.AlarmClock;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.preference.PreferenceManager;
-import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.View;
-import android.widget.RemoteViews;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
-import com.github.axet.androidlibrary.widgets.RemoteViewsCompat;
-import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.MainActivity;

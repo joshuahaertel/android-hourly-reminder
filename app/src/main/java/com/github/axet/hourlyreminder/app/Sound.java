@@ -63,12 +63,13 @@ public class Sound extends TTS {
             throw new RuntimeException("Unable to find proper audio attrs");
         int count = rate * dur / 1000; // samples count
         int last = count - 1; // last sample index
-        int stereo = count * 2; // total actual samples count
+        int cn = getChannelCount(SOUND_CHANNELS);
+        int stereo = count * cn; // total actual samples count
         AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(rate, SOUND_CHANNELS, DEFAULT_AUDIOFORMAT, stereo);
         for (int i = 0; i < count; i++) {
             double sx = 2 * Math.PI * i / (rate / hz);
             short sample = (short) (Math.sin(sx) * 0x7FFF);
-            buf.write(i * 2, sample, sample);
+            buf.write(i * cn, sample, cn);
         }
         AudioTrack track = AudioTrack.create(c.streamType, c.usage, c.streamType, buf);
         track.setNotificationMarkerPosition(last);

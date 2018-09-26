@@ -1,7 +1,6 @@
 package com.github.axet.hourlyreminder.services;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -13,28 +12,22 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v7.view.ContextThemeWrapper;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.RemoteViews;
 
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
-import com.github.axet.androidlibrary.widgets.RemoteViewsCompat;
-import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.AlarmActivity;
-import com.github.axet.hourlyreminder.app.HourlyApplication;
-import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
+import com.github.axet.hourlyreminder.app.HourlyApplication;
+import com.github.axet.hourlyreminder.app.Sound;
 
 import org.json.JSONArray;
 import org.json.JSONException;

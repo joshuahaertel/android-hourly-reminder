@@ -105,7 +105,7 @@ public class HourlyApplication extends MainApplication {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         channelAlarms = new NotificationChannelCompat(this, "alarms", "Alarms", NotificationManagerCompat.IMPORTANCE_LOW);
-        channelErrors = new NotificationChannelCompat(this, "errors", "Errors", NotificationManagerCompat.IMPORTANCE_HIGH);
+        channelErrors = new NotificationChannelCompat(this, "errors", "Errors", NotificationManagerCompat.IMPORTANCE_MAX);
         channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
     }
 
