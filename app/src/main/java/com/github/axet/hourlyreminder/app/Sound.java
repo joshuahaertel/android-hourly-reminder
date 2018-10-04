@@ -794,8 +794,7 @@ public class Sound extends TTS {
     }
 
     MediaPlayer playOnce(MediaPlayer player, final Runnable done) {
-        // https://code.google.com/p/android/issues/detail?id=1314
-        player.setLooping(false);
+        player.setLooping(false); // https://code.google.com/p/android/issues/detail?id=1314
 
         final MediaPlayer p = player;
         loop = new Runnable() {
@@ -1048,10 +1047,9 @@ public class Sound extends TTS {
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                 .setContentTitle(t)
                 .setContentText(c);
-        Notification n = b.build();
-        ((HourlyApplication) context.getApplicationContext()).channelErrors.apply(n);
+        ((HourlyApplication) context.getApplicationContext()).channelErrors.apply(b);
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
-        nm.notify(HourlyApplication.NOTIFICATION_FALLBACK_ICON, n);
+        nm.notify(HourlyApplication.NOTIFICATION_FALLBACK_ICON, b.build());
     }
 
 }
