@@ -11,8 +11,8 @@ import android.preference.PreferenceManager;
 public class SoundConfig extends com.github.axet.androidlibrary.sound.Sound {
     public static final String TAG = SoundConfig.class.getSimpleName();
 
-    public final static int SOUND_CHANNELS = AudioFormat.CHANNEL_OUT_STEREO;
-    public final static int SOUND_SAMPLERATE = 44100;
+    public final static int SOUND_CHANNELS = AudioFormat.CHANNEL_OUT_MONO;
+    public final static int SOUND_SAMPLERATE = 16000;
 
     public enum Silenced {
         NONE,

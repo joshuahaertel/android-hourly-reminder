@@ -63,12 +63,13 @@ public class Sound extends TTS {
             throw new RuntimeException("Unable to find proper audio attrs");
         int count = rate * dur / 1000; // samples count
         int last = count - 1; // last sample index
-        int stereo = count * 2; // total actual samples count
+        int cn = getChannelCount(SOUND_CHANNELS);
+        int stereo = count * cn; // total actual samples count
         AudioTrack.AudioBuffer buf = new AudioTrack.AudioBuffer(rate, SOUND_CHANNELS, DEFAULT_AUDIOFORMAT, stereo);
         for (int i = 0; i < count; i++) {
             double sx = 2 * Math.PI * i / (rate / hz);
             short sample = (short) (Math.sin(sx) * 0x7FFF);
-            buf.write(i * 2, sample, sample);
+            buf.write(i * cn, sample, cn);
         }
         AudioTrack track = AudioTrack.create(c.streamType, c.usage, c.streamType, buf);
         track.setNotificationMarkerPosition(last);
@@ -793,8 +794,7 @@ public class Sound extends TTS {
     }
 
     MediaPlayer playOnce(MediaPlayer player, final Runnable done) {
-        // https://code.google.com/p/android/issues/detail?id=1314
-        player.setLooping(false);
+        player.setLooping(false); // https://code.google.com/p/android/issues/detail?id=1314
 
         final MediaPlayer p = player;
         loop = new Runnable() {
@@ -1046,12 +1046,10 @@ public class Sound extends TTS {
         NotificationCompat.Builder b = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                 .setContentTitle(t)
-                .setContentText(c)
-                .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
-        Notification n = b.build();
-        ((HourlyApplication) context.getApplicationContext()).channelErrors.apply(n);
+                .setContentText(c);
+        ((HourlyApplication) context.getApplicationContext()).channelErrors.apply(b);
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
-        nm.notify(HourlyApplication.NOTIFICATION_FALLBACK_ICON, n);
+        nm.notify(HourlyApplication.NOTIFICATION_FALLBACK_ICON, b.build());
     }
 
 }
