@@ -701,7 +701,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     .setMainIntent(main)
                     .setTitle(context.getString(R.string.AlarmMissed))
                     .setText(text)
-                    .setChannel(((HourlyApplication) context.getApplication()).channelAlarms)
+                    .setChannel(((HourlyApplication) context.getApplicationContext()).channelAlarms)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
