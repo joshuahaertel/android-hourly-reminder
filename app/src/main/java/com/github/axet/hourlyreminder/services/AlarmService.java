@@ -503,7 +503,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             builder.view.setTextViewText(R.id.notification_button, getString(R.string.Cancel));
 
             builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
-                    .setChannel(((HourlyApplication) getApplicationContext()).channelUpcoming)
+                    .setChannel(((HourlyApplication) getApplication()).channelUpcoming)
                     .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
                     .setMainIntent(main)
                     .setTitle(subject)
@@ -701,7 +701,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     .setMainIntent(main)
                     .setTitle(context.getString(R.string.AlarmMissed))
                     .setText(text)
-                    .setChannel(((HourlyApplication) context.getApplicationContext()).channelAlarms)
+                    .setChannel(((HourlyApplication) context.getApplication()).channelAlarms)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
