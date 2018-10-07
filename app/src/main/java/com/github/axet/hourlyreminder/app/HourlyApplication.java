@@ -106,18 +106,12 @@ public class HourlyApplication extends MainApplication {
     }
 
     @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        channelAlarms = new NotificationChannelCompat(this, "alarms", "Alarms", NotificationManagerCompat.IMPORTANCE_LOW);
-        channelErrors = new NotificationChannelCompat(this, "errors", "Errors", NotificationManagerCompat.IMPORTANCE_MAX);
-        channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
-    }
-
-    @Override
     public void onCreate() {
         super.onCreate();
 
-        setTheme(getUserTheme());
+        channelAlarms = new NotificationChannelCompat(this, "alarms", "Alarms", NotificationManagerCompat.IMPORTANCE_LOW);
+        channelErrors = new NotificationChannelCompat(this, "errors", "Errors", NotificationManagerCompat.IMPORTANCE_MAX);
+        channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
 
         switch (getVersion(PREFERENCE_VERSION, R.xml.pref_settings)) {
             case -1:
@@ -382,18 +376,8 @@ public class HourlyApplication extends MainApplication {
         Toast.makeText(context, context.getString(R.string.alarm_set_for, str), Toast.LENGTH_SHORT).show();
     }
 
-    public int getUserTheme() {
-        return getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark);
-    }
-
     public static int getTheme(Context context, int light, int dark) {
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        String theme = shared.getString(HourlyApplication.PREFERENCE_THEME, "");
-        if (theme.equals(context.getString(R.string.Theme_Dark))) {
-            return dark;
-        } else {
-            return light;
-        }
+        return MainApplication.getTheme(context, PREFERENCE_THEME, light, dark);
     }
 
     public static String getQuantityString(Context context, Locale locale, int id, int n, Object... formatArgs) {
@@ -573,4 +557,3 @@ public class HourlyApplication extends MainApplication {
             return shared.getStringSet(name, def);
     }
 }
-
