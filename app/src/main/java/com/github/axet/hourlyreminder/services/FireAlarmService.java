@@ -458,14 +458,14 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
             RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
 
-            builder.view.setOnClickPendingIntent(R.id.notification_button, button);
+            builder.setOnClickPendingIntent(R.id.notification_button, button);
 
             builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
                     .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
                     .setTitle(getString(R.string.Alarm))
                     .setText(text)
                     .setMainIntent(main)
-                    .setChannel(((HourlyApplication) getApplication()).channelAlarms)
+                    .setChannel(HourlyApplication.from(this).channelAlarms)
                     .setOngoing(true)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
