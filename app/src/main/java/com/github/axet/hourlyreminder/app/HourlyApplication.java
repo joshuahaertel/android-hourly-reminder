@@ -1,6 +1,8 @@
 package com.github.axet.hourlyreminder.app;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -98,6 +100,10 @@ public class HourlyApplication extends MainApplication {
     public NotificationChannelCompat channelAlarms;
     public NotificationChannelCompat channelErrors;
     public NotificationChannelCompat channelUpcoming;
+
+    public static HourlyApplication from(Context context) {
+        return (HourlyApplication) MainApplication.from(context);
+    }
 
     @Override
     protected void attachBaseContext(Context base) {

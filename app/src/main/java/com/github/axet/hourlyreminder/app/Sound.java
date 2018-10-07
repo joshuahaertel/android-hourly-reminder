@@ -1047,7 +1047,7 @@ public class Sound extends TTS {
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                 .setContentTitle(t)
                 .setContentText(c);
-        ((HourlyApplication) context.getApplicationContext()).channelErrors.apply(b);
+        HourlyApplication.from(context).channelErrors.apply(b);
         NotificationManagerCompat nm = NotificationManagerCompat.from(context);
         nm.notify(HourlyApplication.NOTIFICATION_FALLBACK_ICON, b.build());
     }
