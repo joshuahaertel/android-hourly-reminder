@@ -497,7 +497,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             }
 
-            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, HourlyApplication.getTheme(this, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, R.layout.notification_alarm);
 
             builder.setOnClickPendingIntent(R.id.notification_button, button);
             builder.setTextViewText(R.id.notification_button, getString(R.string.Cancel));
@@ -692,16 +692,16 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             String text = context.getString(R.string.AlarmMissedAfter, Alarm.format2412ap(context, settime), auto);
 
-            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, R.layout.notification_alarm);
 
             builder.setViewVisibility(R.id.notification_button, View.GONE);
 
             builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
+                    .setChannel(HourlyApplication.from(context).channelAlarms)
                     .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
                     .setMainIntent(main)
                     .setTitle(context.getString(R.string.AlarmMissed))
                     .setText(text)
-                    .setChannel(HourlyApplication.from(context).channelAlarms)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
@@ -721,16 +721,16 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             String text = context.getString(R.string.AlarmMissedConflict, Alarm.format2412ap(context, settime));
 
-            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, HourlyApplication.getTheme(context, R.layout.notification_alarm_light, R.layout.notification_alarm_dark));
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, R.layout.notification_alarm);
 
             builder.setViewVisibility(R.id.notification_button, View.GONE);
 
             builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
+                    .setChannel(HourlyApplication.from(context).channelAlarms)
                     .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
                     .setMainIntent(main)
                     .setTitle(context.getString(R.string.AlarmMissed))
                     .setText(text)
-                    .setChannel(HourlyApplication.from(context).channelAlarms)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
