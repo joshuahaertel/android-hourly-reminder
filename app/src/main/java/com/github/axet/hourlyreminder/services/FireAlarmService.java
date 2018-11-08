@@ -1,6 +1,7 @@
 package com.github.axet.hourlyreminder.services;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -21,6 +22,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.AlarmActivity;
@@ -56,11 +58,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
     Runnable alive;
     boolean alarmActivity = false; // if service crashed, activity will be closed. ok to have var.
     Sound.Silenced silenced = Sound.Silenced.NONE;
+    Notification notification;
 
     int state = STATE_INIT;
-    float mGZ;
-    float maxy;
-    float maxz;
     int mGZcount;
     SensorManager sm;
 
@@ -96,7 +96,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             String a = intent.getAction();
-            Log.d(FireAlarmReceiver.class.getSimpleName(), "FireAlarmReceiver " + a);
+            Log.d(TAG, "FireAlarmReceiver " + a);
             if (a.equals(Intent.ACTION_SCREEN_ON)) {
                 final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
                 String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
@@ -194,17 +194,15 @@ public class FireAlarmService extends Service implements SensorEventListener {
     }
 
     public static void activateAlarm(Context context, FireAlarm a) {
-        context.startService(new Intent(context, FireAlarmService.class)
-                .setAction(FIRE_ALARM)
-                .putExtra("state", a.save().toString()));
+        OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class)
+                .setAction(FIRE_ALARM).putExtra("state", a.save().toString()));
     }
 
     public static void startIfActive(Context context) {
         context.stopService(new Intent(context, FireAlarmService.class));
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        if (!shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "").isEmpty()) {
-            context.startService(new Intent(context, FireAlarmService.class));
-        }
+        if (!shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "").isEmpty())
+            OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class));
     }
 
     public static void dismissActiveAlarm(Context context) {
@@ -225,6 +223,13 @@ public class FireAlarmService extends Service implements SensorEventListener {
         }
     }
 
+    public static FireAlarm getAlarm(Intent intent) {
+        String json = intent.getStringExtra("state");
+        if (json == null || json.isEmpty())
+            return null;
+        return new FireAlarm(json);
+    }
+
     public FireAlarmService() {
     }
 
@@ -234,18 +239,24 @@ public class FireAlarmService extends Service implements SensorEventListener {
         super.onCreate();
         Log.d(TAG, "onCreate");
         sound = new Sound(this);
-    }
 
-    public FireAlarm getAlarm(Intent intent) {
-        FireAlarm a;
-
-        String json = intent.getStringExtra("state");
-        if (json == null || json.isEmpty())
-            return null;
-
-        a = new FireAlarm(json);
-
-        return a;
+        PendingIntent main = PendingIntent.getBroadcast(this, 0, new Intent(SHOW_ACTIVITY), PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+        RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, R.layout.notification_alarm);
+        builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
+                .setChannel(HourlyApplication.from(this).channelAlarms)
+                .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                .setTitle(getString(R.string.Alarm))
+                .setWhen(notification)
+                .setMainIntent(main)
+                .setOngoing(true)
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+        Notification n = builder.build();
+        if (notification == null)
+            startForeground(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
+        else
+            nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
+        notification = n;
     }
 
     @Override
@@ -402,9 +413,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(FireAlarmService.class.getSimpleName(), "onDestory");
-
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+        Log.d(TAG, "onDestory");
 
         if (sound != null) {
             sound.close();
@@ -444,6 +453,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
         NotificationManagerCompat nm = NotificationManagerCompat.from(this);
 
         if (alarm == null) {
+            stopForeground(false);
             nm.cancel(HourlyApplication.NOTIFICATION_ALARM_ICON);
         } else {
             PendingIntent button = PendingIntent.getService(this, 0,
@@ -465,11 +475,17 @@ public class FireAlarmService extends Service implements SensorEventListener {
                     .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
                     .setTitle(getString(R.string.Alarm))
                     .setText(text)
+                    .setWhen(notification)
                     .setMainIntent(main)
                     .setOngoing(true)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp);
 
-            nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, builder.build());
+            Notification n = builder.build();
+            if (notification == null)
+                startForeground(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
+            else
+                nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
+            notification = n;
         }
     }
 

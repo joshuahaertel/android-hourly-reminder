@@ -467,8 +467,7 @@ public class Sound extends TTS {
         player = playOnce(uri, new Runnable() {
             @Override
             public void run() {
-                if (done != null && dones.contains(done))
-                    done.run();
+                done(done);
             }
         });
     }
@@ -545,9 +544,7 @@ public class Sound extends TTS {
                 // prevent strange android bug, with second beep when connecting android to external usb audio source.
                 // seems like this beep pushed to external audio source from sound cache.
                 beepClose();
-
-                if (done != null && dones.contains(done))
-                    done.run();
+                done(done);
             }
         };
 
@@ -805,8 +802,7 @@ public class Sound extends TTS {
                 int pos = p.getCurrentPosition();
                 if (pos < last) {
                     playerCl();
-                    if (done != null && dones.contains(done))
-                        done.run();
+                    done(done);
                     return;
                 }
                 last = pos;
@@ -938,11 +934,7 @@ public class Sound extends TTS {
             public void run() {
                 final Runnable restart = this;
                 dones.add(restart);
-                if (late != null) {
-                    if (dones.contains(late))
-                        late.run();
-                    dones.remove(late);
-                }
+                done(late);
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -968,10 +960,7 @@ public class Sound extends TTS {
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (dones.contains(late)) {
-                                    late.run();
-                                    dones.remove(late);
-                                }
+                                done(late);
                             }
                         }, delay);
                     }

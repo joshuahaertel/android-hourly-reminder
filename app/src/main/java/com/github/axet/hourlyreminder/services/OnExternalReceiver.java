@@ -24,6 +24,6 @@ public class OnExternalReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (!isExternal(context))
             return;
-        AlarmService.start(context);
+        AlarmService.startIfEnabled(context);
     }
 }

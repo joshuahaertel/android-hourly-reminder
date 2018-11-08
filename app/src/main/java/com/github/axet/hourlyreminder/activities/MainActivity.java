@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         tab.setCustomView(v);
         v.updateLayout();
 
-        AlarmService.start(this);
+        AlarmService.startIfEnabled(this);
 
         openIntent(getIntent());
 

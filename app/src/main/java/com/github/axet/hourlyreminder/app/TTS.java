@@ -41,6 +41,7 @@ public class TTS extends SoundConfig {
     boolean restart; // restart tts once if failed. on apk upgrade tts always failed.
     Set<Runnable> dones = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
     Runnable onInit; // once
+    Set<Runnable> exits = new HashSet<>(); // run when all done
 
     public TTS(Context context) {
         super(context);
@@ -112,8 +113,7 @@ public class TTS extends SoundConfig {
             public void run() {
                 handler.removeCallbacks(delayed);
                 delayed = null;
-                if (done != null && dones.contains(done))
-                    done.run();
+                done(done);
             }
         };
 
@@ -391,5 +391,23 @@ public class TTS extends SoundConfig {
         }
         restart = false;
         return true;
+    }
+
+    public void done(Runnable done) {
+        if (done != null && dones.contains(done))
+            done.run();
+        dones.remove(done);
+        if (dones.isEmpty()) {
+            for (Runnable r : exits)
+                r.run();
+            exits.clear();
+        }
+    }
+
+    public void after(Runnable done) {
+        if (dones.isEmpty())
+            done.run();
+        else
+            exits.add(done);
     }
 }

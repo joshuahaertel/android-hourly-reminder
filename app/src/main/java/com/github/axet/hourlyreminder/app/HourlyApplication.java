@@ -1,8 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -16,6 +14,7 @@ import android.support.v7.preference.PreferenceManager;
 
 import com.github.axet.androidlibrary.app.MainApplication;
 import com.github.axet.androidlibrary.widgets.NotificationChannelCompat;
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
@@ -42,6 +41,7 @@ public class HourlyApplication extends MainApplication {
     public static final int NOTIFICATION_ALARM_ICON = 1;
     public static final int NOTIFICATION_MISSED_ICON = 2;
     public static final int NOTIFICATION_FALLBACK_ICON = 3;
+    public static final int NOTIFICATION_PERSISTENT_ICON = 4;
 
     public static final String PREFERENCE_VERSION = "version";
 
@@ -97,6 +97,7 @@ public class HourlyApplication extends MainApplication {
 
     public static final String PREFERENCE_FLASH = "flash";
 
+    public NotificationChannelCompat channelStatus;
     public NotificationChannelCompat channelAlarms;
     public NotificationChannelCompat channelErrors;
     public NotificationChannelCompat channelUpcoming;
@@ -109,6 +110,7 @@ public class HourlyApplication extends MainApplication {
     public void onCreate() {
         super.onCreate();
 
+        channelStatus = new NotificationChannelCompat(this, "status", "Status", NotificationManagerCompat.IMPORTANCE_LOW);
         channelAlarms = new NotificationChannelCompat(this, "alarms", "Alarms", NotificationManagerCompat.IMPORTANCE_LOW);
         channelErrors = new NotificationChannelCompat(this, "errors", "Errors", NotificationManagerCompat.IMPORTANCE_MAX);
         channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
@@ -124,6 +126,12 @@ public class HourlyApplication extends MainApplication {
             case 1:
                 version1to2();
                 break;
+        }
+
+        if (Build.VERSION.SDK_INT >= 26 && getApplicationInfo().targetSdkVersion >= 26) {
+            OptimizationPreferenceCompat.ICON = false;
+        } else {
+            OptimizationPreferenceCompat.ICON = true;
         }
 
         FireAlarmService.startIfActive(this);
@@ -261,7 +269,7 @@ public class HourlyApplication extends MainApplication {
         SharedPreferences.Editor edit = shared.edit();
         saveAlarms(edit, alarms);
         edit.commit();
-        AlarmService.start(context);
+        AlarmService.startIfEnabled(context);
     }
 
     public static void saveReminders(Context context, List<ReminderSet> reminders) {
@@ -269,7 +277,7 @@ public class HourlyApplication extends MainApplication {
         SharedPreferences.Editor edit = shared.edit();
         saveReminders(edit, reminders);
         edit.commit();
-        AlarmService.start(context);
+        AlarmService.startIfEnabled(context);
 
     }
 
@@ -377,7 +385,7 @@ public class HourlyApplication extends MainApplication {
     }
 
     public static int getTheme(Context context, int light, int dark) {
-        return MainApplication.getTheme(context, PREFERENCE_THEME, light, dark);
+        return MainApplication.getTheme(context, PREFERENCE_THEME, light, dark, context.getString(R.string.Theme_Dark));
     }
 
     public static String getQuantityString(Context context, Locale locale, int id, int n, Object... formatArgs) {

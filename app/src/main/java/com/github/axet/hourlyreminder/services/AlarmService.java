@@ -1,6 +1,7 @@
 package com.github.axet.hourlyreminder.services;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
@@ -61,14 +62,40 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     public static final String ALARMINFO = "alarminfo";
 
-    // minutes
     public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
     public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
 
-    public static void start(Context context) {
+    Sound sound;
+    List<Alarm> alarms;
+    List<ReminderSet> reminders;
+    PowerManager.WakeLock wl;
+    PowerManager.WakeLock wlCpu;
+    Handler handler = new Handler();
+    Runnable wakeClose = new Runnable() {
+        @Override
+        public void run() {
+            wakeClose();
+        }
+    };
+    AlarmManager am = new AlarmManager(this);
+    OptimizationPreferenceCompat.ServiceReceiver optimization;
+    Notification notification;
+
+    public static void startIfEnabled(Context context) {
+        TreeSet<Long> all = new TreeSet<>();
+        TreeSet<Long> alarms;
+        TreeSet<Long> reminders;
+        reminders = generateReminders(HourlyApplication.loadReminders(context));
+        all.addAll(reminders);
+        alarms = generateAlarms(HourlyApplication.loadAlarms(context));
+        all.addAll(alarms);
         Intent intent = new Intent(context, AlarmService.class);
-        intent.setAction(REGISTER);
-        context.startService(intent);
+        if (all.isEmpty()) {
+            context.stopService(intent);
+        } else {
+            intent.setAction(REGISTER);
+            OptimizationPreferenceCompat.startService(context, intent);
+        }
     }
 
     public static void startClock(Context context) { // https://stackoverflow.com/questions/3590955
@@ -78,7 +105,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         String clockImpls[][] = {
                 {"HTC Alarm Clock", "com.htc.android.worldclock", "com.htc.android.worldclock.WorldClockTabControl"},
-                {"Standar Alarm Clock", "com.android.deskclock", "com.android.deskclock.AlarmClock"},
+                {"Standard Alarm Clock", "com.android.deskclock", "com.android.deskclock.AlarmClock"},
                 {"Froyo Nexus Alarm Clock", "com.google.android.deskclock", "com.android.deskclock.DeskClock"},
                 {"Moto Blur Alarm Clock", "com.motorola.blur.alarmclock", "com.motorola.blur.alarmclock.AlarmClock"},
                 {"Samsung Galaxy Clock", "com.sec.android.app.clockpackage", "com.sec.android.app.clockpackage.ClockPackage"},
@@ -109,30 +136,14 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         Intent intent = new Intent(context, AlarmService.class);
         intent.setAction(SNOOZE);
         intent.putExtra("state", a.save().toString());
-        context.startService(intent);
+        OptimizationPreferenceCompat.startService(context, intent);
 
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         Integer min = Integer.valueOf(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_DELAY, "10"));
         Toast.makeText(context, context.getString(R.string.snoozed_for) + " " + HourlyApplication.formatLeftExact(context, min * 60 * 1000), Toast.LENGTH_LONG).show();
     }
 
-    Sound sound;
-    List<Alarm> alarms;
-    List<ReminderSet> reminders;
-    PowerManager.WakeLock wl;
-    PowerManager.WakeLock wlCpu;
-    Handler handler = new Handler();
-    Runnable wakeClose = new Runnable() {
-        @Override
-        public void run() {
-            wakeClose();
-        }
-    };
-    AlarmManager am = new AlarmManager(this);
-    OptimizationPreferenceCompat.ServiceReceiver optimization;
-
     public AlarmService() {
-        super();
     }
 
     @Override
@@ -142,9 +153,19 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass(), HourlyApplication.PREFERENCE_OPTIMIZATION) {
             @Override
-            public void check() { // disable ping
+            public void onReceive(Context context, Intent intent) {
+                super.onReceive(context, intent);
+                String a = intent.getAction();
+                if (a != null && a.equals(OptimizationPreferenceCompat.ICON_UPDATE)) {
+                    updateIcon();
+                }
             }
         };
+        optimization.filters.addAction(OptimizationPreferenceCompat.ICON_UPDATE);
+        optimization.create();
+
+        updateIcon();
+
         sound = new Sound(this);
         alarms = HourlyApplication.loadAlarms(this);
         reminders = HourlyApplication.loadReminders(this);
@@ -189,7 +210,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             Log.d(TAG, "onStartCommand restart"); // crash fail
             alarms = HourlyApplication.loadAlarms(this);
             reminders = HourlyApplication.loadReminders(this);
-            registerNextAlarm();
+            registerNext();
         }
 
         if (intent != null) {
@@ -199,7 +220,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 if (action.equals(NOTIFICATION)) {
                     long time = intent.getLongExtra("time", 0);
                     showNotificationUpcoming(time);
-                    registerNextAlarm();
+                    registerNext();
                 } else if (action.equals(CANCEL)) {
                     long time = intent.getLongExtra("time", 0);
                     tomorrow(time);
@@ -211,20 +232,20 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 } else if (action.equals(REGISTER)) {
                     alarms = HourlyApplication.loadAlarms(this);
                     reminders = HourlyApplication.loadReminders(this);
-                    registerNextAlarm();
+                    registerNext();
                 } else if (action.equals(SNOOZE)) {
                     FireAlarmService.FireAlarm a = new FireAlarmService.FireAlarm(intent.getStringExtra("state"));
                     snooze(a.ids);
                 }
             } else {
-                registerNextAlarm();
+                registerNext();
             }
         }
         return super.onStartCommand(intent, flags, startId);
     }
 
     // create list for hour reminders. 'time' list for reminder (hronological order)
-    public TreeSet<Long> generateReminders(Calendar cur) {
+    public static TreeSet<Long> generateReminders(List<ReminderSet> reminders) {
         TreeSet<Long> alarms = new TreeSet<>();
 
         for (ReminderSet rr : reminders) {
@@ -240,15 +261,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     // create list for alarms. 'time' list for alarms (hronological order)
-    public TreeSet<Long> generateAlarms() {
-        TreeSet<Long> alarms = new TreeSet<>();
-
-        for (Alarm a : this.alarms) {
+    public static TreeSet<Long> generateAlarms(List<Alarm> alarms) {
+        TreeSet<Long> aa = new TreeSet<>();
+        for (Alarm a : alarms) {
             if (a.enabled)
-                alarms.add(a.getTime());
+                aa.add(a.getTime());
         }
-
-        return alarms;
+        return aa;
     }
 
     // cancel alarm 'time' by set it time for day+1 (same hour:min)
@@ -277,14 +296,14 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
 
         HourlyApplication.save(this, alarms, reminders);
-        registerNextAlarm();
+        registerNext();
     }
 
     // register alarm event for next one.
     //
     // scan all alarms and hourly reminders and register net one
     //
-    public void registerNextAlarm() {
+    public boolean registerNextAlarm() {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
 
         TreeSet<Long> all = new TreeSet<>();
@@ -294,11 +313,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         Calendar cur = Calendar.getInstance();
 
         // check hourly reminders
-        reminders = generateReminders(cur);
+        reminders = generateReminders(this.reminders);
         all.addAll(reminders);
 
         // check alarms
-        alarms = generateAlarms();
+        alarms = generateAlarms(this.alarms);
         all.addAll(alarms);
 
         Intent alarmIntent = new Intent(this, AlarmService.class).setAction(ALARM);
@@ -307,6 +326,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         if (all.isEmpty()) {
             OptimizationPreferenceCompat.setKillCheck(this, 0, HourlyApplication.PREFERENCE_NEXT);
             updateNotificationUpcomingAlarm(0);
+            return false;
         } else {
             long time = all.first();
             OptimizationPreferenceCompat.setKillCheck(this, time, HourlyApplication.PREFERENCE_NEXT);
@@ -343,6 +363,19 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             AlarmManager.Alarm a = am.setAlarm(time, alarmIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE));
             huaweiLock(time, a); // exact on time lock enabled always for alarms
+        }
+
+        return true;
+    }
+
+    public void registerNext() {
+        if (!registerNextAlarm()) {
+            sound.after(new Runnable() {
+                @Override
+                public void run() {
+                    stopSelf();
+                }
+            });
         }
     }
 
@@ -573,9 +606,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
 
-        if (alarm != null) {
+        if (alarm != null)
             FireAlarmService.activateAlarm(this, alarm);
-        }
 
         if (rlist != null) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -594,7 +626,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         if (alarm != null || rlist != null) {
             HourlyApplication.save(this, alarms, reminders);
-            registerNextAlarm();
+            registerNext();
         } else {
             Log.d(TAG, "Time ignored: " + time);
         }
@@ -607,23 +639,23 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         // do not update on pref change for alarms, too slow. use direct call from AlarmFragment
 //        if (key.startsWith(HourlyApplication.PREFERENCE_ALARMS_PREFIX)) {
 //            alarms = HourlyApplication.loadAlarms(this);
-//            registerNextAlarm();
+//            registerNext();
 //        }
 
         // reset reminders on special events
         if (key.equals(HourlyApplication.PREFERENCE_ALARM)) {
-            registerNextAlarm();
+            registerNext();
         }
         if (key.equals(HourlyApplication.PREFERENCE_THEME)) {
         }
     }
 
-    static boolean dismiss(Context context, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
+    public static boolean dismiss(Context context, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
         Calendar cur = Calendar.getInstance();
         return dismiss(context, cur, settime, snoozed);
     }
 
-    static boolean dismiss(Context context, Calendar cur, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
+    public static boolean dismiss(Context context, Calendar cur, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
         int auto = ALARM_AUTO_OFF;
@@ -669,7 +701,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
 
         HourlyApplication.save(this, alarms, reminders);
-        registerNextAlarm();
+        registerNext();
     }
 
     // show notification about missed alarm
@@ -773,5 +805,42 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
         optimization.onTaskRemoved(rootIntent);
+    }
+
+    Notification build() {
+        PendingIntent main = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+        RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Low(this, R.layout.notification_alarm);
+
+        builder.setViewVisibility(R.id.notification_button, View.GONE);
+
+        builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
+                .setChannel(HourlyApplication.from(this).channelStatus)
+                .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                .setTitle(getString(R.string.app_name))
+                .setText(TAG)
+                .setWhen(notification)
+                .setMainIntent(main)
+                .setOngoing(true)
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+
+        return builder.build();
+    }
+
+    void updateIcon() {
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+        OptimizationPreferenceCompat.State state = OptimizationPreferenceCompat.getState(this, HourlyApplication.PREFERENCE_OPTIMIZATION);
+        if (state.icon || Build.VERSION.SDK_INT >= 26 && getApplicationInfo().targetSdkVersion >= 26) {
+            Notification n = build();
+            if (notification == null)
+                startForeground(HourlyApplication.NOTIFICATION_PERSISTENT_ICON, n);
+            else
+                nm.notify(HourlyApplication.NOTIFICATION_PERSISTENT_ICON, n);
+            notification = n;
+        } else {
+            stopForeground(false);
+            nm.cancel(HourlyApplication.NOTIFICATION_PERSISTENT_ICON);
+        }
     }
 }
