@@ -158,9 +158,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         PreferenceGroup advanced = (PreferenceGroup) findPreference("advanced");
         Preference alarm = findPreference(HourlyApplication.PREFERENCE_ALARM);
         // 21+ SDK requires to be Alarm to be precise on time
-        if (Build.VERSION.SDK_INT < 21) {
-            advanced.removePreference(alarm);
-        }
+        if (Build.VERSION.SDK_INT < 21)
+            alarm.setVisible(false);
+        if (Build.VERSION.SDK_INT >= 26 && getContext().getApplicationInfo().targetSdkVersion >= 26)
+            findPreference(HourlyApplication.PREFERENCE_NOTIFICATIONS).setVisible(false);
         // 23+ SDK requires to be Alarm to be precise on time
         if (Build.VERSION.SDK_INT >= 23) {
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
@@ -193,9 +194,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_INCREASE_VOLUME));
 
         PreferenceGroup speak = (PreferenceGroup) findPreference("speak");
-        if (DateFormat.is24HourFormat(getActivity())) {
-            speak.removePreference(findPreference(HourlyApplication.PREFERENCE_SPEAK_AMPM));
-        }
+        if (DateFormat.is24HourFormat(getActivity()))
+            findPreference(HourlyApplication.PREFERENCE_SPEAK_AMPM).setVisible(false);
 
         bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_THEME));
         bindPreferenceSummaryToValue(findPreference(HourlyApplication.PREFERENCE_WEEKSTART));
