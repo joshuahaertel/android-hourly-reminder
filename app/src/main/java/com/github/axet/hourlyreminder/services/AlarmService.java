@@ -56,9 +56,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // reminder broadcast triggers sound
     public static final String REMINDER = HourlyApplication.class.getCanonicalName() + ".REMINDER";
 
-    public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
-    public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
-
     Sound sound;
     PowerManager.WakeLock wl;
     PowerManager.WakeLock wlCpu;
@@ -347,64 +344,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             registerNext();
         }
         if (key.equals(HourlyApplication.PREFERENCE_THEME)) {
-        }
-    }
-
-    public static boolean dismiss(Context context, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
-        Calendar cur = Calendar.getInstance();
-        return dismiss(context, cur, settime, snoozed);
-    }
-
-    public static boolean dismiss(Context context, Calendar cur, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
-        int auto = ALARM_AUTO_OFF;
-        if (sec > 0 || snoozed)
-            auto = ALARM_SNOOZE_AUTO_OFF;
-
-        final Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(settime);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-
-        cal.add(Calendar.MINUTE, auto);
-
-        return cur.after(cal);
-    }
-
-    // show notification about missed alarm
-    @SuppressLint("RestrictedApi")
-    public static void showNotificationMissed(Context context, long settime, boolean snoozed) {
-        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
-
-        if (settime == 0) {
-            nm.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
-        } else {
-            final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-            Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
-            int auto = ALARM_AUTO_OFF;
-            if (sec > 0 || snoozed)
-                auto = ALARM_SNOOZE_AUTO_OFF;
-
-            PendingIntent main = PendingIntent.getActivity(context, 0,
-                    new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", settime),
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-
-            String text = context.getString(R.string.AlarmMissedAfter, Alarm.format2412ap(context, settime), auto);
-
-            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, R.layout.notification_alarm);
-
-            builder.setViewVisibility(R.id.notification_button, View.GONE);
-
-            builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
-                    .setChannel(HourlyApplication.from(context).channelAlarms)
-                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
-                    .setMainIntent(main)
-                    .setTitle(context.getString(R.string.AlarmMissed))
-                    .setText(text)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
-
-            nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
     }
 
