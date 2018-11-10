@@ -132,7 +132,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     }
 
     public static boolean dismiss(Context context, Calendar cur, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
-        final SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
         int auto = ALARM_AUTO_OFF;
         if (sec > 0 || snoozed)
@@ -146,6 +146,43 @@ public class FireAlarmService extends Service implements SensorEventListener {
         cal.add(Calendar.MINUTE, auto);
 
         return cur.after(cal);
+    }
+
+    public static void activateAlarm(Context context, FireAlarm a) {
+        OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class)
+                .setAction(FIRE_ALARM).putExtra("state", a.save().toString()));
+    }
+
+    public static void startIfActive(Context context) {
+        context.stopService(new Intent(context, FireAlarmService.class));
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        if (!shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "").isEmpty())
+            OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class));
+    }
+
+    public static void dismissActiveAlarm(Context context) {
+        context.stopService(new Intent(context, FireAlarmService.class));
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor edit = shared.edit();
+        edit.remove(HourlyApplication.PREFERENCE_ACTIVE_ALARM);
+        edit.commit();
+    }
+
+    public static void snoozeActiveAlarm(Context context) {
+        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+        String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
+        if (!json.isEmpty()) {
+            FireAlarm alarm = new FireAlarm(json);
+            FireAlarmService.snooze(context, alarm);
+            dismissActiveAlarm(context);
+        }
+    }
+
+    public static FireAlarm getAlarm(Intent intent) {
+        String json = intent.getStringExtra("state");
+        if (json == null || json.isEmpty())
+            return null;
+        return new FireAlarm(json);
     }
 
     class PhoneStateChangeListener extends PhoneStateListener {
@@ -273,43 +310,6 @@ public class FireAlarmService extends Service implements SensorEventListener {
             }
             return false;
         }
-    }
-
-    public static void activateAlarm(Context context, FireAlarm a) {
-        OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class)
-                .setAction(FIRE_ALARM).putExtra("state", a.save().toString()));
-    }
-
-    public static void startIfActive(Context context) {
-        context.stopService(new Intent(context, FireAlarmService.class));
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        if (!shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "").isEmpty())
-            OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class));
-    }
-
-    public static void dismissActiveAlarm(Context context) {
-        context.stopService(new Intent(context, FireAlarmService.class));
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor edit = shared.edit();
-        edit.remove(HourlyApplication.PREFERENCE_ACTIVE_ALARM);
-        edit.commit();
-    }
-
-    public static void snoozeActiveAlarm(Context context) {
-        final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
-        if (!json.isEmpty()) {
-            FireAlarm alarm = new FireAlarm(json);
-            FireAlarmService.snooze(context, alarm);
-            dismissActiveAlarm(context);
-        }
-    }
-
-    public static FireAlarm getAlarm(Intent intent) {
-        String json = intent.getStringExtra("state");
-        if (json == null || json.isEmpty())
-            return null;
-        return new FireAlarm(json);
     }
 
     public FireAlarmService() {
