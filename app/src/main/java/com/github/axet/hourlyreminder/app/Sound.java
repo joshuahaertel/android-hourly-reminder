@@ -380,9 +380,7 @@ public class Sound extends TTS {
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
-            if (done != null) {
-                done.run();
-            }
+            done(done);
             return s;
         }
 
@@ -392,9 +390,7 @@ public class Sound extends TTS {
                 if (!rr.after.isEmpty()) {
                     playCustom(rr.after, done);
                 } else {
-                    if (done != null) {
-                        done.run();
-                    }
+                    done(done);
                 }
             }
         };
@@ -446,8 +442,7 @@ public class Sound extends TTS {
 
     public void playCustom(final List<Uri> uu, final int index, final Runnable done) {
         if (index >= uu.size()) {
-            if (done != null)
-                done.run();
+            done(done);
             return;
         }
 
@@ -498,8 +493,7 @@ public class Sound extends TTS {
                     @Override
                     public void run() {
                         toneClose();
-                        if (done != null)
-                            done.run();
+                        done(done);
                     }
                 };
                 try {
@@ -770,8 +764,7 @@ public class Sound extends TTS {
                     @Override
                     public void run() {
                         toneClose();
-                        if (done != null)
-                            done.run();
+                        done(done);
                     }
                 };
                 try {
@@ -815,8 +808,7 @@ public class Sound extends TTS {
                                            @Override
                                            public void onCompletion(MediaPlayer mp) {
                                                playerCl();
-                                               if (done != null)
-                                                   done.run();
+                                               done(done);
                                            }
                                        }
         );
@@ -899,6 +891,7 @@ public class Sound extends TTS {
     public void playerClose() {
         playerCl();
         dones.clear();
+        exits.clear();
     }
 
     public Silenced playAlarm(final FireAlarmService.FireAlarm alarm, final long delay, final Runnable late) {

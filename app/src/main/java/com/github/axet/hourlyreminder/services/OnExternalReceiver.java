@@ -7,6 +7,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
+import com.github.axet.hourlyreminder.app.HourlyApplication;
+
 public class OnExternalReceiver extends BroadcastReceiver {
 
     boolean isExternal(Context context) {
@@ -24,6 +26,6 @@ public class OnExternalReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (!isExternal(context))
             return;
-        AlarmService.startIfEnabled(context);
+        HourlyApplication.registerNext(context);
     }
 }

@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         tab.setCustomView(v);
         v.updateLayout();
 
-        AlarmService.startIfEnabled(this);
+        HourlyApplication.registerNext(this);
 
         openIntent(getIntent());
 
@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
             mViewPager.setCurrentItem(1);
         if (a.equals(SHOW_SETTINGS_PAGE))
             mViewPager.setCurrentItem(2);
-        if (intent.getBooleanExtra(AlarmService.ALARMINFO, false))
+        if (intent.getBooleanExtra(HourlyApplication.ALARMINFO, false))
             Toast.makeText(this, getString(R.string.open_from_notificationbar_warning, getString(R.string.pref_alarm_title)), Toast.LENGTH_LONG).show();
     }
 

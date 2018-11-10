@@ -31,14 +31,14 @@ import java.util.List;
 
 public class AlarmsFragment extends WeekSetFragment {
 
-    List<Alarm> alarms = new ArrayList<>();
+    HourlyApplication app;
 
     public AlarmsFragment() {
     }
 
     int getPosition(long id) {
-        for (int i = 0; i < alarms.size(); i++) {
-            if (alarms.get(i).id == id) {
+        for (int i = 0; i < app.alarms.size(); i++) {
+            if (app.alarms.get(i).id == id) {
                 return i;
             }
         }
@@ -47,25 +47,26 @@ public class AlarmsFragment extends WeekSetFragment {
 
     @Override
     public int getCount() {
-        return alarms.size();
+        return app.alarms.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return alarms.get(position);
+        return app.alarms.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return alarms.get(position).id;
+        return app.alarms.get(position).id;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        alarms = HourlyApplication.loadAlarms(getActivity());
-        Collections.sort(alarms, new Alarm.CustomComparator());
+        app = HourlyApplication.from(getContext());
+
+        Collections.sort(app.alarms, new Alarm.CustomComparator());
     }
 
     @Override
@@ -131,8 +132,8 @@ public class AlarmsFragment extends WeekSetFragment {
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         super.onSharedPreferenceChanged(sharedPreferences, key);
         if (key.startsWith(HourlyApplication.PREFERENCE_ALARMS_PREFIX)) {
-            alarms = HourlyApplication.loadAlarms(getActivity());
-            Collections.sort(alarms, new Alarm.CustomComparator());
+            app.alarms = HourlyApplication.loadAlarms(getActivity());
+            Collections.sort(app.alarms, new Alarm.CustomComparator());
             changed();
         }
     }
@@ -151,17 +152,17 @@ public class AlarmsFragment extends WeekSetFragment {
 
     void save(WeekSet a) {
         super.save(a);
-        HourlyApplication.saveAlarms(getActivity(), alarms);
+        app.saveAlarms();
     }
 
     public void addAlarm(Alarm a) {
-        alarms.add(a);
-        Collections.sort(alarms, new Alarm.CustomComparator());
+        app.alarms.add(a);
+        Collections.sort(app.alarms, new Alarm.CustomComparator());
         select(a.id);
-        int pos = alarms.indexOf(a);
+        int pos = app.alarms.indexOf(a);
         list.smoothScrollToPosition(pos);
 
-        HourlyApplication.saveAlarms(getActivity(), alarms);
+        app.saveAlarms();
 
         boxAnimate = false;
     }
@@ -169,8 +170,8 @@ public class AlarmsFragment extends WeekSetFragment {
     @Override
     public void remove(WeekSet a) {
         super.remove(a);
-        alarms.remove(a);
-        HourlyApplication.saveAlarms(getActivity(), alarms);
+        app.alarms.remove(a);
+        app.saveAlarms();
         boxAnimate = false;
     }
 

@@ -122,7 +122,7 @@ public class AlarmActivity extends AppCompatThemeActivity {
         snooze.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlarmService.snooze(AlarmActivity.this, a);
+                FireAlarmService.snooze(AlarmActivity.this, a);
                 FireAlarmService.dismissActiveAlarm(AlarmActivity.this);
                 backToMain();
             }

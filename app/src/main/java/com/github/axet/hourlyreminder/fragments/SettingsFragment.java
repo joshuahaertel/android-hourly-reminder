@@ -2,7 +2,10 @@ package com.github.axet.hourlyreminder.fragments;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Build;
@@ -52,6 +55,19 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     Sound sound;
     Handler handler = new Handler();
+    BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String a = intent.getAction();
+            if (a.equals(OptimizationPreferenceCompat.ICON_UPDATE)) {
+                OptimizationPreferenceCompat.State state = OptimizationPreferenceCompat.getState(context, HourlyApplication.PREFERENCE_OPTIMIZATION);
+                if (state.icon)
+                    AlarmService.start(context);
+                else
+                    AlarmService.stop(context);
+            }
+        }
+    };
 
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -216,6 +232,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
         optimization.enable(AlarmService.class);
+        IntentFilter ff = new IntentFilter();
+        ff.addAction(OptimizationPreferenceCompat.ICON_UPDATE);
+        getContext().registerReceiver(receiver, ff);
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.registerOnSharedPreferenceChangeListener(this);
@@ -304,6 +323,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             sound.close();
             sound = null;
         }
+
+        getContext().unregisterReceiver(receiver);
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.unregisterOnSharedPreferenceChangeListener(this);
