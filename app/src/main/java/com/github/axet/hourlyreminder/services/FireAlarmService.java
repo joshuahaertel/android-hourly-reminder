@@ -21,12 +21,14 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
 
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.AlarmActivity;
+import com.github.axet.hourlyreminder.activities.MainActivity;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
@@ -59,6 +61,9 @@ public class FireAlarmService extends Service implements SensorEventListener {
     public static final int STATE_SIDE = 2;
     public static final int STATE_DOWN = 3;
 
+    public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
+    public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
+
     HourlyApplication app;
     FireAlarmReceiver receiver;
     Sound sound;
@@ -75,7 +80,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     PhoneStateChangeListener pscl;
 
     public static void snooze(Context context, FireAlarmService.FireAlarm a) {
-        Intent intent = new Intent(context, AlarmService.class);
+        Intent intent = new Intent(context, FireAlarmService.class);
         intent.setAction(SNOOZE);
         intent.putExtra("state", a.save().toString());
         OptimizationPreferenceCompat.startService(context, intent);
@@ -83,6 +88,64 @@ public class FireAlarmService extends Service implements SensorEventListener {
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
         Integer min = Integer.valueOf(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_DELAY, "10"));
         Toast.makeText(context, context.getString(R.string.snoozed_for) + " " + HourlyApplication.formatLeftExact(context, min * 60 * 1000), Toast.LENGTH_LONG).show();
+    }
+
+    // show notification about missed alarm
+    @SuppressLint("RestrictedApi")
+    public static void showNotificationMissed(Context context, long settime, boolean snoozed) {
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
+
+        if (settime == 0) {
+            nm.cancel(HourlyApplication.NOTIFICATION_MISSED_ICON);
+        } else {
+            final SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
+            Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
+            int auto = ALARM_AUTO_OFF;
+            if (sec > 0 || snoozed)
+                auto = ALARM_SNOOZE_AUTO_OFF;
+
+            PendingIntent main = PendingIntent.getActivity(context, 0,
+                    new Intent(context, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE).putExtra("time", settime),
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            String text = context.getString(R.string.AlarmMissedAfter, Alarm.format2412ap(context, settime), auto);
+
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, R.layout.notification_alarm);
+
+            builder.setViewVisibility(R.id.notification_button, View.GONE);
+
+            builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
+                    .setChannel(HourlyApplication.from(context).channelAlarms)
+                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                    .setMainIntent(main)
+                    .setTitle(context.getString(R.string.AlarmMissed))
+                    .setText(text)
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+
+            nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
+        }
+    }
+
+    public static boolean dismiss(Context context, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
+        Calendar cur = Calendar.getInstance();
+        return dismiss(context, cur, settime, snoozed);
+    }
+
+    public static boolean dismiss(Context context, Calendar cur, long settime, boolean snoozed) { // do we have to dismiss (due timeout) alarm?
+        final SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        Integer sec = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")); // snooze auto seconds
+        int auto = ALARM_AUTO_OFF;
+        if (sec > 0 || snoozed)
+            auto = ALARM_SNOOZE_AUTO_OFF;
+
+        final Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(settime);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        cal.add(Calendar.MINUTE, auto);
+
+        return cur.after(cal);
     }
 
     class PhoneStateChangeListener extends PhoneStateListener {
@@ -344,7 +407,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
         long fire = System.currentTimeMillis();
         if (!alive(alarm, fire, 1000 * 60)) {
             stopSelf();
-            AlarmService.showNotificationMissed(this, alarm.settime, alarm.isSnoozed(fire));
+            showNotificationMissed(this, alarm.settime, alarm.isSnoozed(fire));
             SharedPreferences.Editor editor = shared.edit();
             editor.remove(HourlyApplication.PREFERENCE_ACTIVE_ALARM);
             editor.commit();
@@ -403,13 +466,13 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 boolean b = a.enabled;
                 a.snooze(); // auto enable
                 if (!old.isEmpty() && a.getTime() >= old.first()) { // did we hit another enabled alarm? stop snooze
-                    AlarmService.showNotificationMissed(context, a.getSetTime(), a.isSnoozed());
+                    showNotificationMissed(context, a.getSetTime(), a.isSnoozed());
                     a.setEnable(b); // restore enable state && setNext
                 } else {
                     final Calendar cur = Calendar.getInstance();
                     cur.setTimeInMillis(a.getTime());
-                    if (AlarmService.dismiss(context, cur, a.getSetTime(), a.isSnoozed())) { // outdated by snooze timeout?
-                        AlarmService.showNotificationMissed(context, a.getSetTime(), a.isSnoozed());
+                    if (dismiss(context, cur, a.getSetTime(), a.isSnoozed())) { // outdated by snooze timeout?
+                        showNotificationMissed(context, a.getSetTime(), a.isSnoozed());
                         a.setEnable(b); // restore enable state && setNext
                     }
                 }
@@ -422,7 +485,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     boolean alive(final FireAlarm alarm, final long fire, long delay) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-        if (!AlarmService.dismiss(this, alarm.settime, alarm.isSnoozed(fire))) { // do not check snooze on first run
+        if (!dismiss(this, alarm.settime, alarm.isSnoozed(fire))) { // do not check snooze on first run
             handle.removeCallbacks(alive);
             alive = new Runnable() {
                 @Override
@@ -443,7 +506,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                     if (sec <= 0)
                         sec = 1;
                     if (!alive(alarm, fire, sec * 1000)) {
-                        AlarmService.showNotificationMissed(FireAlarmService.this, alarm.settime, alarm.isSnoozed(fire));
+                        showNotificationMissed(FireAlarmService.this, alarm.settime, alarm.isSnoozed(fire));
                         stopSelf();
                         return;
                     }
