@@ -1,10 +1,11 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.Service;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -13,12 +14,18 @@ import android.os.Build;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.SharedPreferencesCompat;
 import android.support.v7.preference.PreferenceManager;
+import android.util.Log;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.MainApplication;
 import com.github.axet.androidlibrary.widgets.NotificationChannelCompat;
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
+import com.github.axet.hourlyreminder.activities.MainActivity;
 import com.github.axet.hourlyreminder.alarms.Alarm;
+import com.github.axet.hourlyreminder.alarms.Reminder;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.alarms.Week;
 import com.github.axet.hourlyreminder.alarms.WeekTime;
@@ -42,6 +49,9 @@ public class HourlyApplication extends MainApplication {
     public static final int NOTIFICATION_ALARM_ICON = 1;
     public static final int NOTIFICATION_MISSED_ICON = 2;
     public static final int NOTIFICATION_FALLBACK_ICON = 3;
+    public static final int NOTIFICATION_PERSISTENT_ICON = 4;
+
+    public static final String ALARMINFO = "alarminfo";
 
     public static final String PREFERENCE_VERSION = "version";
 
@@ -97,44 +107,36 @@ public class HourlyApplication extends MainApplication {
 
     public static final String PREFERENCE_FLASH = "flash";
 
+    public NotificationChannelCompat channelStatus;
     public NotificationChannelCompat channelAlarms;
     public NotificationChannelCompat channelErrors;
     public NotificationChannelCompat channelUpcoming;
+
+    public List<Alarm> alarms;
+    public List<ReminderSet> reminders;
+
+    AlarmManager am = new AlarmManager(this);
 
     public static HourlyApplication from(Context context) {
         return (HourlyApplication) MainApplication.from(context);
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        channelAlarms = new NotificationChannelCompat(this, "alarms", "Alarms", NotificationManagerCompat.IMPORTANCE_LOW);
-        channelErrors = new NotificationChannelCompat(this, "errors", "Errors", NotificationManagerCompat.IMPORTANCE_MAX);
-        channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
-
-        switch (getVersion(PREFERENCE_VERSION, R.xml.pref_settings)) {
-            case -1:
-                SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
-                SharedPreferences.Editor edit = shared.edit();
-                edit.putInt(PREFERENCE_VERSION, 2);
-                SharedPreferencesCompat.EditorCompat.getInstance().apply(edit);
-                break;
-            case 0:
-            case 1:
-                version1to2();
-                break;
-        }
-
-        FireAlarmService.startIfActive(this);
+    public static void registerNext(Context context) {
+        HourlyApplication app = HourlyApplication.from(context);
+        app.registerNextAlarm();
+        OptimizationPreferenceCompat.State state = OptimizationPreferenceCompat.getState(context, HourlyApplication.PREFERENCE_OPTIMIZATION);
+        if (state.icon)
+            AlarmService.start(context);
+        else
+            AlarmService.stop(context);
     }
 
-    void version1to2() {
-        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+    public static void save(Context context, List<Alarm> alarms, List<ReminderSet> reminders) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor edit = shared.edit();
-        int old = Integer.valueOf(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")) * 60;
-        edit.putString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, Integer.toString(old));
-        SharedPreferencesCompat.EditorCompat.getInstance().apply(edit);
+        saveAlarms(edit, alarms);
+        saveReminders(edit, reminders);
+        edit.commit();
     }
 
     public static List<Alarm> loadAlarms(Context context) {
@@ -261,22 +263,11 @@ public class HourlyApplication extends MainApplication {
         SharedPreferences.Editor edit = shared.edit();
         saveAlarms(edit, alarms);
         edit.commit();
-        AlarmService.start(context);
     }
 
     public static void saveReminders(Context context, List<ReminderSet> reminders) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor edit = shared.edit();
-        saveReminders(edit, reminders);
-        edit.commit();
-        AlarmService.start(context);
-
-    }
-
-    public static void save(Context context, List<Alarm> alarms, List<ReminderSet> reminders) {
-        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor edit = shared.edit();
-        saveAlarms(edit, alarms);
         saveReminders(edit, reminders);
         edit.commit();
     }
@@ -377,7 +368,7 @@ public class HourlyApplication extends MainApplication {
     }
 
     public static int getTheme(Context context, int light, int dark) {
-        return MainApplication.getTheme(context, PREFERENCE_THEME, light, dark);
+        return MainApplication.getTheme(context, PREFERENCE_THEME, light, dark, context.getString(R.string.Theme_Dark));
     }
 
     public static String getQuantityString(Context context, Locale locale, int id, int n, Object... formatArgs) {
@@ -555,5 +546,327 @@ public class HourlyApplication extends MainApplication {
             return def; // ignore this app no longer uses StringSets
         else
             return shared.getStringSet(name, def);
+    }
+
+    // create list for hour reminders. 'time' list for reminder (hronological order)
+    public static TreeSet<Long> generateReminders(List<ReminderSet> reminders) {
+        TreeSet<Long> alarms = new TreeSet<>();
+
+        for (ReminderSet rr : reminders) {
+            if (rr.enabled) {
+                for (Reminder r : rr.list) {
+                    if (r.enabled)
+                        alarms.add(r.getTime());
+                }
+            }
+        }
+
+        return alarms;
+    }
+
+    // create list for alarms. 'time' list for alarms (hronological order)
+    public static TreeSet<Long> generateAlarms(List<Alarm> alarms) {
+        TreeSet<Long> aa = new TreeSet<>();
+        for (Alarm a : alarms) {
+            if (a.enabled)
+                aa.add(a.getTime());
+        }
+        return aa;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        channelStatus = new NotificationChannelCompat(this, "status", "Status", NotificationManagerCompat.IMPORTANCE_LOW);
+        channelAlarms = new NotificationChannelCompat(this, "alarms", "Alarms", NotificationManagerCompat.IMPORTANCE_LOW);
+        channelErrors = new NotificationChannelCompat(this, "errors", "System Errors", NotificationManagerCompat.IMPORTANCE_MAX);
+        channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
+
+        switch (getVersion(PREFERENCE_VERSION, R.xml.pref_settings)) {
+            case -1:
+                SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+                SharedPreferences.Editor edit = shared.edit();
+                edit.putInt(PREFERENCE_VERSION, 2);
+                SharedPreferencesCompat.EditorCompat.getInstance().apply(edit);
+                break;
+            case 0:
+            case 1:
+                version1to2();
+                break;
+        }
+
+        OptimizationPreferenceCompat.ICON = true;
+
+        load();
+
+        FireAlarmService.startIfActive(this);
+    }
+
+    void version1to2() {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor edit = shared.edit();
+        int old = Integer.valueOf(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, "0")) * 60;
+        edit.putString(HourlyApplication.PREFERENCE_SNOOZE_AFTER, Integer.toString(old));
+        SharedPreferencesCompat.EditorCompat.getInstance().apply(edit);
+    }
+
+    public void load() {
+        alarms = HourlyApplication.loadAlarms(this);
+        reminders = HourlyApplication.loadReminders(this);
+    }
+
+    public void saveAlarms() {
+        saveAlarms(this, alarms);
+        registerNext(this);
+    }
+
+    public void saveReminders() {
+        saveReminders(this, reminders);
+        registerNext(this);
+    }
+
+    public void save() {
+        save(this, alarms, reminders);
+    }
+
+    // register alarm event for next one.
+    //
+    // scan all alarms and hourly reminders and register net one
+    //
+    public boolean registerNextAlarm() {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+
+        TreeSet<Long> all = new TreeSet<>();
+        TreeSet<Long> reminders;
+        TreeSet<Long> alarms;
+
+        Calendar cur = Calendar.getInstance();
+
+        // check hourly reminders
+        reminders = generateReminders(this.reminders);
+        all.addAll(reminders);
+
+        // check alarms
+        alarms = generateAlarms(this.alarms);
+        all.addAll(alarms);
+
+        Intent alarmIntent = new Intent(this, AlarmService.class).setAction(AlarmService.ALARM);
+        Intent reminderIntent = new Intent(this, AlarmService.class).setAction(AlarmService.REMINDER);
+
+        if (all.isEmpty()) {
+            OptimizationPreferenceCompat.setKillCheck(this, 0, HourlyApplication.PREFERENCE_NEXT);
+            updateNotificationUpcomingAlarm(0);
+            return false;
+        } else {
+            long time = all.first();
+            OptimizationPreferenceCompat.setKillCheck(this, time, HourlyApplication.PREFERENCE_NEXT);
+            updateNotificationUpcomingAlarm(time);
+        }
+
+        if (reminders.isEmpty()) {
+            am.cancel(reminderIntent);
+        } else {
+            long time = reminders.first();
+
+            reminderIntent.putExtra("time", time);
+
+            Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetReminder: " + AlarmManager.formatTime(time));
+
+            AlarmManager.Alarm a;
+            if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
+                a = am.setAlarm(time, reminderIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true));
+            } else {
+                a = am.setExact(time, reminderIntent);
+            }
+            if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) // exact on time lock enabled only for reminders
+                huaweiLock(time, a);
+        }
+
+        if (alarms.isEmpty()) {
+            am.cancel(alarmIntent);
+        } else {
+            long time = alarms.first();
+
+            alarmIntent.putExtra("time", time);
+
+            Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetAlarm: " + AlarmManager.formatTime(time));
+
+            AlarmManager.Alarm a = am.setAlarm(time, alarmIntent, new Intent(this, MainActivity.class).setAction(MainActivity.SHOW_ALARMS_PAGE));
+            huaweiLock(time, a); // exact on time lock enabled always for alarms
+        }
+
+        return true;
+    }
+
+    void huaweiLock(long time, AlarmManager.Alarm a) { // support for huawei trash phones
+        if (!OptimizationPreferenceCompat.isHuawei(this))
+            return;
+        Calendar cur = Calendar.getInstance();
+        Calendar upcoming = upcomingTime(time);
+        if (cur.after(upcoming))
+            a.wakeLock();
+    }
+
+
+    // register notification_upcoming alarm event for 'time' - 15min.
+    //
+    // service will call showNotificationUpcoming(time)
+    //
+    void updateNotificationUpcomingAlarm(long time) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+
+        Intent upcomingIntent = new Intent(this, AlarmService.class).setAction(AlarmService.NOTIFICATION).putExtra("time", time);
+        if (time == 0) {
+            am.cancel(upcomingIntent);
+            showNotificationUpcoming(0);
+        } else {
+            Calendar cur = Calendar.getInstance();
+
+            int sec = upcomingSec(time);
+            Calendar cal = upcomingTime(time, sec);
+
+            if (cur.after(cal)) { // we already 15 before alarm, show notification_upcoming
+                am.cancel(upcomingIntent);
+                showNotificationUpcoming(time);
+            } else {
+                showNotificationUpcoming(0);
+                long time15 = cal.getTimeInMillis(); // time to wait before show notification_upcoming
+                if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
+                    Intent showIntent = new Intent(this, MainActivity.class);
+                    if (isAlarm(time))
+                        showIntent.setAction(MainActivity.SHOW_ALARMS_PAGE);
+                    else
+                        showIntent.setAction(MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true);
+                    am.setAlarm(time15, upcomingIntent, time, showIntent);
+                } else {
+                    if (Build.VERSION.SDK_INT >= 23 && sec < 15 * 60) { // 15 min interval
+                        am.checkPost(time15, upcomingIntent); // post intent, do not create alarm
+                    } else {
+                        am.setExact(time15, upcomingIntent);
+                    }
+                }
+            }
+        }
+    }
+
+    // show upcoming alarm notification
+    //
+    // time - 0 cancel notification
+    // time - upcoming alarm time, show text.
+    @SuppressLint("RestrictedApi")
+    public void showNotificationUpcoming(long time) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (!prefs.getBoolean(HourlyApplication.PREFERENCE_NOTIFICATIONS, true))
+            return;
+
+        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+
+        if (time == 0) {
+            nm.cancel(HourlyApplication.NOTIFICATION_UPCOMING_ICON);
+        } else {
+            PendingIntent button = PendingIntent.getService(this, 0,
+                    new Intent(this, AlarmService.class).setAction(AlarmService.CANCEL).putExtra("time", time),
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            String action = MainActivity.SHOW_REMINDERS_PAGE;
+
+            String subject = getString(R.string.UpcomingChime);
+            if (isAlarm(time)) {
+                subject = getString(R.string.UpcomingAlarm);
+                action = MainActivity.SHOW_ALARMS_PAGE;
+            }
+
+            PendingIntent main = PendingIntent.getActivity(this, 0,
+                    new Intent(this, MainActivity.class).setAction(action).putExtra("time", time),
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            String text = Alarm.format2412ap(this, time);
+            for (Alarm a : alarms) {
+                if (a.getTime() == time) {
+                    if (a.isSnoozed()) {
+                        text += " (" + getString(R.string.snoozed) + ": " + a.format2412ap() + ")";
+                    }
+                }
+            }
+
+            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, R.layout.notification_alarm);
+
+            builder.setOnClickPendingIntent(R.id.notification_button, button);
+            builder.setTextViewText(R.id.notification_button, getString(R.string.Cancel));
+
+            builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
+                    .setChannel(HourlyApplication.from(this).channelUpcoming)
+                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                    .setMainIntent(main)
+                    .setTitle(subject)
+                    .setText(text)
+                    .setOngoing(true)
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+
+            nm.notify(HourlyApplication.NOTIFICATION_UPCOMING_ICON, builder.build());
+        }
+    }
+
+    boolean isAlarm(long time) {
+        for (Alarm a : alarms) {
+            if (a.getTime() == time && a.getEnable())
+                return true;
+        }
+        return false;
+    }
+
+    boolean isReminder(long time) {
+        for (ReminderSet rr : reminders) {
+            if (rr.enabled) {
+                for (Reminder r : rr.list) {
+                    if (r.getTime() == time && r.enabled) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+    int getRepeat(long time) {
+        TreeSet<Integer> rep = new TreeSet<>();
+        rep.add(60); // default 60 minutes == 15 minutes before alarm
+        for (ReminderSet rr : reminders) {
+            if (rr.enabled) {
+                for (Reminder r : rr.list) {
+                    if (r.getTime() == time && r.enabled) {
+                        if (rr.repeat > 0) // negative means once per hour == 60 (already in the list), skip it
+                            rep.add(rr.repeat); // add 15 or 5 or 30
+                    }
+                }
+            }
+        }
+        return rep.first(); // sorted smallest first
+    }
+
+    int upcomingSec(long time) {
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
+        int repeat = getRepeat(time) * 60; // make seconds
+        int sec;
+        if (Build.VERSION.SDK_INT >= 23 && !shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) { // 15 min interval
+            sec = repeat / 4; // 60 / 4 = 15min
+        } else {
+            sec = repeat / 12; // 60 / 12 = 5min
+        }
+        return sec;
+    }
+
+    Calendar upcomingTime(long time) {
+        int sec = upcomingSec(time);
+        return upcomingTime(time, sec);
+    }
+
+    Calendar upcomingTime(long time, int sec) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(time);
+        cal.add(Calendar.SECOND, -sec);
+        return cal;
     }
 }
