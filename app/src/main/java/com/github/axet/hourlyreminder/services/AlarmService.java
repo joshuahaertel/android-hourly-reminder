@@ -68,7 +68,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     };
     OptimizationPreferenceCompat.ServiceReceiver optimization;
     Notification notification;
-    HourlyApplication app;
+    HourlyApplication.ItemsStorage items;
 
     public static void start(Context context) {
         Intent intent = new Intent(context, AlarmService.class);
@@ -122,7 +122,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        app = HourlyApplication.from(this);
+        items = HourlyApplication.from(this).items;
 
         optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass(), HourlyApplication.PREFERENCE_OPTIMIZATION) {
             @Override
@@ -187,7 +187,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             if (action != null) {
                 if (action.equals(NOTIFICATION)) {
                     long time = intent.getLongExtra("time", 0);
-                    app.showNotificationUpcoming(time);
+                    items.showNotificationUpcoming(time);
                     registerNext();
                 } else if (action.equals(CANCEL)) {
                     long time = intent.getLongExtra("time", 0);
@@ -205,7 +205,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     // cancel alarm 'time' by set it time for day+1 (same hour:min)
     public void tomorrow(long time) {
-        for (Alarm a : app.alarms) {
+        for (Alarm a : items.alarms) {
             if (a.getTime() == time && a.enabled) {
                 if (a.weekdaysCheck) {
                     // be safe for another timezone. if we moved we better call setNext().
@@ -218,7 +218,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
 
-        for (ReminderSet rr : app.reminders) {
+        for (ReminderSet rr : items.reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
                     if (r.getTime() == time && r.enabled) {
@@ -228,12 +228,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             }
         }
 
-        app.save();
+        items.save();
         registerNext();
     }
 
     public void registerNext() {
-        app.registerNextAlarm();
+        items.registerNextAlarm();
         OptimizationPreferenceCompat.State state = OptimizationPreferenceCompat.getState(this, HourlyApplication.PREFERENCE_OPTIMIZATION);
         if (!state.icon) {
             sound.after(new Runnable() {
@@ -255,7 +255,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         // then sound alarm or hourly reminder
 
         FireAlarmService.FireAlarm alarm = null;
-        for (Alarm a : app.alarms) { // here can be two alarms with same time
+        for (Alarm a : items.alarms) { // here can be two alarms with same time
             if (a.getTime() == time && a.enabled) {
                 Log.d(TAG, "Sound Alarm " + Alarm.format24(a.getTime()));
                 if (alarm == null) {
@@ -278,7 +278,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
 
         Sound.Playlist rlist = null;
-        for (final ReminderSet rr : app.reminders) {
+        for (final ReminderSet rr : items.reminders) {
             if (rr.enabled && rr.last < time) {
                 for (Reminder r : rr.list) {
                     if (r.isSoundAlarm(time) && r.enabled) {
@@ -322,7 +322,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         }
 
         if (alarm != null || rlist != null) {
-            app.save();
+            items.save();
             registerNext();
         } else {
             Log.d(TAG, "Time ignored: " + time);

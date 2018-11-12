@@ -32,14 +32,14 @@ import java.util.List;
 
 public class RemindersFragment extends WeekSetFragment implements DialogInterface.OnDismissListener {
 
-    HourlyApplication app;
+    HourlyApplication.ItemsStorage items;
 
     public RemindersFragment() {
     }
 
     int getPosition(long id) {
-        for (int i = 0; i < app.reminders.size(); i++) {
-            if (app.reminders.get(i).id == id) {
+        for (int i = 0; i < items.reminders.size(); i++) {
+            if (items.reminders.get(i).id == id) {
                 return i;
             }
         }
@@ -48,23 +48,23 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
 
     @Override
     public int getCount() {
-        return app.reminders.size();
+        return items.reminders.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return app.reminders.get(position);
+        return items.reminders.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return app.reminders.get(position).id;
+        return items.reminders.get(position).id;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        app = HourlyApplication.from(getContext());
+        items = HourlyApplication.from(getContext()).items;
     }
 
     @Override
@@ -105,7 +105,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         super.onSharedPreferenceChanged(sharedPreferences, key);
         if (key.startsWith(HourlyApplication.PREFERENCE_REMINDERS_PREFIX)) {
-            app.reminders = HourlyApplication.loadReminders(getActivity());
+            items.loadReminders();
             changed();
         }
     }
@@ -124,23 +124,23 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
 
     void save(WeekSet a) {
         super.save(a);
-        app.saveReminders();
+        items.saveReminders();
     }
 
     public void addAlarm(ReminderSet a) {
-        app.reminders.add(a);
+        items.reminders.add(a);
         select(a.id);
-        int pos = app.reminders.indexOf(a);
+        int pos = items.reminders.indexOf(a);
         list.smoothScrollToPosition(pos);
-        app.saveReminders();
+        items.saveReminders();
         boxAnimate = false;
     }
 
     @Override
     public void remove(WeekSet a) {
         super.remove(a);
-        app.reminders.remove(a);
-        app.saveReminders();
+        items.reminders.remove(a);
+        items.saveReminders();
     }
 
     @Override
@@ -190,7 +190,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 HoursDialogFragment dialog = new HoursDialogFragment();
 
                 Bundle args = new Bundle();
-                args.putInt("index", app.reminders.indexOf(w));
+                args.putInt("index", items.reminders.indexOf(w));
                 args.putStringArrayList("hours", new ArrayList<>(rr.hours));
 
                 dialog.setArguments(args);
@@ -205,7 +205,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 RepeatDialogFragment d = new RepeatDialogFragment();
 
                 Bundle args = new Bundle();
-                args.putInt("index", app.reminders.indexOf(w));
+                args.putInt("index", items.reminders.indexOf(w));
                 args.putInt("mins", rr.repeat);
                 d.setArguments(args);
 
@@ -265,7 +265,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 ReminderSet rs = new ReminderSet(getActivity(), r.hours);
                 addAlarm(rs);
             } else {
-                ReminderSet rs = app.reminders.get(r.index);
+                ReminderSet rs = items.reminders.get(r.index);
                 rs.load(r.hours);
                 save(rs);
             }
@@ -274,7 +274,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
             RepeatDialogFragment.Result r = (RepeatDialogFragment.Result) dialogInterface;
             if (!r.ok)
                 return;
-            ReminderSet rs = app.reminders.get(r.index);
+            ReminderSet rs = items.reminders.get(r.index);
             rs.repeat = r.mins;
             save(rs);
 

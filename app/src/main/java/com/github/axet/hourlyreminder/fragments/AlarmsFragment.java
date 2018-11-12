@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.github.axet.androidlibrary.app.Storage;
+import com.github.axet.androidlibrary.widgets.RingtoneChoicer;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.WeekSet;
@@ -22,23 +23,20 @@ import com.github.axet.hourlyreminder.alarms.WeekTime;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
-import com.github.axet.androidlibrary.widgets.RingtoneChoicer;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 public class AlarmsFragment extends WeekSetFragment {
 
-    HourlyApplication app;
+    HourlyApplication.ItemsStorage items;
 
     public AlarmsFragment() {
     }
 
     int getPosition(long id) {
-        for (int i = 0; i < app.alarms.size(); i++) {
-            if (app.alarms.get(i).id == id) {
+        for (int i = 0; i < items.alarms.size(); i++) {
+            if (items.alarms.get(i).id == id) {
                 return i;
             }
         }
@@ -47,26 +45,26 @@ public class AlarmsFragment extends WeekSetFragment {
 
     @Override
     public int getCount() {
-        return app.alarms.size();
+        return items.alarms.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return app.alarms.get(position);
+        return items.alarms.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return app.alarms.get(position).id;
+        return items.alarms.get(position).id;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        app = HourlyApplication.from(getContext());
+        items = HourlyApplication.from(getContext()).items;
 
-        Collections.sort(app.alarms, new Alarm.CustomComparator());
+        Collections.sort(items.alarms, new Alarm.CustomComparator());
     }
 
     @Override
@@ -132,8 +130,8 @@ public class AlarmsFragment extends WeekSetFragment {
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         super.onSharedPreferenceChanged(sharedPreferences, key);
         if (key.startsWith(HourlyApplication.PREFERENCE_ALARMS_PREFIX)) {
-            app.alarms = HourlyApplication.loadAlarms(getActivity());
-            Collections.sort(app.alarms, new Alarm.CustomComparator());
+            items.loadAlarms();
+            Collections.sort(items.alarms, new Alarm.CustomComparator());
             changed();
         }
     }
@@ -152,17 +150,17 @@ public class AlarmsFragment extends WeekSetFragment {
 
     void save(WeekSet a) {
         super.save(a);
-        app.saveAlarms();
+        items.saveAlarms();
     }
 
     public void addAlarm(Alarm a) {
-        app.alarms.add(a);
-        Collections.sort(app.alarms, new Alarm.CustomComparator());
+        items.alarms.add(a);
+        Collections.sort(items.alarms, new Alarm.CustomComparator());
         select(a.id);
-        int pos = app.alarms.indexOf(a);
+        int pos = items.alarms.indexOf(a);
         list.smoothScrollToPosition(pos);
 
-        app.saveAlarms();
+        items.saveAlarms();
 
         boxAnimate = false;
     }
@@ -170,8 +168,8 @@ public class AlarmsFragment extends WeekSetFragment {
     @Override
     public void remove(WeekSet a) {
         super.remove(a);
-        app.alarms.remove(a);
-        app.saveAlarms();
+        items.alarms.remove(a);
+        items.saveAlarms();
         boxAnimate = false;
     }
 
