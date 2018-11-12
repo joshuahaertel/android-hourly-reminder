@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 
 import com.github.axet.hourlyreminder.alarms.Alarm;
-import com.github.axet.hourlyreminder.alarms.Reminder;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
 
 import org.apache.commons.io.IOUtils;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 
 public class Storage extends com.github.axet.androidlibrary.app.Storage {
     public static final String TAG = Storage.class.getSimpleName();
@@ -37,17 +35,16 @@ public class Storage extends com.github.axet.androidlibrary.app.Storage {
             throw new RuntimeException("unable to create: " + dir);
         }
 
-        List<Alarm> alarms = HourlyApplication.loadAlarms(context);
-        List<ReminderSet> reminders = HourlyApplication.loadReminders(context);
+        HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
 
         for (File child : dir.listFiles()) {
             Uri u = Uri.fromFile(child);
             boolean delete = true;
-            for (Alarm a : alarms) {
+            for (Alarm a : items.alarms) {
                 if (a.ringtoneValue.equals(u))
                     delete = false;
             }
-            for (ReminderSet r : reminders) {
+            for (ReminderSet r : items.reminders) {
                 if (r.ringtoneValue.equals(u))
                     delete = false;
             }

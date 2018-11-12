@@ -186,9 +186,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 @TargetApi(23)
                 public boolean onPreferenceChange(Preference preference, Object o) {
                     boolean b = (Boolean) o;
-                    List<ReminderSet> reminders = HourlyApplication.loadReminders(getActivity());
+                    HourlyApplication.ItemsStorage items= HourlyApplication.from(getActivity()).items;
                     boolean set = false;
-                    for (ReminderSet rs : reminders) {
+                    for (ReminderSet rs : items.reminders) {
                         if (rs.repeat > 0 && rs.repeat < 15) {
                             if (!b) {
                                 set = true;
@@ -198,7 +198,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     }
                     if (set) {
                         Toast.makeText(getActivity(), R.string.Reminders15, Toast.LENGTH_SHORT).show();
-                        HourlyApplication.saveReminders(getActivity(), reminders);
+                        items.saveReminders();
                     }
                     return true;
                 }

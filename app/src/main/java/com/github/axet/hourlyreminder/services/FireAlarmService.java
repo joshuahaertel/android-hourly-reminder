@@ -64,7 +64,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
     public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
     public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
 
-    HourlyApplication app;
+    HourlyApplication.ItemsStorage items;
     FireAlarmReceiver receiver;
     Sound sound;
     Handler handle = new Handler();
@@ -322,7 +322,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
         Log.d(TAG, "onCreate");
         sound = new Sound(this);
 
-        app = HourlyApplication.from(this);
+        items = HourlyApplication.from(this).items;
 
         PendingIntent main = PendingIntent.getBroadcast(this, 0, new Intent(SHOW_ACTIVITY), PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationManagerCompat nm = NotificationManagerCompat.from(this);
@@ -456,12 +456,12 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
         // create old list, we need to check conflicts with old alarms only, not shifted
         TreeSet<Long> old = new TreeSet<>();
-        for (Alarm a : app.alarms) {
+        for (Alarm a : items.alarms) {
             if (a.enabled)
                 old.add(a.getTime());
         }
 
-        for (Alarm a : app.alarms) {
+        for (Alarm a : items.alarms) {
             if (ids.contains(a.id)) {
                 boolean b = a.enabled;
                 a.snooze(); // auto enable
@@ -479,8 +479,8 @@ public class FireAlarmService extends Service implements SensorEventListener {
             }
         }
 
-        app.save();
-        app.registerNextAlarm();
+        items.save();
+        items.registerNextAlarm();
     }
 
     boolean alive(final FireAlarm alarm, final long fire, long delay) {
