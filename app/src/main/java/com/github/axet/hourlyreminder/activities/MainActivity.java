@@ -15,11 +15,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -34,7 +34,6 @@ import com.github.axet.hourlyreminder.app.Toast;
 import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
 import com.github.axet.hourlyreminder.fragments.RemindersFragment;
 import com.github.axet.hourlyreminder.fragments.SettingsFragment;
-import com.github.axet.hourlyreminder.services.AlarmService;
 
 public class MainActivity extends AppCompatSettingsThemeActivity implements DialogInterface.OnDismissListener {
 
@@ -201,12 +200,12 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         tab.setCustomView(v);
         v.updateLayout();
 
+        if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
+            OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION).show();
+
         HourlyApplication.registerNext(this);
 
         openIntent(getIntent());
-
-        if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
-            OptimizationPreferenceCompat.buildKilledWarning(this, true, HourlyApplication.PREFERENCE_OPTIMIZATION).show();
     }
 
     @Override
