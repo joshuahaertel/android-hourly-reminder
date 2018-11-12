@@ -122,9 +122,9 @@ public class HourlyApplication extends MainApplication {
 
     public static void registerNext(Context context) {
         ItemsStorage items = HourlyApplication.from(context).items;
-        items.registerNextAlarm();
+        boolean b = items.registerNextAlarm();
         OptimizationPreferenceCompat.State state = OptimizationPreferenceCompat.getState(context, HourlyApplication.PREFERENCE_OPTIMIZATION);
-        if (state.icon)
+        if ((Build.VERSION.SDK_INT < 26 && b) || state.icon) // always running service for <API26
             AlarmService.start(context);
         else
             AlarmService.stop(context);
