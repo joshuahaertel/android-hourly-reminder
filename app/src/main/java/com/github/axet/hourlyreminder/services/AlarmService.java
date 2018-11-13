@@ -23,7 +23,6 @@ import android.view.View;
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
-import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.MainActivity;
 import com.github.axet.hourlyreminder.alarms.Alarm;
@@ -32,10 +31,6 @@ import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
-
-import java.util.Calendar;
-import java.util.List;
-import java.util.TreeSet;
 
 /**
  * System Alarm Manager notifies this service to create/stop alarms.
@@ -233,9 +228,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     }
 
     public void registerNext() {
-        items.registerNextAlarm();
+        boolean b = items.registerNextAlarm();
         OptimizationPreferenceCompat.State state = OptimizationPreferenceCompat.getState(this, HourlyApplication.PREFERENCE_OPTIMIZATION);
-        if (!state.icon) {
+        if (!state.icon && (Build.VERSION.SDK_INT >= 26 || !b)) {
             sound.after(new Runnable() {
                 @Override
                 public void run() {

@@ -114,8 +114,6 @@ public class HourlyApplication extends MainApplication {
 
     public ItemsStorage items;
 
-    AlarmManager am = new AlarmManager(this);
-
     public static HourlyApplication from(Context context) {
         return (HourlyApplication) MainApplication.from(context);
     }
@@ -124,7 +122,7 @@ public class HourlyApplication extends MainApplication {
         ItemsStorage items = HourlyApplication.from(context).items;
         boolean b = items.registerNextAlarm();
         OptimizationPreferenceCompat.State state = OptimizationPreferenceCompat.getState(context, HourlyApplication.PREFERENCE_OPTIMIZATION);
-        if ((Build.VERSION.SDK_INT < 26 && b) || state.icon) // always running service for <API26
+        if (Build.VERSION.SDK_INT < 26 && b || state.icon) // always running service for <API26
             AlarmService.start(context);
         else
             AlarmService.stop(context);
@@ -356,6 +354,7 @@ public class HourlyApplication extends MainApplication {
     }
 
     public class ItemsStorage {
+        public AlarmManager am = new AlarmManager(HourlyApplication.this);
         public List<Alarm> alarms;
         public List<ReminderSet> reminders;
 
