@@ -276,6 +276,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 return;
             ReminderSet rs = items.reminders.get(r.index);
             rs.repeat = r.mins;
+            rs.load(rs.hours); // update hours
             save(rs);
 
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
