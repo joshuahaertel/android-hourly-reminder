@@ -12,10 +12,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.axet.androidlibrary.app.Storage;
+import com.github.axet.androidlibrary.widgets.RingtoneChoicer;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
@@ -24,11 +26,9 @@ import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.dialogs.HoursDialogFragment;
 import com.github.axet.hourlyreminder.dialogs.RepeatDialogFragment;
-import com.github.axet.androidlibrary.widgets.RingtoneChoicer;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 public class RemindersFragment extends WeekSetFragment implements DialogInterface.OnDismissListener {
 
@@ -199,7 +199,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         });
 
         TextView every = (TextView) view.findViewById(R.id.alarm_every);
-        every.setOnClickListener(new View.OnClickListener() {
+        ((FrameLayout) every.getParent()).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 RepeatDialogFragment d = new RepeatDialogFragment();
