@@ -124,9 +124,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
             public void onReceive(Context context, Intent intent) {
                 super.onReceive(context, intent);
                 String a = intent.getAction();
-                if (a != null && a.equals(OptimizationPreferenceCompat.ICON_UPDATE)) {
+                if (a != null && a.equals(OptimizationPreferenceCompat.ICON_UPDATE))
                     updateIcon(true);
-                }
+            }
+
+            @Override
+            public void check() {
+                registerNext();
             }
         };
         optimization.filters.addAction(OptimizationPreferenceCompat.ICON_UPDATE);
