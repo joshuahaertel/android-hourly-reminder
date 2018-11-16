@@ -51,7 +51,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // reminder broadcast triggers sound
     public static final String REMINDER = HourlyApplication.class.getCanonicalName() + ".REMINDER";
 
-    Sound sound;
     PowerManager.WakeLock wl;
     PowerManager.WakeLock wlCpu;
     Handler handler = new Handler();
@@ -64,6 +63,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     OptimizationPreferenceCompat.ServiceReceiver optimization;
     Notification notification;
     HourlyApplication.ItemsStorage items;
+    Sound sound;
 
     public static void start(Context context) {
         Intent intent = new Intent(context, AlarmService.class);
@@ -117,7 +117,9 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        items = HourlyApplication.from(this).items;
+        HourlyApplication app = HourlyApplication.from(this);
+        sound = app.sound;
+        items = app.items;
 
         optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, getClass(), HourlyApplication.PREFERENCE_OPTIMIZATION) {
             @Override
@@ -138,8 +140,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         updateIcon(true);
 
-        sound = new Sound(this);
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
     }
@@ -157,11 +157,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.unregisterOnSharedPreferenceChangeListener(this);
-
-        if (sound != null) {
-            sound.close();
-            sound = null;
-        }
 
         if (optimization != null) {
             optimization.close();

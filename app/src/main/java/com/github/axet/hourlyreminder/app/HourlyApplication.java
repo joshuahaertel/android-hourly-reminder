@@ -113,6 +113,7 @@ public class HourlyApplication extends MainApplication {
     public NotificationChannelCompat channelUpcoming;
 
     public ItemsStorage items;
+    public Sound sound;
 
     public static HourlyApplication from(Context context) {
         return (HourlyApplication) MainApplication.from(context);
@@ -853,6 +854,7 @@ public class HourlyApplication extends MainApplication {
         OptimizationPreferenceCompat.ICON = true;
 
         items = new ItemsStorage();
+        sound = new Sound(this);
 
         FireAlarmService.startIfActive(this);
     }
