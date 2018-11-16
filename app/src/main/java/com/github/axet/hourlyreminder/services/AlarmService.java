@@ -41,8 +41,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     public static final String TAG = AlarmService.class.getSimpleName();
 
     // upcoming notification alarm action. Triggers notification upcoming.
-    public static final String REGISTER = AlarmService.class.getCanonicalName() + ".REGISTER";
-    // upcoming notification alarm action. Triggers notification upcoming.
     public static final String NOTIFICATION = AlarmService.class.getCanonicalName() + ".NOTIFICATION";
     // cancel alarm
     public static final String CANCEL = HourlyApplication.class.getCanonicalName() + ".CANCEL";
@@ -129,11 +127,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 if (a != null && a.equals(OptimizationPreferenceCompat.ICON_UPDATE))
                     updateIcon(true);
             }
-
-            @Override
-            public void check() {
-                registerNext();
-            }
         };
         optimization.filters.addAction(OptimizationPreferenceCompat.ICON_UPDATE);
         optimization.create();
@@ -170,6 +163,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        items.am.update();
         if (optimization.onStartCommand(intent, flags, startId)) {
             Log.d(TAG, "onStartCommand restart"); // crash fail
             registerNext();
@@ -189,7 +183,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 } else if (action.equals(ALARM) || action.equals(REMINDER)) {
                     long time = intent.getLongExtra("time", 0);
                     soundAlarm(time);
-                } else if (action.equals(REGISTER)) {
+                } else {
                     registerNext();
                 }
             }
