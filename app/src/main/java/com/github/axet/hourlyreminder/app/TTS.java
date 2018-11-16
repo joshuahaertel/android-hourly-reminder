@@ -20,8 +20,6 @@ import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.widgets.TTSPreference;
 
-import org.json.JSONObject;
-
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -103,9 +101,8 @@ public class TTS extends SoundConfig {
         handler.removeCallbacks(delayed);
         delayed = null;
 
-        if (tts == null) {
+        if (tts == null)
             ttsCreate();
-        }
 
         // clear delayed(), sound just played
         final Runnable clear = new Runnable() {
@@ -377,17 +374,15 @@ public class TTS extends SoundConfig {
             params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, getSoundChannel().streamType);
             params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, getVolume());
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
-            if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS) {
+            if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS)
                 return false;
-            }
         } else {
             HashMap<String, String> params = new HashMap<>();
             params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(getSoundChannel().streamType));
             params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(getVolume()));
             params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
-            if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params) != TextToSpeech.SUCCESS) {
+            if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params) != TextToSpeech.SUCCESS)
                 return false;
-            }
         }
         restart = false;
         return true;
