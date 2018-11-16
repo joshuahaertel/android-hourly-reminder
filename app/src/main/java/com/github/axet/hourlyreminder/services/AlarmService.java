@@ -179,10 +179,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                     registerNext();
                 } else if (action.equals(CANCEL)) {
                     long time = intent.getLongExtra("time", 0);
-                    tomorrow(time);
+                    tomorrow(time); // registerNext()
                 } else if (action.equals(ALARM) || action.equals(REMINDER)) {
                     long time = intent.getLongExtra("time", 0);
-                    soundAlarm(time);
+                    soundAlarm(time); // registerNext()
                 } else {
                     registerNext();
                 }

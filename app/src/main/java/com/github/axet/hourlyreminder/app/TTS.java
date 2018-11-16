@@ -32,11 +32,11 @@ public class TTS extends SoundConfig {
 
     public static final int DELAYED_DELAY = 5 * AlarmManager.SEC1;
 
-    public static final String TTS_INIT = SoundConfig.class.getCanonicalName() + "_TTS_INIT";
+    public static final String TTS_INIT = SoundConfig.class.getCanonicalName() + ".TTS_INIT";
 
     TextToSpeech tts;
-    Runnable delayed; // tts may not be initalized, on init done, run delayed.run()
-    boolean restart; // restart tts once if failed. on apk upgrade tts always failed.
+    Runnable delayed; // delayedSpeach. tts may not be initalized, on init done, run delayed.run()
+    int restart; // restart tts once if failed. on apk upgrade tts always failed.
     Set<Runnable> dones = new HashSet<>(); // valid done list, in case sound was canceled during play done will not be present
     Runnable onInit; // once
     Set<Runnable> exits = new HashSet<>(); // run when all done
@@ -47,6 +47,7 @@ public class TTS extends SoundConfig {
     }
 
     void ttsCreate() {
+        Log.d(TAG, "tts create");
         handler.removeCallbacks(onInit);
         onInit = new Runnable() {
             @Override
@@ -76,21 +77,22 @@ public class TTS extends SoundConfig {
         handler.removeCallbacks(onInit);
         onInit = null;
 
-        if (delayed != null) {
-            Runnable r = delayed;
-            handler.removeCallbacks(delayed);
-            delayed = null;
-            r.run();
-        }
+        done(delayed);
+        delayed = null;
     }
 
     public void close() {
+        closeTTS();
+    }
+
+    public void closeTTS() {
         if (tts != null) {
             tts.shutdown();
             tts = null;
         }
         handler.removeCallbacks(onInit);
         onInit = null;
+        dones.remove(delayed);
         handler.removeCallbacks(delayed);
         delayed = null;
     }
@@ -98,6 +100,7 @@ public class TTS extends SoundConfig {
     public void playSpeech(final long time, final Runnable done) {
         dones.add(done);
 
+        dones.remove(delayed);
         handler.removeCallbacks(delayed);
         delayed = null;
 
@@ -108,6 +111,7 @@ public class TTS extends SoundConfig {
         final Runnable clear = new Runnable() {
             @Override
             public void run() {
+                dones.remove(delayed);
                 handler.removeCallbacks(delayed);
                 delayed = null;
                 done(done);
@@ -143,18 +147,20 @@ public class TTS extends SoundConfig {
         // play speech twice if clear.run() was called.
         if (!playSpeech(time)) {
             Toast.makeText(context, context.getString(R.string.WaitTTS), Toast.LENGTH_SHORT).show();
+            dones.remove(delayed);
             handler.removeCallbacks(delayed);
             delayed = new Runnable() {
                 @Override
                 public void run() {
                     if (!playSpeech(time)) {
-                        close();
-                        if (restart) {
+                        closeTTS();
+                        if (restart >= 1) {
                             Toast.makeText(context, context.getString(R.string.FailedTTS), Toast.LENGTH_SHORT).show();
                             clear.run();
                         } else {
-                            restart = true;
+                            restart++;
                             Toast.makeText(context, context.getString(R.string.FailedTTSRestar), Toast.LENGTH_SHORT).show();
+                            dones.remove(delayed);
                             handler.removeCallbacks(delayed);
                             delayed = new Runnable() {
                                 @Override
@@ -162,11 +168,13 @@ public class TTS extends SoundConfig {
                                     playSpeech(time, done);
                                 }
                             };
+                            dones.add(delayed);
                             handler.postDelayed(delayed, DELAYED_DELAY);
                         }
                     }
                 }
             };
+            dones.add(delayed);
             handler.postDelayed(delayed, DELAYED_DELAY);
         }
     }
@@ -384,7 +392,7 @@ public class TTS extends SoundConfig {
             if (tts.speak(speak, TextToSpeech.QUEUE_FLUSH, params) != TextToSpeech.SUCCESS)
                 return false;
         }
-        restart = false;
+        restart = 0;
         return true;
     }
 
