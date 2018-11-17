@@ -130,7 +130,7 @@ public class AlarmsFragment extends WeekSetFragment {
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         super.onSharedPreferenceChanged(sharedPreferences, key);
         if (key.startsWith(HourlyApplication.PREFERENCE_ALARMS_PREFIX)) {
-            items.loadAlarms();
+            items.loadAlarms(sharedPreferences);
             Collections.sort(items.alarms, new Alarm.CustomComparator());
             changed();
         }

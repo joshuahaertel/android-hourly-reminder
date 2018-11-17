@@ -70,6 +70,16 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     }
 
     public class TimeSetReceiver extends BroadcastReceiver {
+        public IntentFilter filter = new IntentFilter();
+
+        public TimeSetReceiver() {
+            filter.addAction(Intent.ACTION_TIME_CHANGED);
+        }
+
+        public void register(Context context) {
+            context.registerReceiver(reciver, filter);
+        }
+
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TimeSetReceiver.class.getSimpleName(), "TimeSetReceiver " + intent.getAction());
@@ -94,7 +104,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
 
         void updateLayout() {
             ViewParent p = getParent();
-            if (p != null && p instanceof LinearLayout) { // TabView extends LinearLayout
+            if (p instanceof LinearLayout) { // TabView extends LinearLayout
                 LinearLayout l = (LinearLayout) p;
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) l.getLayoutParams();
                 if (lp != null) {
@@ -184,9 +194,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
 
         is24Hours = DateFormat.is24HourFormat(this);
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_TIME_CHANGED);
-        registerReceiver(reciver, filter);
+        reciver.register(this);
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 

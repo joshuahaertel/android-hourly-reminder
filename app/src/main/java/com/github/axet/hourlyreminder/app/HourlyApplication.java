@@ -364,14 +364,14 @@ public class HourlyApplication extends MainApplication {
         }
 
         public void load() {
-            alarms = loadAlarms();
-            reminders = loadReminders();
+            SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(HourlyApplication.this);
+            alarms = loadAlarms(shared);
+            reminders = loadReminders(shared);
         }
 
-        public List<Alarm> loadAlarms() {
+        public List<Alarm> loadAlarms(SharedPreferences shared) {
             ArrayList<Alarm> alarms = new ArrayList<>();
 
-            SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(HourlyApplication.this);
             int c = shared.getInt(PREFERENCE_ALARMS_PREFIX + "count", -1);
             if (c == -1) // <=1.4.4
                 c = shared.getInt("Alarm_" + "Count", -1);
@@ -503,10 +503,8 @@ public class HourlyApplication extends MainApplication {
             registerNext(HourlyApplication.this);
         }
 
-        public List<ReminderSet> loadReminders() {
+        public List<ReminderSet> loadReminders(SharedPreferences shared) {
             ArrayList<ReminderSet> list = new ArrayList<>();
-
-            SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(HourlyApplication.this);
 
             int count = shared.getInt(PREFERENCE_REMINDERS_PREFIX + "count", -1);
 

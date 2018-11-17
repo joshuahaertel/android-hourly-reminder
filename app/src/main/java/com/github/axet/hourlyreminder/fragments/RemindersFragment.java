@@ -105,7 +105,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         super.onSharedPreferenceChanged(sharedPreferences, key);
         if (key.startsWith(HourlyApplication.PREFERENCE_REMINDERS_PREFIX)) {
-            items.loadReminders();
+            items.loadReminders(sharedPreferences);
             changed();
         }
     }
