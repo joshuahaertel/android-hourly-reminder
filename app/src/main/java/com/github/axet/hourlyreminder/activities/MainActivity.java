@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -92,17 +93,15 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     public static class SettingsTabView extends AppCompatImageView {
         Drawable d;
 
-        public SettingsTabView(Context context, TabLayout.Tab tab, ColorStateList colors) {
+        public SettingsTabView(Context context, ColorStateList colors) {
             super(context);
-
             d = ContextCompat.getDrawable(context, R.drawable.ic_more_vert_24dp);
-
             setImageDrawable(d);
-
             setColorFilter(colors.getDefaultColor());
         }
 
-        void updateLayout() {
+        void updateLayout(TabLayout.Tab tab) {
+            tab.setCustomView(this);
             ViewParent p = getParent();
             if (p instanceof LinearLayout) { // TabView extends LinearLayout
                 LinearLayout l = (LinearLayout) p;
@@ -110,7 +109,6 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
                 if (lp != null) {
                     lp.weight = 0;
                     lp.width = LinearLayout.LayoutParams.WRAP_CONTENT;
-
                     int left = l.getMeasuredHeight() / 2 - d.getIntrinsicWidth() / 2;
                     int right = left;
                     left -= l.getPaddingLeft();
@@ -189,7 +187,6 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
         is24Hours = DateFormat.is24HourFormat(this);
@@ -204,9 +201,8 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
         TabLayout.Tab tab = tabLayout.getTabAt(2);
-        SettingsTabView v = new SettingsTabView(this, tab, tabLayout.getTabTextColors());
-        tab.setCustomView(v);
-        v.updateLayout();
+        SettingsTabView v = new SettingsTabView(this, tabLayout.getTabTextColors());
+        v.updateLayout(tab);
 
         if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
             OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION).show();

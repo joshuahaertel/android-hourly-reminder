@@ -328,11 +328,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 //        }
 
         // reset reminders on special events
-        if (key.equals(HourlyApplication.PREFERENCE_ALARM)) {
+        if (key.equals(HourlyApplication.PREFERENCE_ALARM))
             registerNext();
-        }
-        if (key.equals(HourlyApplication.PREFERENCE_THEME)) {
-        }
     }
 
     @SuppressLint("RestrictedApi")
