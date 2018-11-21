@@ -311,10 +311,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         if (alarm != null || rlist != null) {
             items.save();
-            registerNext();
         } else {
             Log.d(TAG, "Time ignored: " + time);
         }
+        registerNext();
     }
 
     @Override
