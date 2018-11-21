@@ -78,6 +78,7 @@ public class TTS extends SoundConfig {
         onInit = null;
 
         done(delayed);
+        handler.removeCallbacks(delayed);
         delayed = null;
     }
 
@@ -86,6 +87,7 @@ public class TTS extends SoundConfig {
     }
 
     public void closeTTS() {
+        Log.d(TAG, "closeTTS()");
         if (tts != null) {
             tts.shutdown();
             tts = null;
@@ -128,16 +130,22 @@ public class TTS extends SoundConfig {
         } else {
             tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                 @Override
-                public void onStart(String utteranceId) {
+                public void onStart(String utteranceId) { // tts start speaking
+                    Log.d(TAG, "TTS::onStart");
+                    dones.remove(delayed);
+                    handler.removeCallbacks(delayed);
+                    delayed = null;
                 }
 
                 @Override
                 public void onDone(String utteranceId) {
+                    Log.d(TAG, "TTS::onDone");
                     handler.post(clear);
                 }
 
                 @Override
                 public void onError(String utteranceId) {
+                    Log.d(TAG, "TTS::onError");
                     handler.post(clear);
                 }
             });
@@ -146,18 +154,22 @@ public class TTS extends SoundConfig {
         // TTS may say failed, but play sounds successfully. we need regardless or failed do not
         // play speech twice if clear.run() was called.
         if (!playSpeech(time)) {
+            Log.d(TAG, "Waiting for TTS");
             Toast.makeText(context, context.getString(R.string.WaitTTS), Toast.LENGTH_SHORT).show();
             dones.remove(delayed);
             handler.removeCallbacks(delayed);
             delayed = new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "delayed run()");
                     if (!playSpeech(time)) {
                         closeTTS();
                         if (restart >= 1) {
+                            Log.d(TAG, "Failed TTS again, skipping");
                             Toast.makeText(context, context.getString(R.string.FailedTTS), Toast.LENGTH_SHORT).show();
                             clear.run();
                         } else {
+                            Log.d(TAG, "Failed TTS again, restarting");
                             restart++;
                             Toast.makeText(context, context.getString(R.string.FailedTTSRestar), Toast.LENGTH_SHORT).show();
                             dones.remove(delayed);
