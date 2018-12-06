@@ -13,10 +13,11 @@ import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.github.axet.androidlibrary.app.NotificationManagerCompat;
+import com.github.axet.androidlibrary.app.SuperUser;
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
 import com.github.axet.hourlyreminder.R;
@@ -601,15 +602,7 @@ public class Sound extends TTS {
     }
 
     void toastTone(Throwable e) {
-        String str = "";
-        if (e != null) {
-            while (e.getCause() != null)
-                e = e.getCause();
-            str = e.getMessage();
-            if (str == null || str.isEmpty())
-                str = e.getClass().getSimpleName();
-        }
-        Toast.makeText(context, "MediaPlayer init failed, fallback to Tone " + str, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "MediaPlayer init failed, fallback to Tone " + SuperUser.toMessage(e), Toast.LENGTH_SHORT).show();
     }
 
     long tonePlay() {

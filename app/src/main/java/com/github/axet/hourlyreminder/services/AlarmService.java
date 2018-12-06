@@ -15,12 +15,12 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.AlarmClock;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
+import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.hourlyreminder.R;

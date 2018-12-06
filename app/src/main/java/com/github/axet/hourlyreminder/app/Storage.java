@@ -85,7 +85,7 @@ public class Storage extends com.github.axet.androidlibrary.app.Storage {
 
         String a = uri.getAuthority();
         if (Build.VERSION.SDK_INT >= 21 && a.startsWith(Storage.SAF)) {
-            return getDocumentName(uri);
+            return getDocumentName(context, uri);
         }
 
         String title = titles.get(uri);
