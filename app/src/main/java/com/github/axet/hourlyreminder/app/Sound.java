@@ -473,6 +473,8 @@ public class Sound extends TTS {
     public void playBeep(final Runnable done) {
         beepClose();
 
+        dones.add(done);
+
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         String b = shared.getString(HourlyApplication.PREFERENCE_BEEP_CUSTOM, BeepPreference.BeepConfig.DEFAULT);
 
@@ -522,7 +524,7 @@ public class Sound extends TTS {
         return (int) (100 * systemVolume * alarmVolume);
     }
 
-    public void playBeep(AudioTrack t, final Runnable done) {
+    public void playBeep(AudioTrack t, final Runnable done) { // done should be added by caller
         beepClose();
 
         track = t;
@@ -532,8 +534,6 @@ public class Sound extends TTS {
         } else {
             track.setVolume(getVolume());
         }
-
-        dones.add(done);
 
         final Runnable end = new Runnable() {
             @Override
@@ -778,7 +778,7 @@ public class Sound extends TTS {
         return playOnce(player, done);
     }
 
-    MediaPlayer playOnce(MediaPlayer player, final Runnable done) {
+    MediaPlayer playOnce(MediaPlayer player, final Runnable done) { // done should be added by caller
         player.setLooping(false); // https://code.google.com/p/android/issues/detail?id=1314
 
         final MediaPlayer p = player;
