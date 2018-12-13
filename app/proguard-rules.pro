@@ -17,3 +17,5 @@
 #}
 
 -dontobfuscate
+
+-dontwarn de.innosystec.unrar.**

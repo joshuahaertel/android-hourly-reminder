@@ -1,6 +1,5 @@
 package com.github.axet.hourlyreminder.app;
 
-import android.app.Notification;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,12 +12,13 @@ import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
+import com.github.axet.androidlibrary.widgets.ErrorDialog;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.alarms.ReminderSet;
@@ -380,6 +380,7 @@ public class Sound extends TTS {
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
+            dones.add(done);
             done(done);
             return s;
         }
@@ -390,6 +391,7 @@ public class Sound extends TTS {
                 if (!rr.after.isEmpty()) {
                     playCustom(rr.after, done);
                 } else {
+                    dones.add(done);
                     done(done);
                 }
             }
@@ -437,6 +439,7 @@ public class Sound extends TTS {
     }
 
     public void playCustom(List<Uri> uu, final Runnable done) {
+        dones.add(done);
         playCustom(uu, 0, done);
     }
 
@@ -601,15 +604,7 @@ public class Sound extends TTS {
     }
 
     void toastTone(Throwable e) {
-        String str = "";
-        if (e != null) {
-            while (e.getCause() != null)
-                e = e.getCause();
-            str = e.getMessage();
-            if (str == null || str.isEmpty())
-                str = e.getClass().getSimpleName();
-        }
-        Toast.makeText(context, "MediaPlayer init failed, fallback to Tone " + str, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "MediaPlayer init failed, fallback to Tone " + ErrorDialog.toMessage(e), Toast.LENGTH_SHORT).show();
     }
 
     long tonePlay() {
