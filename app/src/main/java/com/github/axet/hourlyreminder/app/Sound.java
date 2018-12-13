@@ -1,6 +1,5 @@
 package com.github.axet.hourlyreminder.app;
 
-import android.app.Notification;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -17,7 +16,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
-import com.github.axet.androidlibrary.app.SuperUser;
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
 import com.github.axet.androidlibrary.widgets.ErrorDialog;
@@ -382,6 +380,7 @@ public class Sound extends TTS {
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
+            dones.add(done);
             done(done);
             return s;
         }
@@ -392,6 +391,7 @@ public class Sound extends TTS {
                 if (!rr.after.isEmpty()) {
                     playCustom(rr.after, done);
                 } else {
+                    dones.add(done);
                     done(done);
                 }
             }
@@ -439,6 +439,7 @@ public class Sound extends TTS {
     }
 
     public void playCustom(List<Uri> uu, final Runnable done) {
+        dones.add(done);
         playCustom(uu, 0, done);
     }
 
