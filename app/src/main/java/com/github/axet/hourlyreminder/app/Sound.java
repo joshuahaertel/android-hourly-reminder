@@ -488,10 +488,12 @@ public class Sound extends TTS {
             try {
                 playerCl();
                 MediaPlayer p = create(ReminderSet.DEFAULT_NOTIFICATION); // first fallback to system media player
+                dones.add(done);
                 player = playOnce(p, done);
             } catch (RuntimeException e2) { // second fallback to tone (samsung phones crashes on tone native initialization (seems like some AudioTrack initialization failed)
                 Log.d(TAG, "Unable get tone", e2);
                 toastTone(e2);
+                dones.add(done);
                 Runnable end = new Runnable() {
                     @Override
                     public void run() {
@@ -778,7 +780,7 @@ public class Sound extends TTS {
         return playOnce(player, done);
     }
 
-    MediaPlayer playOnce(MediaPlayer player, final Runnable done) {
+    MediaPlayer playOnce(MediaPlayer player, final Runnable done) { // done should be added already
         player.setLooping(false); // https://code.google.com/p/android/issues/detail?id=1314
 
         final MediaPlayer p = player;
