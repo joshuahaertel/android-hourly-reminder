@@ -72,6 +72,10 @@ public class ReminderSet extends WeekSet {
         return super.formatDays();
     }
 
+    public void reload() {
+        load(hours);
+    }
+
     public void load(Set<String> hours) {
         this.hours = new TreeSet<>(hours);
         this.list = new ArrayList<>();

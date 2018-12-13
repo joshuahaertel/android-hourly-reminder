@@ -120,7 +120,7 @@ public class AlarmsFragment extends WeekSetFragment {
     }
 
     @Override
-    void setEnable(WeekSet a, boolean e) {
+    public void setEnable(WeekSet a, boolean e) {
         super.setEnable(a, e);
         if (e)
             HourlyApplication.toastAlarmSet(getActivity(), (WeekTime) a);

@@ -122,6 +122,12 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         return super.getView(position, convertView, parent);
     }
 
+    @Override
+    public void setEnable(WeekSet a, boolean e) {
+        super.setEnable(a, e);
+        ((ReminderSet) a).reload(); // update hours after enable / disable
+    }
+
     void save(WeekSet a) {
         super.save(a);
         items.saveReminders();
@@ -276,7 +282,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 return;
             ReminderSet rs = items.reminders.get(r.index);
             rs.repeat = r.mins;
-            rs.load(rs.hours); // update hours
+            rs.reload(); // update hours
             save(rs);
 
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.

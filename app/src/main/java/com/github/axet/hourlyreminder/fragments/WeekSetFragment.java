@@ -530,7 +530,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         }
     }
 
-    void setEnable(WeekSet a, boolean e) {
+    public void setEnable(WeekSet a, boolean e) {
         a.setEnable(e);
     }
 
