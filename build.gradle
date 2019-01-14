@@ -2,23 +2,27 @@
 
 buildscript {
     repositories {
-        jcenter()
         mavenLocal()
+        jcenter()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.0'
     }
 }
 
 allprojects {
     repositories {
-        jcenter()
         mavenLocal()
+        jcenter()
         google()
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+def prop(String name) {
+    project.hasProperty(name) ? project.getProperty(name) : null
 }

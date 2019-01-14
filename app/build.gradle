@@ -3,14 +3,12 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 25
     buildToolsVersion '28.0.3'
-
     android {
         lintOptions {
             checkReleaseBuilds false
             abortOnError false
         }
     }
-
     defaultConfig {
         applicationId "com.github.axet.hourlyreminder"
         minSdkVersion 9
@@ -20,10 +18,10 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(RELEASE_STORE_FILE)
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias RELEASE_KEY_ALIAS
-            keyPassword RELEASE_KEY_PASSWORD
+            storeFile file(prop('RELEASE_STORE_FILE') ?: 'none')
+            storePassword prop('RELEASE_STORE_PASSWORD')
+            keyAlias prop('RELEASE_KEY_ALIAS')
+            keyPassword prop('RELEASE_KEY_PASSWORD')
         }
     }
     buildTypes {
@@ -43,6 +41,6 @@ android {
 
 dependencies {
     testImplementation 'junit:junit:4.12'
+    implementation 'com.github.axet:android-library:1.30.5' // implementation project(':android-library')
     implementation 'com.android.support:design:25.3.1'
-    implementation 'com.github.axet:android-library:1.28.30' // implementation project(':android-library')
 }
