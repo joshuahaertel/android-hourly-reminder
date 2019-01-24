@@ -73,6 +73,7 @@ public class ReminderSet extends WeekSet {
     }
 
     public void reload() {
+        last = 0;
         load(hours);
     }
 
