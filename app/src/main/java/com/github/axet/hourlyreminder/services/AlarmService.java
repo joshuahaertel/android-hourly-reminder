@@ -267,7 +267,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         Sound.Playlist rlist = null;
         for (final ReminderSet rr : items.reminders) {
-            if (rr.enabled && rr.last < time) {
+            if (rr.enabled) {
                 for (Reminder r : rr.list) {
                     if (r.isSoundAlarm(time) && r.enabled) {
                         // calling setNext is more safe. if this alarm have to fire today we will reset it
@@ -276,15 +276,17 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         //
                         // also safe if we moved to another timezone.
                         r.setNext();
-                        rr.last = time;
-                        if (alarm == null) { // do not cross alarms
-                            if (rlist == null) {
-                                rlist = new Sound.Playlist(rr);
-                            } else {
-                                rlist.merge(rr);
+                        if (rr.last < time) {
+                            rr.last = time;
+                            if (alarm == null) { // do not cross alarms
+                                if (rlist == null) {
+                                    rlist = new Sound.Playlist(rr);
+                                } else {
+                                    rlist.merge(rr);
+                                }
+                            } else { // merge reminder with alarm
+                                alarm.merge(rr);
                             }
-                        } else { // merge reminder with alarm
-                            alarm.merge(rr);
                         }
                     }
                 }
