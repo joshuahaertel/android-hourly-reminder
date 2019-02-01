@@ -9,7 +9,10 @@ import com.github.axet.hourlyreminder.app.HourlyApplication;
 public class OnTimeZoneReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals(Intent.ACTION_TIMEZONE_CHANGED))
+        String a = intent.getAction();
+        if (a == null)
+            return;
+        if (a.equals(Intent.ACTION_TIMEZONE_CHANGED))
             HourlyApplication.registerNext(context);
     }
 }

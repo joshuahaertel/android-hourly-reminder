@@ -1,27 +1,11 @@
 package com.github.axet.hourlyreminder.services;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 
-public class OnExternalReceiver extends BroadcastReceiver {
-
-    boolean isExternal(Context context) {
-        PackageManager pm = context.getPackageManager();
-        try {
-            PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
-            ApplicationInfo ai = pi.applicationInfo;
-            return (ai.flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE) == ApplicationInfo.FLAG_EXTERNAL_STORAGE;
-        } catch (PackageManager.NameNotFoundException ignore) {
-        }
-        return false;
-    }
-
+public class OnExternalReceiver extends com.github.axet.androidlibrary.services.OnExternalReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (!isExternal(context))
