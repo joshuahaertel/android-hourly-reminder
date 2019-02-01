@@ -73,6 +73,7 @@ public class ReminderSet extends WeekSet {
     }
 
     public void reload() {
+        last = 0;
         load(hours);
     }
 
@@ -215,9 +216,8 @@ public class ReminderSet extends WeekSet {
         Reminder.Key last = null;
         for (int i = 0; i < list.size(); i++) {
             int index = start + i;
-            if (index >= list.size()) {
+            if (index >= list.size())
                 index -= list.size();
-            }
             Reminder.Key s = new Reminder.Key(list.get(index));
             if (prev != null && prev.next(s)) {
                 count++;

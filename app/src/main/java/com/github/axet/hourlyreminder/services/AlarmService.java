@@ -267,7 +267,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         Sound.Playlist rlist = null;
         for (final ReminderSet rr : items.reminders) {
-            if (rr.enabled && rr.last < time) {
+            if (rr.enabled) {
                 for (Reminder r : rr.list) {
                     if (r.isSoundAlarm(time) && r.enabled) {
                         // calling setNext is more safe. if this alarm have to fire today we will reset it
@@ -276,15 +276,17 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                         //
                         // also safe if we moved to another timezone.
                         r.setNext();
-                        rr.last = time;
-                        if (alarm == null) { // do not cross alarms
-                            if (rlist == null) {
-                                rlist = new Sound.Playlist(rr);
-                            } else {
-                                rlist.merge(rr);
+                        if (rr.last < time) {
+                            rr.last = time;
+                            if (alarm == null) { // do not cross alarms
+                                if (rlist == null) {
+                                    rlist = new Sound.Playlist(rr);
+                                } else {
+                                    rlist.merge(rr);
+                                }
+                            } else { // merge reminder with alarm
+                                alarm.merge(rr);
                             }
-                        } else { // merge reminder with alarm
-                            alarm.merge(rr);
                         }
                     }
                 }
@@ -351,7 +353,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
                     .setChannel(HourlyApplication.from(context).channelAlarms)
-                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                    .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
                     .setMainIntent(main)
                     .setTitle(context.getString(R.string.AlarmMissed))
                     .setText(text)
@@ -409,7 +411,7 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
                 .setChannel(HourlyApplication.from(this).channelStatus)
-                .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
                 .setTitle(getString(R.string.app_name))
                 .setText(TAG)
                 .setWhen(notification)

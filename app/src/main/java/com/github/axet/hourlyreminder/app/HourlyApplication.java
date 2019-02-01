@@ -753,7 +753,7 @@ public class HourlyApplication extends MainApplication {
 
                 builder.setTheme(HourlyApplication.getTheme(HourlyApplication.this, R.style.AppThemeLight, R.style.AppThemeDark))
                         .setChannel(channelUpcoming)
-                        .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                        .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
                         .setMainIntent(main)
                         .setTitle(subject)
                         .setText(text)
