@@ -1,6 +1,5 @@
 package com.github.axet.hourlyreminder.widgets;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -28,8 +27,6 @@ import com.github.axet.hourlyreminder.app.Toast;
 public class FlashPreference extends SwitchPreferenceCompat {
     public static final String TAG = FlashPreference.class.getSimpleName();
 
-    public static final String[] PERMISSIONS_V = new String[]{Manifest.permission.VIBRATE};
-
     ArrayAdapter<CharSequence> values = ArrayAdapter.createFromResource(getContext(), R.array.patterns_values, android.R.layout.simple_spinner_item);
 
     AlertDialog d;
@@ -56,13 +53,14 @@ public class FlashPreference extends SwitchPreferenceCompat {
     };
 
     public static boolean supported(Context context) {
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+        PackageManager pm = context.getPackageManager();
+        return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
     }
 
     public static class Flash {
         Context context;
         Camera cam;
-        CameraManager camManager;
+        CameraManager cm;
         Handler handler = new Handler();
         long[] pattern;
         int index;
@@ -81,14 +79,14 @@ public class FlashPreference extends SwitchPreferenceCompat {
         public void on() {
             if (cam != null)
                 return;
-            if (camManager != null)
+            if (cm != null)
                 return;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                camManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+                cm = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
                 try {
-                    String cameraId = camManager.getCameraIdList()[0];
-                    camManager.setTorchMode(cameraId, true);
+                    String cameraId = cm.getCameraIdList()[0];
+                    cm.setTorchMode(cameraId, true);
                     return;
                 } catch (Exception e) { // catching CameraAccessException, cause VerifyError on old devices
                     throw new RuntimeException(e);
@@ -113,10 +111,10 @@ public class FlashPreference extends SwitchPreferenceCompat {
 
             if (Build.VERSION.SDK_INT >= 23) {
                 try {
-                    if (camManager != null) {
-                        String cameraId = camManager.getCameraIdList()[0]; // Usually front camera is at 0 position.
-                        camManager.setTorchMode(cameraId, false);
-                        camManager = null;
+                    if (cm != null) {
+                        String cameraId = cm.getCameraIdList()[0]; // Usually front camera is at 0 position.
+                        cm.setTorchMode(cameraId, false);
+                        cm = null;
                     }
                 } catch (Exception e) { // catching CameraAccessException, cause VerifyError on old devices
                     throw new RuntimeException(e);
