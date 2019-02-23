@@ -1,0 +1,252 @@
+<resources>
+    <string name="app_name">Alarma recordatoria</string>
+    <string name="action_settings">Ajustes</string>
+
+    <string-array name="weekdays_text">
+        <item>Lun</item>
+        <item>Mar</item>
+        <item>Mie</item>
+        <item>Jue</item>
+        <item>Vie</item>
+        <item>Sab</item>
+        <item>Dom</item>
+    </string-array>
+
+    <string-array name="custom_sound_text">
+        <item>Desactivado</item>
+        <item>Tipo de alarma</item>
+        <item>Tipo de archivo sonoro</item>
+    </string-array>
+
+    <string-array name="increasing_volume_text">
+        <item>Desactivado</item>
+        <item>1 seg</item>
+        <item>2 seg</item>
+        <item>3 seg</item>
+        <item>4 seg</item>
+        <item>5 seg</item>
+    </string-array>
+
+    <string-array name="snooze_after_text">
+        <item>Desactivado</item>
+        <item>1 seg</item>
+        <item>3 seg</item>
+        <item>5 seg</item>
+        <item>30 seg</item>
+        <item>1 min</item>
+        <item>5 min</item>
+    </string-array>
+
+    <string-array name="snooze_text">
+        <item>1 min</item>
+        <item>5 min</item>
+        <item>10 min</item>
+        <item>15 min</item>
+        <item>20 min</item>
+    </string-array>
+
+    <string name="system">Lenguaje del sistema</string>
+
+    <string-array name="patterns_text">
+        <item>Simple</item>
+        <item>Pitido-Pitido</item>
+        <item>Pitido largo</item>
+    </string-array>
+
+    <!--MainActivity-->
+    <string name="HourlyReminders">Alarma recordatoria</string>
+    <string name="CustomAlarms">Alarmas personalizadas</string>
+
+    <!--Sound-->
+    <string name="WaitTTS">Esperando para TTS</string>
+    <string name="FailedTTS">Falló TTS nuevamente, saltando</string>
+    <string name="FailedTTSRestar">Falló TTS nuevamente, reiniciando</string>
+    <string name="NoDefaultRingtone">Sin timbre predeterminado</string>
+    <string name="DefaultRingtone">Timbre predeterminado</string>
+    <string name="SoundSilenced">(Sonido silenciado)</string>
+    <string name="SoundSilencedVibrate">(Sonido silenciado) - Vibrar</string>
+    <string name="SoundSilencedCall">(Sonido silenciado) - Llamada</string>
+    <string name="SoundSilencedMusic">(Sonido silenciado) - Música</string>
+    <string name="SoundSilencedSettings">(Sonido silenciado) - Ajustes</string>
+    <string name="ToastTime">La hora es %1$s</string>
+
+    <!--Alarm-->
+    <string name="once">Una vez</string>
+    <string name="Everyday">Cada día</string>
+    <string name="Weekdays">Días laborables</string>
+    <string name="DaysOfWeek">Días de la semana</string>
+    <string name="Weekend">Fines de semana</string>
+    <string name="Today">Hoy</string>
+    <string name="Tomorrow">Mañana</string>
+
+    <string name="WEEK_MON">Lun</string>
+    <string name="WEEK_TUE">Mar</string>
+    <string name="WEEK_WED">Mie</string>
+    <string name="WEEK_THU">Jue</string>
+    <string name="WEEK_FRI">Vie</string>
+    <string name="WEEK_SAT">Sab</string>
+    <string name="WEEK_SUN">Dom</string>
+
+    <string name="monday">L</string>
+    <string name="tuesday">M</string>
+    <string name="wednesday">M</string>
+    <string name="thursday">J</string>
+    <string name="friday">V</string>
+    <string name="saturday">S</string>
+    <string name="sunday">D</string>
+
+    <string name="title_activity_alarm">Alarma</string>
+    <string name="title_activity_settings">Ajustes</string>
+
+    <plurals name="days">
+        <item quantity="one">%d día</item>
+        <item quantity="other">%d días</item>
+    </plurals>
+
+    <plurals name="hours">
+        <item quantity="one">%d hora</item>
+        <item quantity="other">%d horas</item>
+    </plurals>
+
+    <plurals name="minutes">
+        <item quantity="one">%d minuto</item>
+        <item quantity="other">%d minutos</item>
+    </plurals>
+
+    <plurals name="seconds">
+        <item quantity="one">%d segundo</item>
+        <item quantity="other">%d segundos</item>
+    </plurals>
+
+    <string name="alarm_set_for">¡Alarma establecida para %s desde ahora!</string>
+    <string name="alarm_disabled">Alarma está desactivada</string>
+    <string name="hour_symbol">h</string>
+    <string name="min_symbol">m</string>
+
+    <string-array name="themes_text">
+        <item>Tema claro</item>
+        <item>Tema oscuro</item>
+    </string-array>
+
+    <string-array name="weekstart_text">
+        <item>Sábados</item>
+        <item>Domingos</item>
+        <item>Lunes</item>
+    </string-array>
+
+    <string name="Yes">Sí</string>
+    <string name="No">No</string>
+
+    <string name="SelectAlarm">Seleccionar Alarma</string>
+
+    <string name="Reminder">Recordatorio</string>
+    <string name="Reminders15">Repetir recordatorio definido en 15 min, revise \'recordatorios\'.</string>
+
+    <string name="UpcomingAlarm">Próxima alarma…</string>
+    <string name="UpcomingChime">Próximo timbre…</string>
+    <string name="Cancel">Cancelar</string>
+
+    <string name="Alarm">Alarma</string>
+    <string name="AlarmMissed">Alarma perdida</string>
+    <string name="AlarmMissedAfter">Alarma %1$s perdida después de %2$d mins</string>
+    <string name="AlarmMissedConflict">Alarma %1$s ignorada debido al conflicto con la siguiente alarma</string>
+
+    <string name="dismiss_alarm">Ignorar Alarm</string>
+
+    <string name="day_pm">PM</string>
+    <string name="day_am">AM</string>
+
+    <string name="day_pm_full">PM</string>
+    <string name="day_am_full">AM</string>
+
+    <string name="day_4_pm">PM</string>
+    <string name="day_4_am">AM</string>
+    <string name="day_4_night">AM</string>
+    <string name="day_4_mid">PM</string>
+
+    <string name="beep">Pitido</string>
+    <string name="speech">Hablada</string>
+    <string name="ringtone">Timbre</string>
+    <string name="browse_sdcard">Buscar tarjeta sd</string>
+
+    <string name="active_alarm">¡Activar Alarm!</string>
+    <string name="dismiss">Omitir</string>
+
+    <string name="not_selected">(no seleccionada)</string>
+    <string name="alarm_type_alarm">Opción \'Hora exactiva\' activada, revise los ajustes.</string>
+    <string name="reminders_vibrate">Recordatorio definido solo para vibrar</string>
+    <string name="reminders_silence">Recordatorio definido a \'silencio\'</string>
+
+    <string name="speak_time_12h00" formatted="false">%H en punto</string>
+    <string name="speak_time_12h01" formatted="false">La hora es %H %M %A</string>
+    <string name="speak_time_24h00" formatted="false">%H horas</string>
+    <string name="speak_time_24h01" formatted="false">La hora es %H %M</string>
+
+    <string name="reset">Reestablecer</string>
+    <string name="play">Reproducir</string>
+    <string name="snoozed">Pospuesto</string>
+    <string name="snooze">Posponer</string>
+    <string name="every">Recordar cada&#8230;</string>
+    <string name="hours">Horas</string>
+    <string name="hourly">Cada hora</string>
+    <string name="min">min</string>
+    <string name="repeat">Repetir</string>
+    <string name="intervals">Intervalos:</string>
+    <string name="once_per_hour">Una por hora</string>
+    <string name="repeat_time_interval">Repetir intervalo de tiempo</string>
+    <string name="vibrate_reminders">Vibrar recordatorios</string>
+    <string name="vibrate_alarms">Vibrar alarmas</string>
+    <string name="show_30_minutes">Mostrar 30-minutes</string>
+    <string name="snoozed_for">Alarma pospuesta por</string>
+
+    <string name="pref_volume_title">Reducir Volumen</string>
+    <string name="pref_volume_summary">Ajustar volumen de texto hablado</string>
+    <string name="pref_beep_title">Pitido Personalizado</string>
+    <string name="pref_beep_summary">Personaliza sonido de pitido</string>
+    <string name="pref_callsilence_title">Silenciar durante llamadas</string>
+    <string name="pref_callsilence_summary">No reproduce sonidos cuando llama</string>
+    <string name="pref_musicsilence_title">Silenciar durante música</string>
+    <string name="pref_musicsilence_summary">No reproduce sonidos cuando escucha música</string>
+    <string name="pref_phonesilence_title">Perfil de bajo sonido</string>
+    <string name="pref_phonesilnece_summary">No reproduce sonidos cuando el teléfono está en silencio o vibración. Cambia al canal del timbre (en lugar del canal de alarma)</string>
+    <string name="pref_vibrate_title">Vibrar</string>
+    <string name="pref_vibrate_summary">Vibrar mientras suena un recordatorio / alarma</string>
+    <string name="pref_wakeup_title">Despertar Pantalla</string>
+    <string name="pref_wakeup_summary">Despierta la pantalla en los recordatorios</string>
+    <string name="pref_alarm_title">Tiempo exacto</string>
+    <string name="pref_alarm_summary">Usa como tipo de evento \'alarma\' (se despierta en modo ahorro de energía)</string>
+    <string name="pref_increasingvolume_title">Incrementar Volumen de la Alarma</string>
+    <string name="pref_increasingvolume_summary">Ajusta el incremento de volumen de la alarma</string>
+    <string name="pref_snooze_title">Posponer Alarma después de...</string>
+    <string name="pref_snooze_summary">Posterga después de unos minutos</string>
+    <string name="pref_snoozetime_title">Minutos de Alarma Pospuesta...</string>
+    <string name="pref_snoozetime_summary">Posterga por un tiempo en minutos</string>
+    <string name="pref_tts_title">Legunaje TTS</string>
+    <string name="pref_tts_summary">Selecciona el lenguaje de texto-a-voz</string>
+    <string name="pref_ttsampm_title">Pronunciar AM/PM</string>
+    <string name="pref_ttsampm_summary">El tiempo se hablará con el sufijo AM/PM</string>
+    <string name="pref_optimization_title">Desactivar Optimización de Batería</string>
+    <string name="pref_optimization_summary">Evita que la aplicación sea removida de la memoria</string>
+    <string name="pref_notifications_title">Notificaciones</string>
+    <string name="pref_notifications_summary">Muestra notificaciones</string>
+    <string name="pref_theme_title">Tema de la Aplicación</string>
+    <string name="pref_theme_summary">Establece el tema de la aplicación (claro / oscuro)</string>
+    <string name="pref_weekstart_title">Iniciar semana en</string>
+    <string name="pref_weekstart_summary">Inicia la semana en cierto día</string>
+    <string name="pref_speakcustom_title">Personalizar pronunciación</string>
+    <string name="pref_speakcustom_summary">Texto personalizado al pronunciar</string>
+    <string name="pref_sounds">Sonidos</string>
+    <string name="pref_reminders">Recordatorios</string>
+    <string name="pref_alarms">Alarmas</string>
+    <string name="pref_speak">Pronunciación</string>
+    <string name="pref_application">Aplicación</string>
+    <string name="show_12h">Mostrar 12h</string>
+    <string name="show_24h">Mostrar 24h</string>
+    <string name="default_tts">Predeterminado</string>
+    <string name="flip_phone_to_snooze">(Voltear el teléfono para posponer)</string>
+    <string name="fallback_text">No se pueden reproducir sonidos debido a la falta de recursos</string>
+    <string name="pref_flash_summary">Activa la linterna mientras suena un recordatorio / alarma</string>
+    <string name="pref_flash_title">Linterna</string>
+    <string name="pref_haptic">Haptic\'s</string>
+    <string name="open_from_notificationbar_warning">Desactiva \'%s\' para abrir la aplicación predeterminada de Alarm Clock</string>
+</resources>

@@ -130,6 +130,7 @@
     <string-array name="languages_text" translatable="false">
         <item>@string/system</item>
         <item>English</item>
+        <item>Español</item>
         <item>Русский</item>
     </string-array>
 
@@ -137,6 +138,7 @@
     <string-array name="languages_values" translatable="false">
         <item></item>
         <item>en</item>
+        <item>es</item>
         <item>ru</item>
     </string-array>
 
