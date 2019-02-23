@@ -788,6 +788,13 @@ public class Sound extends TTS {
 
         loop = new Runnable() { // loop detector. mediaplayer has bug looping non looped sounds
             int last = 0;
+            long delay;
+
+            {
+                delay = player.getDuration(); // we can't pool as fast as we want
+                if (delay <= 0)
+                    delay = 200; // also, mediaplayer has bug, which return unaccurate current playback position at first 400ms
+            }
 
             @Override
             public void run() {
@@ -797,10 +804,8 @@ public class Sound extends TTS {
                     return;
                 }
                 last = pos;
-                long delay = player.getDuration(); // we can't pool as fast as we want
-                if (delay <= 0)
-                    delay = 200; // also, mediaplayer has bug, which return unaccurate current playback position
                 handler.postDelayed(loop, delay);
+                delay = 200; // first run takes getDuration(), next 200 ms
             }
         };
         loop.run();
