@@ -292,10 +292,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
         if (rlist != null) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             if (prefs.getBoolean(HourlyApplication.PREFERENCE_WAKEUP, true)) {
-                if (wake != null)
-                    wake.close();
-                wake = new WakeScreen(this);
-                wake.wake();
+                if (wake == null) {
+                    wake = new WakeScreen(this);
+                    wake.wake();
+                }
             }
             SoundConfig.Silenced s = sound.playList(rlist, time, new Runnable() {
                 @Override
@@ -304,7 +304,8 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             });
             sound.silencedToast(s, time);
-            wake.update();
+            if (wake != null)
+                wake.update();
         }
 
         if (alarm != null || rlist != null)
