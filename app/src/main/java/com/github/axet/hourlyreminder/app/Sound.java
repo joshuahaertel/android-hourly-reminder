@@ -247,11 +247,8 @@ public class Sound extends TTS {
 
     public void close() {
         super.close();
-
         vibrateStop();
-
         playerClose();
-
         flashStop();
     }
 
@@ -778,35 +775,37 @@ public class Sound extends TTS {
         return playOnce(player, done);
     }
 
-    MediaPlayer playOnce(MediaPlayer player, final Runnable done) { // done should be added by caller
+    MediaPlayer playOnce(final MediaPlayer player, final Runnable done) { // done should be added by caller
         player.setLooping(false); // https://code.google.com/p/android/issues/detail?id=1314
 
-        final MediaPlayer p = player;
-        loop = new Runnable() {
+        final MediaPlayer.OnCompletionListener c = new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                playerCl();
+                done(done);
+            }
+        };
+
+        loop = new Runnable() { // loop detector. mediaplayer has bug looping non looped sounds
             int last = 0;
 
             @Override
             public void run() {
-                int pos = p.getCurrentPosition();
+                int pos = player.getCurrentPosition();
                 if (pos < last) {
-                    playerCl();
-                    done(done);
+                    c.onCompletion(player);
                     return;
                 }
                 last = pos;
-                handler.postDelayed(loop, 200);
+                long delay = player.getDuration(); // we can't pool as fast as we want
+                if (delay <= 0)
+                    delay = 200; // also, mediaplayer has bug, which return unaccurate current playback position
+                handler.postDelayed(loop, delay);
             }
         };
         loop.run();
 
-        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                           @Override
-                                           public void onCompletion(MediaPlayer mp) {
-                                               playerCl();
-                                               done(done);
-                                           }
-                                       }
-        );
+        player.setOnCompletionListener(c);
 
         startPlayer(player);
 

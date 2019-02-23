@@ -41,7 +41,6 @@
         <service
             android:name=".services.AlarmService"
             android:exported="false" />
-        <service android:name=".app.WakeScreen$WakeService" />
 
         <receiver android:name=".services.OnBootReceiver">
             <intent-filter>
