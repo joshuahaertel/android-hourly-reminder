@@ -303,8 +303,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             });
             sound.silencedToast(s, time);
-            if (wake != null)
-                wake.update();
         }
 
         if (alarm != null || rlist != null)
