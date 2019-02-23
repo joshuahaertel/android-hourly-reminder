@@ -17,6 +17,10 @@ In additional, you need to figure it out, which is the best way to pronounce cur
   * "Current time is 0 9" (00:09)
   * "Current time is 1 5" (01:09)
 
+Also please read about "Quantity strings" here:
+
+  * https://developer.android.com/guide/topics/resources/string-resource#Plurals
+
  You can find how speech time string is built here:
 
   * [TTS.java](/app/src/main/java/com/github/axet/hourlyreminder/app/TTS.java)
