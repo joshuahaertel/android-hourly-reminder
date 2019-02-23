@@ -10,16 +10,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.provider.AlarmClock;
 import android.support.annotation.Nullable;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 
-import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
@@ -31,6 +28,7 @@ import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.app.SoundConfig;
+import com.github.axet.hourlyreminder.app.WakeScreen;
 
 /**
  * System Alarm Manager notifies this service to create/stop alarms.
@@ -49,19 +47,11 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
     // reminder broadcast triggers sound
     public static final String REMINDER = HourlyApplication.class.getCanonicalName() + ".REMINDER";
 
-    PowerManager.WakeLock wl;
-    PowerManager.WakeLock wlCpu;
-    Handler handler = new Handler();
-    Runnable wakeClose = new Runnable() {
-        @Override
-        public void run() {
-            wakeClose();
-        }
-    };
     OptimizationPreferenceCompat.ServiceReceiver optimization;
     Notification notification;
     HourlyApplication.ItemsStorage items;
     Sound sound;
+    WakeScreen wake;
 
     public static void start(Context context) {
         Intent intent = new Intent(context, AlarmService.class);
@@ -158,7 +148,10 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         updateIcon(false);
 
-        wakeClose();
+        if (wake != null) {
+            wake.close();
+            wake = null;
+        }
     }
 
     @Override
@@ -298,8 +291,12 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
         if (rlist != null) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            if (prefs.getBoolean(HourlyApplication.PREFERENCE_WAKEUP, true))
-                wakeScreen();
+            if (prefs.getBoolean(HourlyApplication.PREFERENCE_WAKEUP, true)) {
+                if (wake != null)
+                    wake.close();
+                wake = new WakeScreen(this);
+                wake.wake();
+            }
             SoundConfig.Silenced s = sound.playList(rlist, time, new Runnable() {
                 @Override
                 public void run() {
@@ -307,15 +304,13 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
                 }
             });
             sound.silencedToast(s, time);
-            handler.removeCallbacks(wakeClose); // remove previous wakeClose actions
-            handler.postDelayed(wakeClose, 3 * AlarmManager.SEC1); // screen off after 3 seconds, even if playlist keep playing
+            wake.update();
         }
 
-        if (alarm != null || rlist != null) {
+        if (alarm != null || rlist != null)
             items.save();
-        } else {
+        else
             Log.d(TAG, "Time ignored: " + time);
-        }
         registerNext();
     }
 
@@ -361,38 +356,6 @@ public class AlarmService extends Service implements SharedPreferences.OnSharedP
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
-    }
-
-    void wakeScreen() {
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        boolean isScreenOn;
-        if (Build.VERSION.SDK_INT >= 20) {
-            isScreenOn = pm.isInteractive();
-        } else {
-            isScreenOn = pm.isScreenOn();
-        }
-        if (isScreenOn == false) {
-            wakeClose();
-            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, getString(R.string.app_name) + "_wakelock");
-            wl.acquire();
-            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name) + "_cpulock");
-            wlCpu.acquire();
-            handler.postDelayed(wakeClose, 10 * AlarmManager.SEC1); // old phones crash on handle wl.acquire(10000)
-        }
-    }
-
-    void wakeClose() {
-        if (wl != null) {
-            if (wl.isHeld())
-                wl.release();
-            wl = null;
-        }
-        if (wlCpu != null) {
-            if (wlCpu.isHeld())
-                wlCpu.release();
-            wlCpu = null;
-        }
-        handler.removeCallbacks(wakeClose);
     }
 
     @Override

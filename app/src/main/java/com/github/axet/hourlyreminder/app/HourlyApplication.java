@@ -740,9 +740,8 @@ public class HourlyApplication extends MainApplication {
                 String text = Alarm.format2412ap(HourlyApplication.this, time);
                 for (Alarm a : alarms) {
                     if (a.getTime() == time) {
-                        if (a.isSnoozed()) {
+                        if (a.isSnoozed())
                             text += " (" + getString(R.string.snoozed) + ": " + a.format2412ap() + ")";
-                        }
                     }
                 }
 
