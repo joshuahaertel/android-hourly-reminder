@@ -93,7 +93,7 @@ public class WakeScreen {
             wl.acquire();
             wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, BuildConfig.APPLICATION_ID + ":cpulock");
             wlCpu.acquire();
-            handler.postDelayed(wakeClose, 10 * AlarmManager.SEC1); // old phones crash on handle wl.acquire(10000)
+            handler.postDelayed(wakeClose, 3 * AlarmManager.SEC1); // old phones crash on handle wl.acquire(10000)
         }
     }
 
@@ -113,12 +113,5 @@ public class WakeScreen {
             n = null;
         }
         handler.removeCallbacks(wakeClose);
-    }
-
-    public void update() {
-        if (n != null)
-            return;
-        handler.removeCallbacks(wakeClose); // remove previous wakeClose actions
-        handler.postDelayed(wakeClose, 3 * AlarmManager.SEC1); // screen off after 3 seconds, even if playlist keep playing
     }
 }
