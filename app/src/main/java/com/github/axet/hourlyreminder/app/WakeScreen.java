@@ -33,6 +33,8 @@ public class WakeScreen {
 
     Context context;
     ContentResolver resolver;
+    Notification n;
+    NotificationManagerCompat nm;
     NotificationChannelCompat wake;
     PowerManager.WakeLock wl;
     PowerManager.WakeLock wlCpu;
@@ -69,7 +71,7 @@ public class WakeScreen {
                 public void run() {
                     stopSelf();
                 }
-            }, 200);
+            }, 0);
             return super.onStartCommand(intent, flags, startId);
         }
 
@@ -89,10 +91,20 @@ public class WakeScreen {
     public WakeScreen(Context context) {
         this.context = context;
         this.resolver = context.getContentResolver();
+        this.nm = NotificationManagerCompat.from(context);
         this.wake = new NotificationChannelCompat(WAKEID, "Wake", NotificationManagerCompat.IMPORTANCE_HIGH);
         this.wake.setSound(null, null);
         this.wake.enableVibration(false);
         this.wake.create(context);
+    }
+
+    public boolean isDoze() {
+        boolean doze = false;
+        try {
+            doze = Build.VERSION.SDK_INT >= 26 && Settings.Secure.getInt(resolver, DOZE_ENABLED) == 1 && Settings.Secure.getInt(resolver, LOCK_SCREEN_SHOW_NOTIFICATIONS) == 1 && wake.getImportance() >= NotificationManagerCompat.IMPORTANCE_HIGH;
+        } catch (Settings.SettingNotFoundException ignore) {
+        }
+        return doze;
     }
 
     public void wake() {
@@ -105,12 +117,9 @@ public class WakeScreen {
             isScreenOn = pm.isScreenOn();
         if (isScreenOn == false) {
             close();
-            boolean doze = false;
-            try {
-                doze = Build.VERSION.SDK_INT >= 26 && Settings.Secure.getInt(resolver, DOZE_ENABLED) == 1 && Settings.Secure.getInt(resolver, LOCK_SCREEN_SHOW_NOTIFICATIONS) == 1 && wake.getImportance() >= NotificationManagerCompat.IMPORTANCE_HIGH;
-            } catch (Settings.SettingNotFoundException ignore) {
-            }
-            if (doze) {
+            if (isDoze()) {
+                n = build(context);
+                nm.notify(ID, n);
                 Intent intent = new Intent(context, WakeService.class);
                 OptimizationPreferenceCompat.startService(context, intent);
                 handler.post(wakeClose);
@@ -135,6 +144,10 @@ public class WakeScreen {
             if (wlCpu.isHeld())
                 wlCpu.release();
             wlCpu = null;
+        }
+        if (n != null) {
+            nm.cancel(ID);
+            n = null;
         }
         handler.removeCallbacks(wakeClose);
     }
