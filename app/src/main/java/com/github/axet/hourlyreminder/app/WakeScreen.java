@@ -12,7 +12,6 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
@@ -55,39 +54,6 @@ public class WakeScreen {
         return n;
     }
 
-    public static class WakeService extends Service { // we need service to remove Notification instantly
-        Handler handler = new Handler();
-
-        @Override
-        public void onCreate() {
-            super.onCreate();
-            startForeground(ID, build(this));
-        }
-
-        @Override
-        public int onStartCommand(Intent intent, int flags, int startId) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    stopSelf();
-                }
-            }, 0);
-            return super.onStartCommand(intent, flags, startId);
-        }
-
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
-            Log.d(TAG, "onDestroy");
-        }
-
-        @Nullable
-        @Override
-        public IBinder onBind(Intent intent) {
-            return null;
-        }
-    }
-
     public WakeScreen(Context context) {
         this.context = context;
         this.resolver = context.getContentResolver();
@@ -108,7 +74,13 @@ public class WakeScreen {
     }
 
     public void wake() {
-        Log.d(TAG, "wake");
+        if (isDoze()) {
+            close();
+            n = build(context);
+            nm.notify(ID, n);
+            handler.post(wakeClose);
+            return;
+        }
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         boolean isScreenOn;
         if (Build.VERSION.SDK_INT >= 20)
@@ -117,24 +89,15 @@ public class WakeScreen {
             isScreenOn = pm.isScreenOn();
         if (isScreenOn == false) {
             close();
-            if (isDoze()) {
-                n = build(context);
-                nm.notify(ID, n);
-                Intent intent = new Intent(context, WakeService.class);
-                OptimizationPreferenceCompat.startService(context, intent);
-                handler.post(wakeClose);
-            } else {
-                wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, BuildConfig.APPLICATION_ID + ":wakelock");
-                wl.acquire();
-                wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, BuildConfig.APPLICATION_ID + ":cpulock");
-                wlCpu.acquire();
-                handler.postDelayed(wakeClose, 10 * AlarmManager.SEC1); // old phones crash on handle wl.acquire(10000)
-            }
+            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, BuildConfig.APPLICATION_ID + ":wakelock");
+            wl.acquire();
+            wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, BuildConfig.APPLICATION_ID + ":cpulock");
+            wlCpu.acquire();
+            handler.postDelayed(wakeClose, 10 * AlarmManager.SEC1); // old phones crash on handle wl.acquire(10000)
         }
     }
 
     public void close() {
-        Log.d(TAG, "close");
         if (wl != null) {
             if (wl.isHeld())
                 wl.release();
@@ -153,6 +116,8 @@ public class WakeScreen {
     }
 
     public void update() {
+        if (n != null)
+            return;
         handler.removeCallbacks(wakeClose); // remove previous wakeClose actions
         handler.postDelayed(wakeClose, 3 * AlarmManager.SEC1); // screen off after 3 seconds, even if playlist keep playing
     }
