@@ -74,13 +74,6 @@ public class WakeScreen {
     }
 
     public void wake() {
-        if (isDoze()) {
-            close();
-            n = build(context);
-            nm.notify(ID, n);
-            handler.post(wakeClose);
-            return;
-        }
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         boolean isScreenOn;
         if (Build.VERSION.SDK_INT >= 20)
@@ -89,6 +82,12 @@ public class WakeScreen {
             isScreenOn = pm.isScreenOn();
         if (isScreenOn == false) {
             close();
+            if (isDoze()) {
+                n = build(context);
+                nm.notify(ID, n);
+                handler.post(wakeClose);
+                return;
+            }
             wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, BuildConfig.APPLICATION_ID + ":wakelock");
             wl.acquire();
             wlCpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, BuildConfig.APPLICATION_ID + ":cpulock");
