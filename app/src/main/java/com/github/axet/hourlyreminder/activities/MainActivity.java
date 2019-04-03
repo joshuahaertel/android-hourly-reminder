@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,13 +29,13 @@ import android.view.ViewParent;
 import android.widget.LinearLayout;
 
 import com.github.axet.androidlibrary.widgets.AppCompatSettingsThemeActivity;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Toast;
 import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
 import com.github.axet.hourlyreminder.fragments.RemindersFragment;
 import com.github.axet.hourlyreminder.fragments.SettingsFragment;
+import com.github.axet.hourlyreminder.widgets.OptimizationPreferenceCompat;
 
 public class MainActivity extends AppCompatSettingsThemeActivity implements DialogInterface.OnDismissListener {
 
@@ -206,6 +207,8 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
 
         if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
             OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION).show();
+        else if(OptimizationPreferenceCompat.needBootWarning(this))
+            OptimizationPreferenceCompat.buildBootWarninig(this).show();
 
         HourlyApplication.registerNext(this);
 

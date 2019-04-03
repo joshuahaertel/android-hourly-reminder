@@ -904,9 +904,8 @@ public class Sound extends TTS {
 
         Silenced s = silencedPlaylist(flashConfig, config, alarm.list);
 
-        if (config.alarms) {
+        if (config.alarms)
             vibrateStart(config.alarmsPattern, 0);
-        }
 
         if (flashConfig.alarms) {
             try {
@@ -917,9 +916,8 @@ public class Sound extends TTS {
         }
 
         // is the alarm silenced?
-        if (s != Silenced.NONE) {
+        if (s != Silenced.NONE)
             return s;
-        }
 
         final Runnable restart = new Runnable() {
             @Override

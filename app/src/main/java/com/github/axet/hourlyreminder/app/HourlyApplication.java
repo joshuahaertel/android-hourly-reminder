@@ -107,6 +107,9 @@ public class HourlyApplication extends MainApplication {
 
     public static final String PREFERENCE_FLASH = "flash";
 
+    public static final String PREFERENCE_BOOT = "boot"; // auto start time
+    public static final String PREFERENCE_INSTALL = "install"; // install event
+
     public NotificationChannelCompat channelStatus;
     public NotificationChannelCompat channelAlarms;
     public NotificationChannelCompat channelErrors;

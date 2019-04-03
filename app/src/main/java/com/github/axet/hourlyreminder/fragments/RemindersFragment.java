@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -130,7 +131,10 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
 
     void save(WeekSet a) {
         super.save(a);
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        shared.unregisterOnSharedPreferenceChangeListener(this);
         items.saveReminders();
+        shared.registerOnSharedPreferenceChangeListener(this);
     }
 
     public void addAlarm(ReminderSet a) {

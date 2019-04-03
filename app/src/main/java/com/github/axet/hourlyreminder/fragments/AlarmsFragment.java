@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -150,7 +151,10 @@ public class AlarmsFragment extends WeekSetFragment {
 
     void save(WeekSet a) {
         super.save(a);
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        shared.unregisterOnSharedPreferenceChangeListener(this);
         items.saveAlarms();
+        shared.registerOnSharedPreferenceChangeListener(this);
     }
 
     public void addAlarm(Alarm a) {
