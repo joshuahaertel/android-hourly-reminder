@@ -54,6 +54,28 @@ public class WakeScreen {
         return n;
     }
 
+    public static class ForceRemove extends Service { // sometimes notification not removed in time, force remove it after delay
+        Handler handler = new Handler();
+
+        @Nullable
+        @Override
+        public IBinder onBind(Intent intent) {
+            return null;
+        }
+
+        @Override
+        public void onCreate() {
+            super.onCreate();
+            startForeground(ID, build(this));
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    stopSelf();
+                }
+            }, 100);
+        }
+    }
+
     public WakeScreen(Context context) {
         this.context = context;
         this.resolver = context.getContentResolver();
@@ -86,6 +108,7 @@ public class WakeScreen {
                 n = build(context);
                 nm.notify(ID, n);
                 handler.post(wakeClose);
+                OptimizationPreferenceCompat.startService(context, new Intent(context, ForceRemove.class));
                 return;
             }
             wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, BuildConfig.APPLICATION_ID + ":wakelock");

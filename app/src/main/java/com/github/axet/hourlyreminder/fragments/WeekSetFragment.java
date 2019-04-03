@@ -266,9 +266,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
     }
 
     void changed() {
-        for (DataSetObserver l : listeners) {
+        for (DataSetObserver l : listeners)
             l.onChanged();
-        }
     }
 
     void setWeek(WeekSet a, int week, boolean c) {
