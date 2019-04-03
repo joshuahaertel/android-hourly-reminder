@@ -163,9 +163,9 @@ public class AlarmsFragment extends WeekSetFragment {
         select(a.id);
         int pos = items.alarms.indexOf(a);
         list.smoothScrollToPosition(pos);
-
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        shared.unregisterOnSharedPreferenceChangeListener(this);
         items.saveAlarms();
-
         boxAnimate = false;
     }
 
@@ -173,7 +173,10 @@ public class AlarmsFragment extends WeekSetFragment {
     public void remove(WeekSet a) {
         super.remove(a);
         items.alarms.remove(a);
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        shared.unregisterOnSharedPreferenceChangeListener(this);
         items.saveAlarms();
+        shared.registerOnSharedPreferenceChangeListener(this);
         boxAnimate = false;
     }
 

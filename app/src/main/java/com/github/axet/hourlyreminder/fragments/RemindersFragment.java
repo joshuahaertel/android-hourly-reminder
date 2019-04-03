@@ -142,7 +142,10 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         select(a.id);
         int pos = items.reminders.indexOf(a);
         list.smoothScrollToPosition(pos);
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        shared.unregisterOnSharedPreferenceChangeListener(this);
         items.saveReminders();
+        shared.registerOnSharedPreferenceChangeListener(this);
         boxAnimate = false;
     }
 
@@ -150,7 +153,10 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     public void remove(WeekSet a) {
         super.remove(a);
         items.reminders.remove(a);
+        SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        shared.unregisterOnSharedPreferenceChangeListener(this);
         items.saveReminders();
+        shared.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
