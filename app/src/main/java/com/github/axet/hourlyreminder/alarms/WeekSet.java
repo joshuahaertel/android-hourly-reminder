@@ -15,16 +15,12 @@ import java.util.List;
 public class WeekSet extends Week {
     public static final List<Integer> DEF_DAYS = new ArrayList<>(Arrays.asList(Week.EVERYDAY));
 
-    // unique id
-    public long id;
-    // alarm with ringtone?
-    public boolean ringtone;
-    // uri or file
-    public Uri ringtoneValue;
-    // beep?
-    public boolean beep;
-    // speech time?
-    public boolean speech;
+    public long id; // unique id
+    public boolean ringtone; // alarm with ringtone?
+    public Uri ringtoneValue; // uri or file
+    public boolean beep; // beep?
+    public boolean speech; // speech time?
+    public String name; // name to show, or empty
 
     public WeekSet(WeekSet copy) {
         super(copy);
@@ -70,17 +66,17 @@ public class WeekSet extends Week {
             this.ringtoneValue = defaultRingtone();
         } else {
             Uri u;
-            if (s.startsWith(ContentResolver.SCHEME_CONTENT)) {
+            if (s.startsWith(ContentResolver.SCHEME_CONTENT))
                 u = Uri.parse(s);
-            } else if (s.startsWith(ContentResolver.SCHEME_FILE)) {
+            else if (s.startsWith(ContentResolver.SCHEME_FILE))
                 u = Uri.parse(s);
-            } else {
+            else
                 u = Uri.fromFile(new File(s));
-            }
             this.ringtoneValue = u;
         }
         this.beep = o.getBoolean("beep");
         this.speech = o.getBoolean("speech");
+        this.name = o.optString("name");
     }
 
     public JSONObject save() {
@@ -94,6 +90,7 @@ public class WeekSet extends Week {
             o.put("ringtone_value", s);
             o.put("beep", this.beep);
             o.put("speech", this.speech);
+            o.put("name", this.name);
             return o;
         } catch (JSONException e) {
             throw new RuntimeException(e);

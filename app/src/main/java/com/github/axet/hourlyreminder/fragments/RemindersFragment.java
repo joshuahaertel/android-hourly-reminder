@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.axet.androidlibrary.app.Storage;
+import com.github.axet.androidlibrary.widgets.OpenFileDialog;
 import com.github.axet.androidlibrary.widgets.RingtoneChoicer;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
@@ -40,9 +41,8 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
 
     int getPosition(long id) {
         for (int i = 0; i < items.reminders.size(); i++) {
-            if (items.reminders.get(i).id == id) {
+            if (items.reminders.get(i).id == id)
                 return i;
-            }
         }
         return -1;
     }
@@ -313,11 +313,10 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
 
     @Override
     Uri fallbackUri(Uri uri) {
-        if (uri != null) {
+        if (uri != null)
             return uri;
-        } else {
+        else
             return ReminderSet.DEFAULT_NOTIFICATION;
-        }
     }
 
     @Override
