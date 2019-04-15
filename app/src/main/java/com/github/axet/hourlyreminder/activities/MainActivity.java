@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
 
         if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
             OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION).show();
-        else if(OptimizationPreferenceCompat.needBootWarning(this))
+        else if (OptimizationPreferenceCompat.needBootWarning(this))
             OptimizationPreferenceCompat.buildBootWarninig(this).show();
 
         HourlyApplication.registerNext(this);
@@ -254,9 +254,8 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_settings)
             return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -274,9 +273,8 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        if (timeChanged) {
+        if (timeChanged)
             restartActivity();
-        }
     }
 
     @Override

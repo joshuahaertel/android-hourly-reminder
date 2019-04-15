@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.text.format.DateFormat;
 
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.app.HourlyApplication;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,7 +13,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -155,9 +153,8 @@ public class ReminderSet extends WeekSet {
             this.last = o.optLong("last");
             JSONArray list = o.getJSONArray("list");
             Set<String> hh = new TreeSet<>();
-            for (int i = 0; i < list.length(); i++) {
+            for (int i = 0; i < list.length(); i++)
                 hh.add(list.getString(i));
-            }
             load(hh);
         } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -168,9 +165,8 @@ public class ReminderSet extends WeekSet {
     public JSONObject save() {
         try {
             JSONArray list = new JSONArray();
-            for (String h : hours) {
+            for (String h : hours)
                 list.put(h);
-            }
             JSONObject o = super.save();
             o.put("repeat", this.repeat);
             o.put("list", list);
@@ -199,14 +195,12 @@ public class ReminderSet extends WeekSet {
             for (int prev = 23; prev >= 0; prev--) {
                 Reminder.Key hh = new Reminder.Key(prev, Reminder.HALF);
                 int i = list.indexOf(hh.key);
-                if (i != -1) {
+                if (i != -1)
                     start = i;
-                }
                 Reminder.Key h = new Reminder.Key(prev);
                 i = list.indexOf(h.key);
-                if (i == -1) {
+                if (i == -1)
                     break;
-                }
                 start = i;
             }
         }

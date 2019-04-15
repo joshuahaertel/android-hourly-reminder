@@ -54,7 +54,7 @@ public class WakeScreen {
         return n;
     }
 
-    public static class ForceRemove extends Service { // sometimes notification not removed in time, force remove it after delay
+    public static class ForceRemove extends Service { // sometimes notification not removed in time, force remove it with delay
         Handler handler = new Handler();
 
         @Nullable
@@ -72,7 +72,13 @@ public class WakeScreen {
                 public void run() {
                     stopSelf();
                 }
-            }, 100);
+            }, 200);
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            stopForeground(true);
         }
     }
 

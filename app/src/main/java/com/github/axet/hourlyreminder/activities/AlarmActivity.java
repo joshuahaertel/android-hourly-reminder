@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -14,18 +13,13 @@ import android.widget.TextView;
 
 import com.github.axet.androidlibrary.widgets.AppCompatThemeActivity;
 import com.github.axet.hourlyreminder.R;
+import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
-import com.github.axet.hourlyreminder.alarms.Alarm;
-import com.github.axet.hourlyreminder.services.AlarmService;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
 import java.util.Calendar;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class AlarmActivity extends AppCompatThemeActivity {
     public static final String TAG = AlarmActivity.class.getSimpleName();
 
@@ -79,13 +73,11 @@ public class AlarmActivity extends AppCompatThemeActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        // bug? it haven't been called
-        getResources().updateConfiguration(newConfig, null);
+        getResources().updateConfiguration(newConfig, null); // bug? it haven't been called
 
         String action = getIntent().getAction();
-        if (action != null && action.equals(CLOSE_ACTIVITY)) {
+        if (action != null && action.equals(CLOSE_ACTIVITY))
             return;
-        }
 
         layoutInit();
     }
@@ -153,9 +145,8 @@ public class AlarmActivity extends AppCompatThemeActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        // handing startActivity with Intent.FLAG_ACTIVITY_NEW_TASK
         String action = intent.getAction();
-        if (action != null && action.equals(CLOSE_ACTIVITY))
+        if (action != null && action.equals(CLOSE_ACTIVITY)) // handing startActivity with Intent.FLAG_ACTIVITY_NEW_TASK
             finish();
     }
 

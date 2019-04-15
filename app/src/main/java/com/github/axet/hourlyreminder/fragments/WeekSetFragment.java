@@ -410,7 +410,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             }
         });
 
-        final View trash = view.findViewById(R.id.alarm_bottom_first);
+        final View trash = view.findViewById(R.id.alarm_trash);
         trash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -433,6 +433,31 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setMessage(R.string.are_you_sure).setPositiveButton(R.string.Yes, dialogClickListener)
                         .setNegativeButton(R.string.No, dialogClickListener).show();
+            }
+        });
+
+        View rename = view.findViewById(R.id.alarm_rename);
+        rename.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final OpenFileDialog.EditTextDialog d = new OpenFileDialog.EditTextDialog(getContext());
+                d.setTitle("Name");
+                d.setText(w.name);
+                d.setNeutralButton("Default", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        w.name = "";
+                        save(w);
+                    }
+                });
+                d.setPositiveButton(new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        w.name = d.getText();
+                        save(w);
+                    }
+                });
+                d.show();
             }
         });
 
@@ -550,7 +575,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             enable.jumpDrawablesToCurrentState();
 
         TextView days = (TextView) view.findViewById(R.id.alarm_compact_first);
-        days.setText(a.formatDays());
+        days.setText(a.name == null || a.name.isEmpty() ? a.formatDays() : a.name);
 
         view.setOnClickListener(new View.OnClickListener() {
             @Override
