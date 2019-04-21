@@ -442,7 +442,8 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 final OpenFileDialog.EditTextDialog d = new OpenFileDialog.EditTextDialog(getContext());
                 d.setTitle(R.string.filedialog_rename);
-                d.setText(w.name);
+                if (w.name != null)
+                    d.setText(w.name);
                 d.setNeutralButton(R.string.default_tts, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
