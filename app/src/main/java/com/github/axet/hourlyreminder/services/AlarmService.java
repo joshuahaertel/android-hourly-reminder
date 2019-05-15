@@ -19,6 +19,7 @@ import android.view.View;
 
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.services.PersistentService;
+import com.github.axet.androidlibrary.widgets.NotificationChannelCompat;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.hourlyreminder.R;
@@ -62,7 +63,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
     public static void registerNext(Context context) {
         HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
         boolean b = items.registerNextAlarm();
-        PersistentService.startIfEnabled(context, b, new Intent(context, AlarmService.class));
+        startIfPersistent(context, b, new Intent(context, AlarmService.class));
     }
 
     public static void startClock(Context context) { // https://stackoverflow.com/questions/3590955
@@ -100,12 +101,6 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     public AlarmService() {
-    }
-
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        CHANNEL_STATUS = HourlyApplication.from(base).channelStatus;
     }
 
     @Override
@@ -348,28 +343,18 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-        optimization.onTaskRemoved(rootIntent);
-    }
-
-    @Override
-    public int getAppTheme() {
-        return HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark);
-    }
-
-    public Notification build() {
+    public Notification build(Intent intent) {
         PendingIntent main = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
         RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Low(this, R.layout.notification_alarm);
 
         builder.setViewVisibility(R.id.notification_button, View.GONE);
 
-        builder.setTheme(getAppTheme())
+        builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
                 .setChannel(HourlyApplication.from(this).channelStatus)
                 .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
                 .setTitle(getString(R.string.app_name))
-                .setText(TAG)
+                .setText(getString(R.string.optimization_alive))
                 .setWhen(notification)
                 .setMainIntent(main)
                 .setOngoing(true)
