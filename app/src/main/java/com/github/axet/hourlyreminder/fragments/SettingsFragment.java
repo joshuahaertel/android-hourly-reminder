@@ -3,6 +3,7 @@ package com.github.axet.hourlyreminder.fragments;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Build;
@@ -52,7 +53,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     Sound sound;
     Handler handler = new Handler();
-    PersistentService.SettingsReceiver receiver = new PersistentService.SettingsReceiver();
+    PersistentService.SettingsReceiver receiver;
 
     public static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -191,6 +192,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
         optimization.enable(AlarmService.class);
+        receiver = new PersistentService.SettingsReceiver(new Intent(getContext(), AlarmService.class));
         receiver.register(getContext());
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());

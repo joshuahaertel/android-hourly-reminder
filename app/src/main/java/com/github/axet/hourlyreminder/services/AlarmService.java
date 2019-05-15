@@ -57,14 +57,12 @@ public class AlarmService extends PersistentService implements SharedPreferences
         NOTIFICATION_PERSISTENT_ICON = HourlyApplication.NOTIFICATION_PERSISTENT_ICON;
         PREFERENCE_OPTIMIZATION = HourlyApplication.PREFERENCE_OPTIMIZATION;
         PREFERENCE_NEXT = HourlyApplication.PREFERENCE_NEXT;
-        MAIN_ACTIVITY = MainActivity.class;
-        SERVICE_CLASS = AlarmService.class;
     }
 
     public static void registerNext(Context context) {
         HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
         boolean b = items.registerNextAlarm();
-        PersistentService.registerNext(context, b);
+        PersistentService.startIfEnabled(context, b, new Intent(context, AlarmService.class));
     }
 
     public static void startClock(Context context) { // https://stackoverflow.com/questions/3590955
@@ -102,6 +100,12 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     public AlarmService() {
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        CHANNEL_STATUS = HourlyApplication.from(base).channelStatus;
     }
 
     @Override
@@ -355,7 +359,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     public Notification build() {
-        PendingIntent main = PendingIntent.getActivity(this, 0, new Intent(this, MAIN_ACTIVITY), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent main = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
         RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Low(this, R.layout.notification_alarm);
 
