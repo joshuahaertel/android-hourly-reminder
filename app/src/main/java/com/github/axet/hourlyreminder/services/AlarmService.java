@@ -333,7 +333,8 @@ public class AlarmService extends PersistentService implements SharedPreferences
                     .setMainIntent(main)
                     .setTitle(context.getString(R.string.AlarmMissed))
                     .setText(text)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+                    .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(R.drawable.ic_launcher_notification);
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
@@ -354,8 +355,9 @@ public class AlarmService extends PersistentService implements SharedPreferences
                 .setText(getString(R.string.optimization_alive))
                 .setWhen(notification)
                 .setMainIntent(main)
-                .setOngoing(true)
-                .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+                .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_launcher_notification)
+                .setOngoing(true);
 
         return builder.build();
     }

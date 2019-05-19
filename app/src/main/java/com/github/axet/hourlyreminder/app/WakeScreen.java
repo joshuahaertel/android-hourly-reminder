@@ -48,7 +48,7 @@ public class WakeScreen {
     public static Notification build(Context context) {
         NotificationCompat.Builder b = new NotificationCompat.Builder(context);
         b.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-        b.setSmallIcon(R.drawable.ic_notifications_black_24dp);
+        b.setSmallIcon(R.drawable.ic_launcher_notification);
         Notification n = b.build();
         NotificationChannelCompat.setChannelId(n, WAKEID);
         return n;

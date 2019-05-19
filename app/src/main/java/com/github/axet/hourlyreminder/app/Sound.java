@@ -1023,7 +1023,7 @@ public class Sound extends TTS {
         String t = context.getString(R.string.app_name);
         String c = context.getString(R.string.fallback_text);
         NotificationCompat.Builder b = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                .setSmallIcon(R.drawable.ic_launcher_notification)
                 .setContentTitle(t)
                 .setContentText(c);
         HourlyApplication.from(context).channelErrors.apply(b);

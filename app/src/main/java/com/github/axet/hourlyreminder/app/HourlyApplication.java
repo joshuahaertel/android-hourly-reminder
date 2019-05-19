@@ -747,8 +747,9 @@ public class HourlyApplication extends MainApplication {
                         .setMainIntent(main)
                         .setTitle(subject)
                         .setText(text)
-                        .setOngoing(true)
-                        .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+                        .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.ic_launcher_notification)
+                        .setOngoing(true);
 
                 nm.notify(HourlyApplication.NOTIFICATION_UPCOMING_ICON, builder.build());
             }
