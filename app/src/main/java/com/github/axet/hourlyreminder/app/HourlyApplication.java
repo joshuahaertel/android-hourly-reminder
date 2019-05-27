@@ -122,16 +122,6 @@ public class HourlyApplication extends MainApplication {
         return (HourlyApplication) MainApplication.from(context);
     }
 
-    public static void registerNext(Context context) {
-        ItemsStorage items = HourlyApplication.from(context).items;
-        boolean b = items.registerNextAlarm();
-        OptimizationPreferenceCompat.State state = OptimizationPreferenceCompat.getState(context, HourlyApplication.PREFERENCE_OPTIMIZATION);
-        if (Build.VERSION.SDK_INT < 26 && b || state.icon) // always running service for <API26
-            AlarmService.start(context);
-        else
-            AlarmService.stop(context);
-    }
-
     public static void toastAlarmSet(Context context, WeekTime a) {
         if (!a.enabled) {
             Toast.makeText(context, context.getString(R.string.alarm_disabled), Toast.LENGTH_SHORT).show();
@@ -481,9 +471,8 @@ public class HourlyApplication extends MainApplication {
             for (int i = 0; i < reminders.size(); i++) {
                 ReminderSet a = reminders.get(i);
 
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
 
                 edit.putString(PREFERENCE_REMINDERS_PREFIX + i, a.save().toString());
@@ -495,7 +484,7 @@ public class HourlyApplication extends MainApplication {
             SharedPreferences.Editor edit = shared.edit();
             saveAlarms(edit, alarms);
             edit.commit();
-            registerNext(HourlyApplication.this);
+            AlarmService.registerNext(HourlyApplication.this);
         }
 
         public void saveReminders() {
@@ -503,7 +492,7 @@ public class HourlyApplication extends MainApplication {
             SharedPreferences.Editor edit = shared.edit();
             saveReminders(edit, reminders);
             edit.commit();
-            registerNext(HourlyApplication.this);
+            AlarmService.registerNext(HourlyApplication.this);
         }
 
         public List<ReminderSet> loadReminders(SharedPreferences shared) {
@@ -569,9 +558,8 @@ public class HourlyApplication extends MainApplication {
                     String json = shared.getString(PREFERENCE_REMINDERS_PREFIX + i, "");
                     ReminderSet a = new ReminderSet(HourlyApplication.this, json);
 
-                    while (ids.contains(a.id)) {
+                    while (ids.contains(a.id))
                         a.id++;
-                    }
                     ids.add(a.id);
 
                     list.add(a);
@@ -759,8 +747,9 @@ public class HourlyApplication extends MainApplication {
                         .setMainIntent(main)
                         .setTitle(subject)
                         .setText(text)
-                        .setOngoing(true)
-                        .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+                        .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.ic_launcher_notification)
+                        .setOngoing(true);
 
                 nm.notify(HourlyApplication.NOTIFICATION_UPCOMING_ICON, builder.build());
             }
@@ -850,8 +839,6 @@ public class HourlyApplication extends MainApplication {
                 version1to2();
                 break;
         }
-
-        OptimizationPreferenceCompat.ICON = true;
 
         items = new ItemsStorage();
         sound = new Sound(this);

@@ -53,8 +53,8 @@ public class FireAlarmService extends Service implements SensorEventListener {
     // snooze
     public static final String SNOOZE = AlarmService.class.getCanonicalName() + ".SNOOZE";
 
-    // notification click -> show activity broadcast
-    public static final String SHOW_ACTIVITY = FireAlarmService.class.getCanonicalName() + ".SHOW_ACTIVITY";
+    public static final String SHOW_ACTIVITY = FireAlarmService.class.getCanonicalName() + ".SHOW_ACTIVITY"; // notification click
+    public static final String RESUME_ACTIVITY = FireAlarmService.class.getCanonicalName() + ".RESUME_ACTIVITY"; // onResume MainActivity
 
     public static final int STATE_INIT = 0;
     public static final int STATE_UP = 1;
@@ -120,7 +120,8 @@ public class FireAlarmService extends Service implements SensorEventListener {
                     .setMainIntent(main)
                     .setTitle(context.getString(R.string.AlarmMissed))
                     .setText(text)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+                    .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(R.drawable.ic_launcher_notification);
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
@@ -151,6 +152,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
     public static void activateAlarm(Context context, FireAlarm a) {
         OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class)
                 .setAction(FIRE_ALARM).putExtra("state", a.save().toString()));
+    }
+
+    public static void onResume(Context context) {
+        context.sendBroadcast(new Intent(RESUME_ACTIVITY));
     }
 
     public static void startIfActive(Context context) {
@@ -230,6 +235,14 @@ public class FireAlarmService extends Service implements SensorEventListener {
             if (a.equals(SHOW_ACTIVITY)) {
                 FireAlarm alarm = new FireAlarm(intent.getStringExtra("state"));
                 showAlarmActivity(alarm, silenced);
+            }
+            if (a.equals(RESUME_ACTIVITY)) {
+                final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
+                String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
+                if (!json.isEmpty()) {
+                    FireAlarm alarm = new FireAlarm(json);
+                    showAlarmActivity(alarm, silenced);
+                }
             }
         }
     }
@@ -333,26 +346,28 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 .setTitle(getString(R.string.Alarm))
                 .setWhen(notification)
                 .setMainIntent(main)
-                .setOngoing(true)
-                .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+                .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_launcher_notification)
+                .setOngoing(true);
         Notification n = builder.build();
         if (notification == null)
             startForeground(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
         else
             nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
         notification = n;
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand");
 
         receiver = new FireAlarmReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(SHOW_ACTIVITY);
+        filter.addAction(RESUME_ACTIVITY);
         registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand");
 
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -521,7 +536,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     public void showAlarmActivity(FireAlarm alarm, Sound.Silenced silenced) {
         alarmActivity = true;
-        AlarmActivity.showAlarmActivity(this, alarm, silenced);
+        AlarmActivity.start(this, alarm, silenced);
     }
 
     @Nullable
@@ -561,7 +576,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
         if (alarmActivity) {
             alarmActivity = false;
-            AlarmActivity.closeAlarmActivity(this);
+            AlarmActivity.close(this);
         }
 
         if (alive != null) {
@@ -598,13 +613,14 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
             builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
                     .setChannel(HourlyApplication.from(this).channelAlarms)
-                    .setImageViewTint(R.id.icon_circle, R.attr.colorButtonNormal)
+                    .setImageViewTint(R.id.icon_circle,  builder.getThemeColor(R.attr.colorButtonNormal))
                     .setTitle(getString(R.string.Alarm))
                     .setText(text)
                     .setWhen(notification)
                     .setMainIntent(main)
-                    .setOngoing(true)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp);
+                    .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(R.drawable.ic_launcher_notification)
+                    .setOngoing(true);
 
             Notification n = builder.build();
             if (notification == null)

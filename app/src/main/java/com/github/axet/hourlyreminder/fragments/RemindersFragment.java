@@ -39,7 +39,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     public RemindersFragment() {
     }
 
-    int getPosition(long id) {
+    public int getPosition(long id) {
         for (int i = 0; i < items.reminders.size(); i++) {
             if (items.reminders.get(i).id == id)
                 return i;
@@ -160,7 +160,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     }
 
     @Override
-    public void fillDetailed(final View view, final WeekSet w, boolean animate) {
+    public void fillDetailed(final View view, final WeekSet w, final boolean animate) {
         super.fillDetailed(view, w, animate);
 
         final ReminderSet rr = (ReminderSet) w;
@@ -184,6 +184,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                         }
                         w.ringtoneValue = fallbackUri(uri);
                         save(w);
+                        changed();
                     }
 
                     @Override
@@ -284,6 +285,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 ReminderSet rs = items.reminders.get(r.index);
                 rs.load(r.hours);
                 save(rs);
+                changed();
             }
         }
         if (dialogInterface instanceof RepeatDialogFragment.Result) {
@@ -294,6 +296,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
             rs.repeat = r.mins;
             rs.reload(); // update hours
             save(rs);
+            changed();
 
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
             if (Build.VERSION.SDK_INT >= 23) {
@@ -312,7 +315,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     }
 
     @Override
-    Uri fallbackUri(Uri uri) {
+    public Uri fallbackUri(Uri uri) {
         if (uri != null)
             return uri;
         else
@@ -320,7 +323,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     }
 
     @Override
-    Sound.Silenced playPreview(WeekSet a) {
+    public Sound.Silenced playPreview(WeekSet a) {
         Sound.Silenced s = sound.playReminder((ReminderSet) a, System.currentTimeMillis(), new Runnable() {
             @Override
             public void run() {
@@ -332,7 +335,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     }
 
     @Override
-    void setWeek(WeekSet a, int week, boolean c) {
+    public void setWeek(WeekSet a, int week, boolean c) {
         super.setWeek(a, week, c);
         if (a.noDays()) {
             a.weekdaysCheck = true;
