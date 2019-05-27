@@ -152,9 +152,10 @@ public class AlarmsFragment extends WeekSetFragment {
     void save(WeekSet a) {
         super.save(a);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        shared.unregisterOnSharedPreferenceChangeListener(this);
+        shared.unregisterOnSharedPreferenceChangeListener(this); // prevent reload alarms
         items.saveAlarms();
         shared.registerOnSharedPreferenceChangeListener(this);
+        changed();
     }
 
     public void addAlarm(Alarm a) {
@@ -235,7 +236,6 @@ public class AlarmsFragment extends WeekSetFragment {
                                 HourlyApplication.toastAlarmSet(getActivity(), t);
                             updateTime(view, (Alarm) w);
                             save(w);
-                            changed();
                         }
                     };
 
