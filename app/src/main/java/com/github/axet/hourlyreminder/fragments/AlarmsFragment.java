@@ -35,7 +35,7 @@ public class AlarmsFragment extends WeekSetFragment {
     public AlarmsFragment() {
     }
 
-    int getPosition(long id) {
+    public int getPosition(long id) {
         for (int i = 0; i < items.alarms.size(); i++) {
             if (items.alarms.get(i).id == id) {
                 return i;
@@ -111,7 +111,7 @@ public class AlarmsFragment extends WeekSetFragment {
     }
 
     @Override
-    void setWeek(WeekSet a, int week, boolean c) {
+    public void setWeek(WeekSet a, int week, boolean c) {
         super.setWeek(a, week, c);
         WeekTime t = (WeekTime) a;
         long time = t.getTime();
@@ -235,6 +235,7 @@ public class AlarmsFragment extends WeekSetFragment {
                                 HourlyApplication.toastAlarmSet(getActivity(), t);
                             updateTime(view, (Alarm) w);
                             save(w);
+                            changed();
                         }
                     };
 
@@ -282,14 +283,14 @@ public class AlarmsFragment extends WeekSetFragment {
     }
 
     @Override
-    Sound.Silenced playPreview(WeekSet a) {
+    public Sound.Silenced playPreview(WeekSet a) {
         Sound.Silenced s = sound.playAlarm(new FireAlarmService.FireAlarm((Alarm) a), 0, null);
         sound.silencedToast(s, System.currentTimeMillis());
         return s;
     }
 
     @Override
-    Uri fallbackUri(Uri uri) {
+    public Uri fallbackUri(Uri uri) {
         if (uri != null) {
             return uri;
         } else {

@@ -35,6 +35,7 @@ import com.github.axet.hourlyreminder.fragments.AlarmsFragment;
 import com.github.axet.hourlyreminder.fragments.RemindersFragment;
 import com.github.axet.hourlyreminder.fragments.SettingsFragment;
 import com.github.axet.hourlyreminder.services.AlarmService;
+import com.github.axet.hourlyreminder.services.FireAlarmService;
 
 public class MainActivity extends AppCompatSettingsThemeActivity implements DialogInterface.OnDismissListener {
 
@@ -274,6 +275,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         Log.d(TAG, "onResume");
         if (timeChanged)
             restartActivity();
+        FireAlarmService.onResume(this);
     }
 
     @Override

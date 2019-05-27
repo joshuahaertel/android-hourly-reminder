@@ -1,10 +1,12 @@
 package com.github.axet.hourlyreminder.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -29,7 +31,7 @@ public class AlarmActivity extends AppCompatThemeActivity {
     Handler handler = new Handler();
     Runnable updateClock;
 
-    public static void showAlarmActivity(Context context, FireAlarmService.FireAlarm alarm, Sound.Silenced silenced) {
+    public static void start(Context context, FireAlarmService.FireAlarm alarm, Sound.Silenced silenced) {
         Intent intent = new Intent(context, AlarmActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS | Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.putExtra("state", alarm.save().toString());
@@ -37,7 +39,7 @@ public class AlarmActivity extends AppCompatThemeActivity {
         context.startActivity(intent);
     }
 
-    public static void closeAlarmActivity(Context context) {
+    public static void close(Context context) {
         Intent intent = new Intent(context, AlarmActivity.class);
         intent.setAction(CLOSE_ACTIVITY);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS | Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -222,7 +224,22 @@ public class AlarmActivity extends AppCompatThemeActivity {
 
     @Override
     public void onBackPressed() {
-        backToMain();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.dismiss_alarm);
+        builder.setMessage(R.string.are_you_sure);
+        builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                FireAlarmService.dismissActiveAlarm(AlarmActivity.this);
+                backToMain();
+            }
+        });
+        builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        builder.show();
     }
 
     void backToMain() {

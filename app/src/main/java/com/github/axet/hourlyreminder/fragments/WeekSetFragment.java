@@ -110,7 +110,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         outState.putLong("selected", selected);
     }
 
-    int getPosition(long id) {
+    public int getPosition(long id) {
         return -1;
     }
 
@@ -121,7 +121,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             updateStartWeek();
     }
 
-    void updateStartWeek() {
+    public void updateStartWeek() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String s = prefs.getString(HourlyApplication.PREFERENCE_WEEKSTART, "");
         for (int i = 0; i < Week.DAYS.length; i++) {
@@ -132,7 +132,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         }
     }
 
-    abstract Uri fallbackUri(Uri uri);
+    public abstract Uri fallbackUri(Uri uri);
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
@@ -265,16 +265,16 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         boxAnimate = false;
     }
 
-    void changed() {
+    public void changed() {
         for (DataSetObserver l : listeners)
             l.onChanged();
     }
 
-    void setWeek(WeekSet a, int week, boolean c) {
+    public void setWeek(WeekSet a, int week, boolean c) {
         a.setWeek(week, c);
     }
 
-    void previewCancel() {
+    public void previewCancel() {
         if (alarmRingtonePlay != null) {
             alarmRingtonePlay.clearAnimation();
             alarmRingtonePlay = null;
@@ -284,17 +284,18 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         preview = false;
     }
 
-    Sound.Silenced playPreview(WeekSet a) {
+    public Sound.Silenced playPreview(WeekSet a) {
         return SoundConfig.Silenced.NONE;
     }
 
-    public void fillDetailed(final View view, final WeekSet w, boolean animate) {
+    public void fillDetailed(final View view, final WeekSet w, final boolean animate) {
         final SwitchCompat enable = (SwitchCompat) view.findViewById(R.id.alarm_enable);
         enable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 setEnable(w, enable.isChecked());
                 save(w);
+                changed();
             }
         });
         enable.setChecked(w.getEnable());
@@ -316,6 +317,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                     public void onClick(View v) {
                         setWeek(w, week, child.isChecked());
                         save(w);
+                        changed();
                     }
                 });
                 child.setChecked(w.isWeek(week));
@@ -333,6 +335,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                     w.setEveryday();
                 }
                 save(w);
+                changed();
             }
         });
 
@@ -357,6 +360,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 w.beep = beep.isChecked();
                 save(w);
+                changed();
             }
         });
         beep.setChecked(w.beep);
@@ -366,21 +370,22 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 w.speech = speech.isChecked();
                 save(w);
+                changed();
             }
         });
         speech.setChecked(w.speech);
 
         final View alarmRingtonePlay = view.findViewById(R.id.alarm_ringtone_play);
 
-        if (preview) {
+        if (preview)
             previewCancel();
-        }
 
         ringtone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 w.ringtone = ringtone.isChecked();
                 save(w);
+                changed();
             }
         });
         alarmRingtonePlay.setOnClickListener(new View.OnClickListener() {
@@ -477,6 +482,7 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                         shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, uri.toString()).commit();
                         w.ringtoneValue = uri;
                         save(w);
+                        changed();
                     }
 
                     @Override
