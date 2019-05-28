@@ -48,10 +48,8 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
 
     public static final String FIRE_ALARM = FireAlarmService.class.getCanonicalName() + ".FIRE_ALARM";
 
-    // dismiss current alarm action
-    public static final String DISMISS = HourlyApplication.class.getCanonicalName() + ".DISMISS";
-    // snooze
-    public static final String SNOOZE = AlarmService.class.getCanonicalName() + ".SNOOZE";
+    public static final String DISMISS = HourlyApplication.class.getCanonicalName() + ".DISMISS"; // dismiss current alarm action
+    public static final String SNOOZE = AlarmService.class.getCanonicalName() + ".SNOOZE"; // snooze
 
     public static final String SHOW_ACTIVITY = FireAlarmService.class.getCanonicalName() + ".SHOW_ACTIVITY"; // notification click
     public static final String RESUME_ACTIVITY = FireAlarmService.class.getCanonicalName() + ".RESUME_ACTIVITY"; // onResume MainActivity
