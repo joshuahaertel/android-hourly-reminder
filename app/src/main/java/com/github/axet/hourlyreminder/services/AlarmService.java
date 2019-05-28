@@ -105,7 +105,6 @@ public class AlarmService extends PersistentService implements SharedPreferences
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate");
 
         HourlyApplication app = HourlyApplication.from(this);
         sound = app.sound;
@@ -117,7 +116,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
 
     @Override
     public void onCreateOptimization() {
-        optimization = new ServiceReceiver(this, getClass(), HourlyApplication.PREFERENCE_OPTIMIZATION, HourlyApplication.PREFERENCE_NEXT);
+        optimization = new ServiceReceiver(HourlyApplication.PREFERENCE_OPTIMIZATION, HourlyApplication.PREFERENCE_NEXT);
         optimization.create();
     }
 
@@ -130,7 +129,6 @@ public class AlarmService extends PersistentService implements SharedPreferences
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy");
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.unregisterOnSharedPreferenceChangeListener(this);
