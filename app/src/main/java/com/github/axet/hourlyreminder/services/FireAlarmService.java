@@ -3,7 +3,6 @@ package com.github.axet.hourlyreminder.services;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +22,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
+import com.github.axet.androidlibrary.services.PersistentService;
 import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
@@ -43,7 +43,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.TreeSet;
 
-public class FireAlarmService extends Service implements SensorEventListener {
+public class FireAlarmService extends PersistentService implements SensorEventListener {
     public static final String TAG = FireAlarmService.class.getSimpleName();
 
     public static final String FIRE_ALARM = FireAlarmService.class.getCanonicalName() + ".FIRE_ALARM";
@@ -196,20 +196,15 @@ public class FireAlarmService extends Service implements SensorEventListener {
         @Override
         public void onCallStateChanged(int s, String incomingNumber) {
             switch (s) {
-                // incoming call ringing
-                case TelephonyManager.CALL_STATE_RINGING:
+                case TelephonyManager.CALL_STATE_RINGING: // incoming call ringing
                     wasRinging = true;
                     break;
-                // answered
-                case TelephonyManager.CALL_STATE_OFFHOOK:
+                case TelephonyManager.CALL_STATE_OFFHOOK: // answered
                     wasRinging = true;
-                    // stop current alarm
-                    if (sound != null) {
-                        sound.playerClose();
-                    }
+                    if (sound != null)
+                        sound.playerClose(); // stop current alarm
                     break;
-                // switch to idle state: no call, no ringing
-                case TelephonyManager.CALL_STATE_IDLE:
+                case TelephonyManager.CALL_STATE_IDLE: // switch to idle state: no call, no ringing
                     wasRinging = false;
                     break;
             }
@@ -233,7 +228,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 // do nothing. do not annoy user. he will see alarm screen on next screen on event.
             }
             if (a.equals(SHOW_ACTIVITY)) {
-                FireAlarm alarm = new FireAlarm(intent.getStringExtra("state"));
+                FireAlarm alarm = new FireAlarm(intent.getStringExtra("alarm"));
                 showAlarmActivity(alarm, silenced);
             }
             if (a.equals(RESUME_ACTIVITY)) {
@@ -330,31 +325,11 @@ public class FireAlarmService extends Service implements SensorEventListener {
 
     @Override
     public void onCreate() {
-        setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark));
         super.onCreate();
         Log.d(TAG, "onCreate");
         sound = new Sound(this);
 
         items = HourlyApplication.from(this).items;
-
-        PendingIntent main = PendingIntent.getBroadcast(this, 0, new Intent(SHOW_ACTIVITY), PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
-        RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, R.layout.notification_alarm);
-        builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
-                .setChannel(HourlyApplication.from(this).channelAlarms)
-                .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
-                .setTitle(getString(R.string.Alarm))
-                .setWhen(notification)
-                .setMainIntent(main)
-                .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
-                .setSmallIcon(R.drawable.ic_launcher_notification)
-                .setOngoing(true);
-        Notification n = builder.build();
-        if (notification == null)
-            startForeground(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
-        else
-            nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
-        notification = n;
 
         receiver = new FireAlarmReceiver();
         IntentFilter filter = new IntentFilter();
@@ -363,6 +338,10 @@ public class FireAlarmService extends Service implements SensorEventListener {
         filter.addAction(SHOW_ACTIVITY);
         filter.addAction(RESUME_ACTIVITY);
         registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public void onCreateOptimization() {
     }
 
     @Override
@@ -436,15 +415,14 @@ public class FireAlarmService extends Service implements SensorEventListener {
                 sm.registerListener(this, a, SensorManager.SENSOR_DELAY_GAME);
         }
 
-        showNotificationAlarm(alarm);
+        updateIcon(new Intent().putExtra("alarm", alarm.save().toString()).putExtra("text", Alarm.format2412(this, alarm.settime)));
 
-        // do we have silence alarm?
-        silenced = sound.playAlarm(alarm, 1000, alive);
+        silenced = sound.playAlarm(alarm, 1000, alive); // did we silence an alarm?
         sound.silencedToast(silenced, alarm.settime);
 
         showAlarmActivity(alarm, silenced);
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     public boolean snooze(long fire) { // false - do not snooze, true - snooze
@@ -498,7 +476,7 @@ public class FireAlarmService extends Service implements SensorEventListener {
         items.registerNextAlarm();
     }
 
-    boolean alive(final FireAlarm alarm, final long fire, long delay) {
+    public boolean alive(final FireAlarm alarm, final long fire, long delay) {
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);
         if (!dismiss(this, alarm.settime, alarm.isSnoozed(fire))) { // do not check snooze on first run
             handle.removeCallbacks(alive);
@@ -539,18 +517,6 @@ public class FireAlarmService extends Service implements SensorEventListener {
         AlarmActivity.start(this, alarm, silenced);
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    public class Binder extends android.os.Binder {
-        public FireAlarmService getService() {
-            return FireAlarmService.this;
-        }
-    }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -560,8 +526,6 @@ public class FireAlarmService extends Service implements SensorEventListener {
             sound.close();
             sound = null;
         }
-
-        showNotificationAlarm(null);
 
         if (receiver != null) {
             unregisterReceiver(receiver);
@@ -588,47 +552,40 @@ public class FireAlarmService extends Service implements SensorEventListener {
             sm.unregisterListener(this);
     }
 
-    // alarm dismiss button
-    @SuppressLint("RestrictedApi")
-    public void showNotificationAlarm(FireAlarm alarm) {
-        NotificationManagerCompat nm = NotificationManagerCompat.from(this);
+    @Override
+    public void updateIcon() {
+        super.updateIcon(new Intent());
+    }
 
-        if (alarm == null) {
-            stopForeground(false);
-            nm.cancel(HourlyApplication.NOTIFICATION_ALARM_ICON);
-        } else {
-            PendingIntent button = PendingIntent.getService(this, 0,
-                    new Intent(this, FireAlarmService.class).setAction(FireAlarmService.DISMISS).putExtra("alarm", alarm.save().toString()),
-                    PendingIntent.FLAG_UPDATE_CURRENT);
+    @Override
+    public Notification build(Intent intent) {
+        String json = intent.getStringExtra("alarm");
+        String text = intent.getStringExtra("text");
 
-            PendingIntent main = PendingIntent.getBroadcast(this, 0,
-                    new Intent(SHOW_ACTIVITY).putExtra("state", alarm.save().toString()),
-                    PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent button = PendingIntent.getService(this, 0,
+                new Intent(this, FireAlarmService.class).setAction(FireAlarmService.DISMISS).putExtra("alarm", json),
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
-            String text = Alarm.format2412(this, alarm.settime);
+        PendingIntent main = PendingIntent.getBroadcast(this, 0,
+                new Intent(SHOW_ACTIVITY).putExtra("alarm", json),
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
-            RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, R.layout.notification_alarm);
+        RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, R.layout.notification_alarm);
 
-            builder.setOnClickPendingIntent(R.id.notification_button, button);
+        builder.setOnClickPendingIntent(R.id.notification_button, button);
 
-            builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
-                    .setChannel(HourlyApplication.from(this).channelAlarms)
-                    .setImageViewTint(R.id.icon_circle,  builder.getThemeColor(R.attr.colorButtonNormal))
-                    .setTitle(getString(R.string.Alarm))
-                    .setText(text)
-                    .setWhen(notification)
-                    .setMainIntent(main)
-                    .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
-                    .setSmallIcon(R.drawable.ic_launcher_notification)
-                    .setOngoing(true);
+        builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
+                .setChannel(HourlyApplication.from(this).channelAlarms)
+                .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
+                .setTitle(getString(R.string.Alarm))
+                .setText(text)
+                .setWhen(notification)
+                .setMainIntent(main)
+                .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_launcher_notification)
+                .setOngoing(true);
 
-            Notification n = builder.build();
-            if (notification == null)
-                startForeground(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
-            else
-                nm.notify(HourlyApplication.NOTIFICATION_ALARM_ICON, n);
-            notification = n;
-        }
+        return builder.build();
     }
 
     @Override
