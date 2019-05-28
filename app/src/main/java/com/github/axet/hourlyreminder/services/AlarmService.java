@@ -47,21 +47,22 @@ public class AlarmService extends PersistentService implements SharedPreferences
     // reminder broadcast triggers sound
     public static final String REMINDER = HourlyApplication.class.getCanonicalName() + ".REMINDER";
 
+    static {
+        OptimizationPreferenceCompat.ICON = true;
+    }
+
+    {
+        id = HourlyApplication.NOTIFICATION_PERSISTENT_ICON;
+    }
+
     HourlyApplication.ItemsStorage items;
     Sound sound;
     WakeScreen wake;
 
-    static {
-        OptimizationPreferenceCompat.ICON = true;
-        NOTIFICATION_PERSISTENT_ICON = HourlyApplication.NOTIFICATION_PERSISTENT_ICON;
-        PREFERENCE_OPTIMIZATION = HourlyApplication.PREFERENCE_OPTIMIZATION;
-        PREFERENCE_NEXT = HourlyApplication.PREFERENCE_NEXT;
-    }
-
     public static void registerNext(Context context) {
         HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
         boolean b = items.registerNextAlarm();
-        startIfPersistent(context, b, new Intent(context, AlarmService.class));
+        startIfPersistent(context, b, new Intent(context, AlarmService.class), HourlyApplication.PREFERENCE_OPTIMIZATION);
     }
 
     public static void startClock(Context context) { // https://stackoverflow.com/questions/3590955
@@ -112,6 +113,12 @@ public class AlarmService extends PersistentService implements SharedPreferences
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onCreateOptimization() {
+        optimization = new ServiceReceiver(this, getClass(), HourlyApplication.PREFERENCE_OPTIMIZATION, HourlyApplication.PREFERENCE_NEXT);
+        optimization.create();
     }
 
     @Nullable
@@ -199,7 +206,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
 
     public void registerNext() {
         boolean b = items.registerNextAlarm();
-        if (!isPersistent(this, b)) {
+        if (!isPersistent(this, b, HourlyApplication.PREFERENCE_OPTIMIZATION)) {
             sound.after(new Runnable() {
                 @Override
                 public void run() {

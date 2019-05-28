@@ -13,9 +13,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -23,7 +21,6 @@ import android.view.View;
 
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.services.PersistentService;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
@@ -61,6 +58,10 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
 
     public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
     public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
+
+    {
+        id = HourlyApplication.NOTIFICATION_ALARM_ICON;
+    }
 
     HourlyApplication.ItemsStorage items;
     FireAlarmReceiver receiver;
