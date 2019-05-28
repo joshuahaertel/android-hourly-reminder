@@ -78,10 +78,8 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
     PhoneStateChangeListener pscl;
 
     public static void snooze(Context context, FireAlarmService.FireAlarm a) {
-        Intent intent = new Intent(context, FireAlarmService.class);
-        intent.setAction(SNOOZE);
-        intent.putExtra("state", a.save().toString());
-        OptimizationPreferenceCompat.startService(context, intent);
+        Intent intent = new Intent(context, FireAlarmService.class).setAction(SNOOZE).putExtra("alarm", a.save().toString());
+        start(context, intent);
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
         Integer min = Integer.valueOf(shared.getString(HourlyApplication.PREFERENCE_SNOOZE_DELAY, "10"));
@@ -148,8 +146,7 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
     }
 
     public static void activateAlarm(Context context, FireAlarm a) {
-        OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class)
-                .setAction(FIRE_ALARM).putExtra("state", a.save().toString()));
+        start(context, new Intent(context, FireAlarmService.class).setAction(FIRE_ALARM).putExtra("alarm", a.save().toString()));
     }
 
     public static void onResume(Context context) {
@@ -160,7 +157,7 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
         context.stopService(new Intent(context, FireAlarmService.class));
         final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         if (!shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "").isEmpty())
-            OptimizationPreferenceCompat.startService(context, new Intent(context, FireAlarmService.class));
+            start(context, new Intent(context, FireAlarmService.class));
     }
 
     public static void dismissActiveAlarm(Context context) {
@@ -182,7 +179,7 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
     }
 
     public static FireAlarm getAlarm(Intent intent) {
-        String json = intent.getStringExtra("state");
+        String json = intent.getStringExtra("alarm");
         if (json == null || json.isEmpty())
             return null;
         return new FireAlarm(json);
@@ -368,11 +365,11 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
                 FireAlarmService.dismissActiveAlarm(this);
                 return START_NOT_STICKY;
             } else if (a != null && a.equals(SNOOZE)) {
-                FireAlarmService.FireAlarm f = new FireAlarmService.FireAlarm(intent.getStringExtra("state"));
+                FireAlarmService.FireAlarm f = new FireAlarmService.FireAlarm(intent.getStringExtra("alarm"));
                 snooze(f.ids);
                 return START_NOT_STICKY;
             } else {
-                alarm = getAlarm(intent);
+                alarm = getAlarm(intent); // FIRE_ALARM
 
                 String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
 
