@@ -2,32 +2,29 @@ package com.github.axet.hourlyreminder.fragments;
 
 import android.app.AlertDialog;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.AbsListView;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
+import com.github.axet.androidlibrary.animations.ExpandItemAnimator;
 import com.github.axet.androidlibrary.animations.MarginAnimation;
-import com.github.axet.androidlibrary.animations.RemoveItemAnimation;
 import com.github.axet.androidlibrary.widgets.OpenChoicer;
 import com.github.axet.androidlibrary.widgets.OpenFileDialog;
 import com.github.axet.hourlyreminder.R;
@@ -40,31 +37,23 @@ import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.app.Storage;
 
 import java.io.File;
-import java.util.ArrayList;
 
-public abstract class WeekSetFragment extends Fragment implements ListAdapter, AbsListView.OnScrollListener, SharedPreferences.OnSharedPreferenceChangeListener {
-    public static final int TYPE_COLLAPSED = 0;
-    public static final int TYPE_EXPANDED = 1;
-    public static final int TYPE_DELETED = 2;
-
-    public static final int[] ALL = {TYPE_COLLAPSED, TYPE_EXPANDED};
-
+public abstract class WeekSetFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final int RESULT_RINGTONE = 0;
     public static final int RESULT_FILE = 1;
 
-    ListView list;
+    RecyclerView list;
 
-    ArrayList<DataSetObserver> listeners = new ArrayList<>();
-    long selected = -1;
-    int scrollState;
+    long selected = -1; // id
     boolean boxAnimate;
     Handler handler;
-    // preview ringtone
-    boolean preview;
+    boolean preview; // preview ringtone
     View alarmRingtonePlay;
     Sound sound;
     Storage storage;
     OpenChoicer choicer;
+    ExpandItemAnimator animator;
+    Adapter adapter;
 
     int startweek = 0;
 
@@ -73,12 +62,79 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         Animation a = view.getAnimation();
         if (a != null && !a.hasEnded())
             return true;
-        if (checkbox) {
+        if (checkbox)
             animate = view.getVisibility() != View.VISIBLE;
-        } else {
+        else
             animate = view.getVisibility() == View.VISIBLE;
-        }
         return animate;
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        public View alarmRingtonePlay;
+        public CheckBox weekdays;
+        public LinearLayout weekdaysValues;
+        public CheckBox alarmRingtone;
+        public View alarmRingtoneLayout;
+        public ImageView expand;
+
+        public ViewHolder(View v) {
+            super(v);
+            alarmRingtonePlay = v.findViewById(R.id.alarm_ringtone_play);
+            weekdays = (CheckBox) v.findViewById(R.id.alarm_week_days);
+            weekdaysValues = (LinearLayout) v.findViewById(R.id.alarm_week);
+            alarmRingtone = (CheckBox) v.findViewById(R.id.alarm_ringtone);
+            alarmRingtoneLayout = v.findViewById(R.id.alarm_ringtone_layout);
+            expand = (ImageView) v.findViewById(R.id.alarm_expand);
+        }
+    }
+
+    public class Adapter extends RecyclerView.Adapter<ViewHolder> {
+        @Override
+        public int getItemCount() {
+            return 0;
+        }
+
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return -1;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return 0;
+        }
+
+        public int getPosition(long id) {
+            return -1;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            View convertView = inflater.inflate(R.layout.alarm, parent, false);
+            return new ViewHolder(convertView);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder h, int position) {
+            final WeekSet a = (WeekSet) getItem(position);
+
+            h.alarmRingtonePlay.clearAnimation();
+
+            animator.onBindViewHolder(h, position);
+
+            if (selected == a.id) {
+                fillDetailed(h.itemView, a, boxAnimate);
+                h.expand.setImageResource(R.drawable.arrow_up);
+            } else {
+                fillCompact(h.itemView, a, boxAnimate);
+                h.expand.setImageResource(R.drawable.arrow_down);
+            }
+        }
     }
 
     public WeekSetFragment() {
@@ -90,6 +146,30 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
 
         handler = new Handler();
 
+        animator = new ExpandItemAnimator() {
+            @Override
+            public Animation apply(RecyclerView.ViewHolder holder, boolean animate) {
+                ViewHolder h = (ViewHolder) holder;
+                final WeekSet a = (WeekSet) adapter.getItem(h.getAdapterPosition());
+                if (selected == a.id) {
+                    Animation n = AlarmAnimation.apply(list, h.itemView, true, animate);
+
+                    MarginAnimation.apply(h.weekdaysValues, h.weekdays.isChecked(), n == null && checkboxAnimate(h.weekdays.isChecked(), h.weekdaysValues));
+                    MarginAnimation.apply(h.alarmRingtoneLayout, h.alarmRingtone.isChecked(), n == null && checkboxAnimate(h.alarmRingtone.isChecked(), h.alarmRingtoneLayout));
+
+                    return n;
+                } else {
+                    return AlarmAnimation.apply(list, h.itemView, false, animate);
+                }
+            }
+
+            @Override
+            public void onScrollStateChanged(int state) {
+                super.onScrollStateChanged(state);
+                boxAnimate = true;
+            }
+        };
+
         sound = new Sound(getActivity());
 
         storage = new Storage(getActivity());
@@ -99,19 +179,14 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         prefs.registerOnSharedPreferenceChangeListener(this);
 
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null)
             selected = savedInstanceState.getLong("selected");
-        }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putLong("selected", selected);
-    }
-
-    public int getPosition(long id) {
-        return -1;
     }
 
     @Override
@@ -134,140 +209,29 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
 
     public abstract Uri fallbackUri(Uri uri);
 
-    @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-        this.scrollState = scrollState;
-        boxAnimate = true;
-    }
-
-    @Override
-    public boolean areAllItemsEnabled() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled(int position) {
-        return true;
-    }
-
-    @Override
-    public void registerDataSetObserver(DataSetObserver observer) {
-        listeners.add(observer);
-    }
-
-    @Override
-    public void unregisterDataSetObserver(DataSetObserver observer) {
-        listeners.remove(observer);
-    }
-
-    @Override
-    public int getCount() {
-        return 0;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return null;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return -1;
-    }
-
-    @Override
-    public boolean hasStableIds() {
-        return false;
-    }
-
-    @Override
-    public View getView(final int position, View convertView, final ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        if (convertView == null) {
-            convertView = inflater.inflate(R.layout.alarm, parent, false);
-            convertView.setTag(-1);
-        }
-
-        if ((int) convertView.getTag() == TYPE_DELETED) {
-            RemoveItemAnimation.restore(convertView.findViewById(R.id.alarm_base));
-            convertView.setTag(-1);
-        }
-
-        final WeekSet a = (WeekSet) getItem(position);
-
-        final View alarmRingtonePlay = convertView.findViewById(R.id.alarm_ringtone_play);
-        alarmRingtonePlay.clearAnimation();
-
-        if (selected == a.id) {
-            fillDetailed(convertView, a, boxAnimate);
-
-            final CheckBox weekdays = (CheckBox) convertView.findViewById(R.id.alarm_week_days);
-            final LinearLayout weekdaysValues = (LinearLayout) convertView.findViewById(R.id.alarm_week);
-            final CheckBox alarmRingtone = (CheckBox) convertView.findViewById(R.id.alarm_ringtone);
-            final View alarmRingtoneLayout = convertView.findViewById(R.id.alarm_ringtone_layout);
-
-            AlarmAnimation.apply(list, convertView, true, scrollState == SCROLL_STATE_IDLE && (int) convertView.getTag() == TYPE_COLLAPSED);
-
-            MarginAnimation.apply(weekdaysValues, weekdays.isChecked(), scrollState == SCROLL_STATE_IDLE &&
-                    (int) convertView.getTag() == TYPE_EXPANDED && checkboxAnimate(weekdays.isChecked(), weekdaysValues));
-
-            MarginAnimation.apply(alarmRingtoneLayout, alarmRingtone.isChecked(), scrollState == SCROLL_STATE_IDLE &&
-                    (int) convertView.getTag() == TYPE_EXPANDED && checkboxAnimate(alarmRingtone.isChecked(), alarmRingtoneLayout));
-
-            convertView.setTag(TYPE_EXPANDED);
-
-            return convertView;
-        } else {
-            fillCompact(convertView, a, boxAnimate);
-
-            AlarmAnimation.apply(list, convertView, false, scrollState == SCROLL_STATE_IDLE && (int) convertView.getTag() == TYPE_EXPANDED);
-
-            convertView.setTag(TYPE_COLLAPSED);
-
-            return convertView;
-        }
-    }
-
     void select(long id) {
-        // stop sound preview when detailed view closed.
-        if (preview) {
+        if (preview) { // stop sound preview when detailed view closed.
             sound.playerClose();
             preview = false;
         }
+        if (selected != id && selected != -1) {
+            int pos = adapter.getPosition(selected);
+            animator.notifyItemChanged(pos);
+            adapter.notifyItemChanged(pos);
+        }
         selected = id;
-        changed();
+        if (id != -1) {
+            int pos = adapter.getPosition(id);
+            animator.notifyItemChanged(pos);
+            adapter.notifyItemChanged(pos);
+        }
     }
 
     void save(WeekSet a) {
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        return TYPE_COLLAPSED;
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return ALL.length;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return getCount() == 0;
-    }
-
     public void remove(WeekSet a) {
         boxAnimate = false;
-    }
-
-    public void changed() {
-        for (DataSetObserver l : listeners)
-            l.onChanged();
     }
 
     public void setWeek(WeekSet a, int week, boolean c) {
@@ -379,6 +343,9 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 w.ringtone = ringtone.isChecked();
                 save(w);
+                int pos = adapter.getPosition(w.id);
+                animator.notifyItemChanged(pos);
+                adapter.notifyItemChanged(pos);
             }
         });
         alarmRingtonePlay.setOnClickListener(new View.OnClickListener() {
@@ -416,15 +383,9 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (which == DialogInterface.BUTTON_POSITIVE) {
-                            view.setTag(TYPE_DELETED);
-                            // mark scroll as animating. because we about to remove item.
-                            RemoveItemAnimation.apply(list, view.findViewById(R.id.alarm_base), new Runnable() {
-                                @Override
-                                public void run() {
-                                    remove(w);
-                                    select(-1);
-                                }
-                            });
+                            remove(w);
+                            selected = -1;
+                            adapter.notifyItemRemoved(adapter.getPosition(w.id));
                         }
                     }
                 };
@@ -598,4 +559,3 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
         }
     }
 }
-

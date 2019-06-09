@@ -1,17 +1,18 @@
 package com.github.axet.hourlyreminder.fragments;
 
 import android.app.TimePickerDialog;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -29,34 +30,9 @@ import java.io.File;
 import java.util.Collections;
 
 public class AlarmsFragment extends WeekSetFragment {
-
     HourlyApplication.ItemsStorage items;
 
     public AlarmsFragment() {
-    }
-
-    public int getPosition(long id) {
-        for (int i = 0; i < items.alarms.size(); i++) {
-            if (items.alarms.get(i).id == id) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    @Override
-    public int getCount() {
-        return items.alarms.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return items.alarms.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return items.alarms.get(position).id;
     }
 
     @Override
@@ -64,16 +40,52 @@ public class AlarmsFragment extends WeekSetFragment {
         super.onCreate(savedInstanceState);
 
         items = HourlyApplication.from(getContext()).items;
-
         Collections.sort(items.alarms, new Alarm.CustomComparator());
+
+        adapter = new Adapter() {
+            @Override
+            public int getItemCount() {
+                return items.alarms.size();
+            }
+
+            @Override
+            public Object getItem(int position) {
+                return items.alarms.get(position);
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return items.alarms.get(position).id;
+            }
+
+            @Override
+            public int getPosition(long id) {
+                for (int i = 0; i < items.alarms.size(); i++) {
+                    if (items.alarms.get(i).id == id)
+                        return i;
+                }
+                return -1;
+            }
+
+            @Override
+            public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+                View convertView = inflater.inflate(R.layout.alarm, parent, false);
+                return new ViewHolder(convertView);
+            }
+        };
+        adapter.setHasStableIds(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_alarms, container, false);
-        list = (ListView) rootView.findViewById(R.id.section_label);
-        list.setAdapter(this);
-        list.setOnScrollListener(this);
+        list = (RecyclerView) rootView.findViewById(R.id.section_label);
+        list.setLayoutManager(new LinearLayoutManager(getContext()));
+        list.setAdapter(adapter);
+        list.setItemAnimator(animator);
+        list.addOnScrollListener(animator.onScrollListener);
+        list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
         FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,7 +117,7 @@ public class AlarmsFragment extends WeekSetFragment {
         });
 
         if (selected > 0)
-            list.smoothScrollToPosition(getPosition(selected));
+            list.smoothScrollToPosition(adapter.getPosition(selected));
 
         return rootView;
     }
@@ -133,20 +145,8 @@ public class AlarmsFragment extends WeekSetFragment {
         if (key.startsWith(HourlyApplication.PREFERENCE_ALARMS_PREFIX)) {
             items.loadAlarms(sharedPreferences);
             Collections.sort(items.alarms, new Alarm.CustomComparator());
-            changed();
+            adapter.notifyDataSetChanged();
         }
-    }
-
-    @Override
-    public View getView(final int position, View convertView, final ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        if (convertView == null) {
-            convertView = inflater.inflate(R.layout.alarm, parent, false);
-            convertView.setTag(-1);
-        }
-
-        return super.getView(position, convertView, parent);
     }
 
     void save(WeekSet a) {
@@ -155,7 +155,7 @@ public class AlarmsFragment extends WeekSetFragment {
         shared.unregisterOnSharedPreferenceChangeListener(this); // prevent reload alarms
         items.saveAlarms();
         shared.registerOnSharedPreferenceChangeListener(this);
-        changed();
+        adapter.notifyDataSetChanged();
     }
 
     public void addAlarm(Alarm a) {
@@ -193,9 +193,8 @@ public class AlarmsFragment extends WeekSetFragment {
             public void onClick(View v) {
                 Uri uri = w.ringtoneValue;
 
-                if (uri == null) {
+                if (uri == null)
                     uri = Alarm.DEFAULT_ALARM;
-                }
 
                 RingtoneChoicer r = new RingtoneChoicer() {
                     @Override
@@ -291,10 +290,9 @@ public class AlarmsFragment extends WeekSetFragment {
 
     @Override
     public Uri fallbackUri(Uri uri) {
-        if (uri != null) {
+        if (uri != null)
             return uri;
-        } else {
+        else
             return Alarm.DEFAULT_ALARM;
-        }
     }
 }

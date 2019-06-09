@@ -4,24 +4,19 @@
     android:layout_height="match_parent"
     tools:context=".activities.MainActivity$AlarmsFragment">
 
-    <!--fab button padding
+    <!-- fab button padding
 
         android:paddingBottom="56dp + 16dp + 5dp"
 
         where:
          56dp - fab size
          16dp - fab margin
-         5dp - ListView padding
-
-        android:clipToPadding="false"
-
-    -->
-    <ListView
+         5dp - ListView padding -->
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/section_label"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:divider="?attr/colorAccent"
         android:dividerHeight="1dp"
         android:paddingBottom="77dp"
         android:paddingLeft="5dp"
@@ -34,5 +29,4 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/plus" />
-
 </FrameLayout>

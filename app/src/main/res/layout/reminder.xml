@@ -238,11 +238,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-
                 <LinearLayout
                     android:id="@+id/alarm_bottom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:orientation="horizontal">
 
                     <LinearLayout
@@ -272,20 +272,14 @@
                             android:src="@drawable/ic_edit_black_24dp"
                             android:tint="?attr/colorAccent" />
                     </LinearLayout>
-
-                    <ImageView
-                        android:id="@+id/alarm_bottom_second"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        android:src="@drawable/arrow_up"
-                        android:tint="?attr/colorAccent" />
                 </LinearLayout>
 
-                <com.github.axet.androidlibrary.widgets.EqualLinearLayout
+                <LinearLayout
                     android:id="@+id/alarm_compact"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/alarm_compact_first"
@@ -293,17 +287,17 @@
                         android:layout_height="wrap_content"
                         android:text="@string/Tomorrow"
                         android:textStyle="bold" />
+                </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/alarm_compact_second"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        android:src="@drawable/arrow_down"
-                        android:tint="?attr/colorAccent" />
-                </com.github.axet.androidlibrary.widgets.EqualLinearLayout>
+                <ImageView
+                    android:id="@+id/alarm_expand"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/arrow_down"
+                    android:tint="?attr/colorAccent" />
             </FrameLayout>
-
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>
