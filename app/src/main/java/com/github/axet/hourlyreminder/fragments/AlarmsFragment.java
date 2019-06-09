@@ -161,8 +161,10 @@ public class AlarmsFragment extends WeekSetFragment {
     public void addAlarm(Alarm a) {
         items.alarms.add(a);
         Collections.sort(items.alarms, new Alarm.CustomComparator());
-        select(a.id);
         int pos = items.alarms.indexOf(a);
+        adapter.notifyItemInserted(pos);
+        select(-1);
+        selected = a.id;
         list.smoothScrollToPosition(pos);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.unregisterOnSharedPreferenceChangeListener(this);

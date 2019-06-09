@@ -299,6 +299,9 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                 if (w.weekdaysCheck && w.noDays())
                     w.setEveryday();
                 save(w);
+                int pos = adapter.getPosition(w.id);
+                animator.notifyItemChanged(pos);
+                adapter.notifyItemChanged(pos);
             }
         });
 
