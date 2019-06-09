@@ -132,9 +132,10 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     void save(WeekSet a) {
         super.save(a);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        shared.unregisterOnSharedPreferenceChangeListener(this);
+        shared.unregisterOnSharedPreferenceChangeListener(this); // prevent reload reminders
         items.saveReminders();
         shared.registerOnSharedPreferenceChangeListener(this);
+        changed();
     }
 
     public void addAlarm(ReminderSet a) {
@@ -184,7 +185,6 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                         }
                         w.ringtoneValue = fallbackUri(uri);
                         save(w);
-                        changed();
                     }
 
                     @Override
@@ -285,7 +285,6 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 ReminderSet rs = items.reminders.get(r.index);
                 rs.load(r.hours);
                 save(rs);
-                changed();
             }
         }
         if (dialogInterface instanceof RepeatDialogFragment.Result) {
@@ -296,7 +295,6 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
             rs.repeat = r.mins;
             rs.reload(); // update hours
             save(rs);
-            changed();
 
             // it is only for 23 api phones and up. since only alarms can trigs often then 15 mins.
             if (Build.VERSION.SDK_INT >= 23) {

@@ -295,7 +295,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 setEnable(w, enable.isChecked());
                 save(w);
-                changed();
             }
         });
         enable.setChecked(w.getEnable());
@@ -317,7 +316,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                     public void onClick(View v) {
                         setWeek(w, week, child.isChecked());
                         save(w);
-                        changed();
                     }
                 });
                 child.setChecked(w.isWeek(week));
@@ -331,11 +329,9 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             @Override
             public void onClick(View v) {
                 w.weekdaysCheck = weekdays.isChecked();
-                if (w.weekdaysCheck && w.noDays()) {
+                if (w.weekdaysCheck && w.noDays())
                     w.setEveryday();
-                }
                 save(w);
-                changed();
             }
         });
 
@@ -360,7 +356,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 w.beep = beep.isChecked();
                 save(w);
-                changed();
             }
         });
         beep.setChecked(w.beep);
@@ -370,7 +365,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 w.speech = speech.isChecked();
                 save(w);
-                changed();
             }
         });
         speech.setChecked(w.speech);
@@ -385,7 +379,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
             public void onClick(View v) {
                 w.ringtone = ringtone.isChecked();
                 save(w);
-                changed();
             }
         });
         alarmRingtonePlay.setOnClickListener(new View.OnClickListener() {
@@ -482,7 +475,6 @@ public abstract class WeekSetFragment extends Fragment implements ListAdapter, A
                         shared.edit().putString(HourlyApplication.PREFERENCE_LAST_PATH, uri.toString()).commit();
                         w.ringtoneValue = uri;
                         save(w);
-                        changed();
                     }
 
                     @Override
