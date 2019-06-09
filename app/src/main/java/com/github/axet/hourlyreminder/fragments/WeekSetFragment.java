@@ -125,15 +125,15 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
 
             h.alarmRingtonePlay.clearAnimation();
 
-            animator.onBindViewHolder(h, position);
-
             if (selected == a.id) {
                 fillDetailed(h.itemView, a, boxAnimate);
-                h.expand.setImageResource(R.drawable.arrow_up);
+                h.expand.setImageResource(R.drawable.ic_expand_less_black_24dp);
             } else {
                 fillCompact(h.itemView, a, boxAnimate);
-                h.expand.setImageResource(R.drawable.arrow_down);
+                h.expand.setImageResource(R.drawable.ic_expand_more_black_24dp);
             }
+
+            animator.onBindViewHolder(h, position);
         }
     }
 
@@ -154,8 +154,11 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                 if (selected == a.id) {
                     Animation n = AlarmAnimation.apply(list, h.itemView, true, animate);
 
-                    MarginAnimation.apply(h.weekdaysValues, h.weekdays.isChecked(), n == null && checkboxAnimate(h.weekdays.isChecked(), h.weekdaysValues));
-                    MarginAnimation.apply(h.alarmRingtoneLayout, h.alarmRingtone.isChecked(), n == null && checkboxAnimate(h.alarmRingtone.isChecked(), h.alarmRingtoneLayout));
+                    Animation m;
+                    m = MarginAnimation.apply(h.weekdaysValues, h.weekdays.isChecked(), animate && n == null && checkboxAnimate(h.weekdays.isChecked(), h.weekdaysValues));
+                    n = n == null ? m : n;
+                    m = MarginAnimation.apply(h.alarmRingtoneLayout, h.alarmRingtone.isChecked(), animate && n == null && checkboxAnimate(h.alarmRingtone.isChecked(), h.alarmRingtoneLayout));
+                    n = n == null ? m : n;
 
                     return n;
                 } else {

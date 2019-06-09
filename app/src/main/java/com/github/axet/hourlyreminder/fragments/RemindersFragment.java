@@ -133,9 +133,11 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     }
 
     public void addAlarm(ReminderSet a) {
+        int pos = items.reminders.size();
         items.reminders.add(a);
-        select(a.id);
-        int pos = items.reminders.indexOf(a);
+        adapter.notifyItemInserted(pos);
+        select(-1);
+        selected = a.id;
         list.smoothScrollToPosition(pos);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.unregisterOnSharedPreferenceChangeListener(this);
@@ -209,7 +211,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         });
 
         TextView every = (TextView) view.findViewById(R.id.alarm_every);
-        ((FrameLayout) every.getParent()).setOnClickListener(new View.OnClickListener() {
+        every.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 RepeatDialogFragment d = new RepeatDialogFragment();
