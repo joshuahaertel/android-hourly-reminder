@@ -322,7 +322,6 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate");
         sound = new Sound(this);
 
         items = HourlyApplication.from(this).items;
@@ -516,7 +515,6 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestory");
 
         if (sound != null) {
             sound.close();
@@ -644,4 +642,3 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 }
-
