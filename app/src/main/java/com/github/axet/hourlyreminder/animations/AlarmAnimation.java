@@ -98,7 +98,7 @@ public class AlarmAnimation extends ExpandAnimation {
         time.setTextColor(ThemeUtils.getThemeColor(context, android.R.attr.textColorSecondary));
         GlowAnimation.restore(time);
 
-        TextView everyT = (TextView) convertView.findViewById(R.id.alarm_every);
+        TextView everyT = (TextView) convertView.findViewById(R.id.alarm_every_text);
         if (everyT != null) {
             GlowAnimation.restore(everyT);
             everyT.setTextColor(ThemeUtils.getThemeColor(context, android.R.attr.textColorSecondary));
@@ -130,7 +130,7 @@ public class AlarmAnimation extends ExpandAnimation {
 //        a.startAnimation(time);
         colorEnd();
 
-        final TextView every = (TextView) convertView.findViewById(R.id.alarm_every);
+        final TextView every = (TextView) convertView.findViewById(R.id.alarm_every_text);
         if (every != null) {
 //            GlowAnimation aa = new GlowAnimation(every) {
 //                @Override
@@ -159,7 +159,7 @@ public class AlarmAnimation extends ExpandAnimation {
     void colorEnd() {
         final int acc = ThemeUtils.getThemeColor(convertView.getContext(), R.attr.colorAccent);
         final ImageView everyT = (ImageView) convertView.findViewById(R.id.alarm_every_image);
-        final TextView every = (TextView) convertView.findViewById(R.id.alarm_every);
+        final TextView every = (TextView) convertView.findViewById(R.id.alarm_every_text);
         final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
         if (time != null)
             time.setTextColor(acc);

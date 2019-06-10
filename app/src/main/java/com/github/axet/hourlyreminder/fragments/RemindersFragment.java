@@ -135,7 +135,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                     }
                 });
 
-                ((FrameLayout) h.every.getParent()).setOnClickListener(new View.OnClickListener() {
+                h.every.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         RepeatDialogFragment d = new RepeatDialogFragment();
@@ -161,7 +161,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 updateTime(h, (ReminderSet) a);
                 h.time.setClickable(false);
 
-                ((FrameLayout) h.every.getParent()).setClickable(false);
+                h.every.setClickable(false);
 
                 updateEvery(h, a);
             }

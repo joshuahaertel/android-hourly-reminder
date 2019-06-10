@@ -236,7 +236,7 @@ public class RepeatDialogFragment extends DialogFragment {
                 textint.setVisibility(View.VISIBLE);
                 v.setVisibility(View.VISIBLE);
                 setRepeatColor(v, color);
-                TextView t = (TextView) v.findViewById(R.id.alarm_every);
+                TextView t = (TextView) v.findViewById(R.id.alarm_every_text);
                 t.setText(ss[i]);
                 final int m = i;
                 v.setOnClickListener(new View.OnClickListener() {
