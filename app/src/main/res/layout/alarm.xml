@@ -242,9 +242,9 @@
 
                 <LinearLayout
                     android:id="@+id/alarm_bottom"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:layout_gravity="center_vertical|left"
                     android:orientation="horizontal">
 
                     <LinearLayout
@@ -279,9 +279,9 @@
 
                 <LinearLayout
                     android:id="@+id/alarm_compact"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:layout_gravity="center_vertical|left"
                     android:orientation="horizontal">
 
                     <TextView
@@ -296,8 +296,9 @@
                     android:id="@+id/alarm_expand"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="right"
+                    android:layout_gravity="center_vertical|right"
                     android:background="@android:color/transparent"
+                    android:padding="5dp"
                     android:src="@drawable/ic_expand_more_black_24dp"
                     android:tint="?attr/colorAccent" />
             </FrameLayout>

@@ -242,7 +242,7 @@ public class AlarmsFragment extends WeekSetFragment {
         shared.unregisterOnSharedPreferenceChangeListener(this); // prevent reload alarms
         items.saveAlarms();
         shared.registerOnSharedPreferenceChangeListener(this);
-        adapter.notifyDataSetChanged();
+        adapter.notifyItemChanged(items.alarms.indexOf(a));
     }
 
     public void addAlarm(Alarm a) {

@@ -222,7 +222,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         shared.unregisterOnSharedPreferenceChangeListener(this); // prevent reload reminders
         items.saveReminders();
         shared.registerOnSharedPreferenceChangeListener(this);
-        adapter.notifyDataSetChanged();
+        adapter.notifyItemChanged(items.reminders.indexOf(a));
     }
 
     public void addAlarm(ReminderSet a) {

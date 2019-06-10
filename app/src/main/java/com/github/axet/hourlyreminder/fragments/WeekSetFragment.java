@@ -189,8 +189,7 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                     if (w.weekdaysCheck && w.noDays())
                         w.setEveryday();
                     save(w);
-                    int pos = adapter.getPosition(w.id);
-                    adapter.notifyItemChanged(pos);
+                    adapter.notifyItemChanged(adapter.getPosition(w.id));
                 }
             });
 
@@ -231,8 +230,7 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                 public void onClick(View v) {
                     w.ringtone = h.ringtone.isChecked();
                     save(w);
-                    int pos = adapter.getPosition(w.id);
-                    adapter.notifyItemChanged(pos);
+                    adapter.notifyItemChanged(adapter.getPosition(w.id));
                 }
             });
             h.alarmRingtonePlay.setOnClickListener(new View.OnClickListener() {
@@ -480,15 +478,11 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
             sound.playerClose();
             preview = false;
         }
-        if (selected != id && selected != -1) {
-            int pos = adapter.getPosition(selected);
-            adapter.notifyItemChanged(pos);
-        }
+        if (selected != id && selected != -1)
+            adapter.notifyItemChanged(adapter.getPosition(selected));
         selected = id;
-        if (id != -1) {
-            int pos = adapter.getPosition(id);
-            adapter.notifyItemChanged(pos);
-        }
+        if (id != -1)
+            adapter.notifyItemChanged(adapter.getPosition(id));
     }
 
     public void selectAdd(long id) {
