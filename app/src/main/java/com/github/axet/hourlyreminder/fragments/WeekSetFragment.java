@@ -190,7 +190,6 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                         w.setEveryday();
                     save(w);
                     int pos = adapter.getPosition(w.id);
-                    animator.notifyItemChanged(pos);
                     adapter.notifyItemChanged(pos);
                 }
             });
@@ -233,7 +232,6 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                     w.ringtone = h.ringtone.isChecked();
                     save(w);
                     int pos = adapter.getPosition(w.id);
-                    animator.notifyItemChanged(pos);
                     adapter.notifyItemChanged(pos);
                 }
             });
@@ -484,13 +482,11 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
         }
         if (selected != id && selected != -1) {
             int pos = adapter.getPosition(selected);
-            animator.notifyItemChanged(pos);
             adapter.notifyItemChanged(pos);
         }
         selected = id;
         if (id != -1) {
             int pos = adapter.getPosition(id);
-            animator.notifyItemChanged(pos);
             adapter.notifyItemChanged(pos);
         }
     }
