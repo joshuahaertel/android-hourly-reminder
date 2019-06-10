@@ -13,6 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.github.axet.androidlibrary.app.Storage;
@@ -33,11 +34,13 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     HourlyApplication.ItemsStorage items;
 
     public static class ViewHolder extends WeekSetFragment.ViewHolder {
-        public TextView every;
+        public View every;
+        public TextView everyText;
 
         public ViewHolder(View v) {
             super(v);
-            every = (TextView) v.findViewById(R.id.alarm_every);
+            every = v.findViewById(R.id.alarm_every);
+            everyText = (TextView) v.findViewById(R.id.alarm_every_text);
         }
     }
 
@@ -132,7 +135,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                     }
                 });
 
-                h.every.setOnClickListener(new View.OnClickListener() {
+                ((FrameLayout) h.every.getParent()).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         RepeatDialogFragment d = new RepeatDialogFragment();
@@ -145,7 +148,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                         d.show(getFragmentManager(), "");
                     }
                 });
-                updateEvery(h.every, w);
+                updateEvery(h, w);
 
                 h.weekdays.setButtonDrawable(null);
                 h.weekdays.setClickable(false);
@@ -158,9 +161,9 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 updateTime(h, (ReminderSet) a);
                 h.time.setClickable(false);
 
-                h.every.setClickable(false);
+                ((FrameLayout) h.every.getParent()).setClickable(false);
 
-                updateEvery(h.every, a);
+                updateEvery(h, a);
             }
         };
         adapter.setHasStableIds(true);
@@ -245,7 +248,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         shared.registerOnSharedPreferenceChangeListener(this);
     }
 
-    void updateEvery(TextView every, WeekSet a) {
+    void updateEvery(ViewHolder h, WeekSet a) {
         String str = "";
         final ReminderSet rr = (ReminderSet) a;
         if (rr.repeat < 0) {
@@ -260,7 +263,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                     break;
             }
         }
-        every.setText(str);
+        h.everyText.setText(str);
     }
 
     void updateTime(ViewHolder h, ReminderSet a) {
