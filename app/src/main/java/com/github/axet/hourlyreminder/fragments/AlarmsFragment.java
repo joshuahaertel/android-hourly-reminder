@@ -42,7 +42,7 @@ public class AlarmsFragment extends WeekSetFragment {
         items = HourlyApplication.from(getContext()).items;
         Collections.sort(items.alarms, new Alarm.CustomComparator());
 
-        adapter = new Adapter() {
+        adapter = new Adapter<ViewHolder>() {
             @Override
             public int getItemCount() {
                 return items.alarms.size();
@@ -72,6 +72,82 @@ public class AlarmsFragment extends WeekSetFragment {
                 LayoutInflater inflater = LayoutInflater.from(parent.getContext());
                 View convertView = inflater.inflate(R.layout.alarm, parent, false);
                 return new ViewHolder(convertView);
+            }
+
+            @Override
+            public void fillDetailed(final ViewHolder h, final WeekSet w, boolean animate) {
+                super.fillDetailed(h, w, animate);
+
+                final WeekTime t = (WeekTime) w;
+
+                h.ringtoneButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Uri uri = w.ringtoneValue;
+
+                        if (uri == null)
+                            uri = Alarm.DEFAULT_ALARM;
+
+                        RingtoneChoicer r = new RingtoneChoicer() {
+                            @Override
+                            public void onResult(Uri uri, boolean tmp) {
+                                if (tmp) {
+                                    File f = storage.storeRingtone(uri);
+                                    uri = Uri.fromFile(f);
+                                }
+                                w.ringtoneValue = fallbackUri(uri);
+                                save(w);
+                            }
+
+                            @Override
+                            public void onDismiss() {
+                                choicer = null;
+                            }
+                        };
+                        r.setPermissionsDialog(AlarmsFragment.this, Storage.PERMISSIONS_RO, RESULT_RINGTONE);
+                        r.setRingtone(AlarmsFragment.this, Alarm.TYPE_ALARM, Alarm.DEFAULT_ALARM, getString(R.string.SelectAlarm), RESULT_RINGTONE);
+                        choicer = r;
+                        choicer.show(uri);
+                    }
+                });
+
+                updateTime(h.itemView, (Alarm) w);
+                h.time.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TimePickerDialog d = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
+                            // onTimeSet called twice on old phones
+                            //
+                            // http://stackoverflow.com/questions/19452993
+                            Runnable r = new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (w.enabled)
+                                        HourlyApplication.toastAlarmSet(getActivity(), t);
+                                    updateTime(h.itemView, (Alarm) w);
+                                    save(w);
+                                }
+                            };
+
+                            @Override
+                            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                t.setTime(hourOfDay, minute);
+                                if (r != null) {
+                                    r.run();
+                                    r = null;
+                                }
+                            }
+                        }, t.getHour(), t.getMin(), DateFormat.is24HourFormat(getActivity()));
+                        d.show();
+                    }
+                });
+            }
+
+            @Override
+            public void fillCompact(final ViewHolder h, final WeekSet a, boolean animate) {
+                super.fillCompact(h, a, animate);
+                updateTime(h.itemView, (Alarm) a);
+                h.time.setClickable(false);
             }
         };
         adapter.setHasStableIds(true);
@@ -181,85 +257,6 @@ public class AlarmsFragment extends WeekSetFragment {
         items.saveAlarms();
         shared.registerOnSharedPreferenceChangeListener(this);
         boxAnimate = false;
-    }
-
-    @Override
-    public void fillDetailed(final View view, final WeekSet w, boolean animate) {
-        super.fillDetailed(view, w, animate);
-
-        final WeekTime t = (WeekTime) w;
-
-        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
-        ringtoneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Uri uri = w.ringtoneValue;
-
-                if (uri == null)
-                    uri = Alarm.DEFAULT_ALARM;
-
-                RingtoneChoicer r = new RingtoneChoicer() {
-                    @Override
-                    public void onResult(Uri uri, boolean tmp) {
-                        if (tmp) {
-                            File f = storage.storeRingtone(uri);
-                            uri = Uri.fromFile(f);
-                        }
-                        w.ringtoneValue = fallbackUri(uri);
-                        save(w);
-                    }
-
-                    @Override
-                    public void onDismiss() {
-                        choicer = null;
-                    }
-                };
-                r.setPermissionsDialog(AlarmsFragment.this, Storage.PERMISSIONS_RO, RESULT_RINGTONE);
-                r.setRingtone(AlarmsFragment.this, Alarm.TYPE_ALARM, Alarm.DEFAULT_ALARM, getString(R.string.SelectAlarm), RESULT_RINGTONE);
-                choicer = r;
-                choicer.show(uri);
-            }
-        });
-
-        final TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        updateTime(view, (Alarm) w);
-        time.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TimePickerDialog d = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
-                    // onTimeSet called twice on old phones
-                    //
-                    // http://stackoverflow.com/questions/19452993
-                    Runnable r = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (w.enabled)
-                                HourlyApplication.toastAlarmSet(getActivity(), t);
-                            updateTime(view, (Alarm) w);
-                            save(w);
-                        }
-                    };
-
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        t.setTime(hourOfDay, minute);
-                        if (r != null) {
-                            r.run();
-                            r = null;
-                        }
-                    }
-                }, t.getHour(), t.getMin(), DateFormat.is24HourFormat(getActivity()));
-                d.show();
-            }
-        });
-    }
-
-    @Override
-    public void fillCompact(final View view, final WeekSet a, boolean animate) {
-        super.fillCompact(view, a, animate);
-        TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        updateTime(view, (Alarm) a);
-        time.setClickable(false);
     }
 
     void updateTime(View view, Alarm a) {
