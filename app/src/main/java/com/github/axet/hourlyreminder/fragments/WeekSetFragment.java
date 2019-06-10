@@ -495,6 +495,11 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
         }
     }
 
+    public void selectAdd(long id) {
+        select(-1);
+        selected = id;
+    }
+
     void save(WeekSet a) {
     }
 

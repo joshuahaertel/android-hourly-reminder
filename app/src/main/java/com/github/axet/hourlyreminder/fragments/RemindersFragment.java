@@ -117,7 +117,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                     }
                 });
 
-                updateTime(h.itemView, (ReminderSet) w);
+                updateTime(h, (ReminderSet) w);
                 h.time.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -155,7 +155,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
             public void fillCompact(final ViewHolder h, final WeekSet a, boolean animate) {
                 super.fillCompact(h, a, animate);
 
-                updateTime(h.itemView, (ReminderSet) a);
+                updateTime(h, (ReminderSet) a);
                 h.time.setClickable(false);
 
                 h.every.setClickable(false);
@@ -226,8 +226,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         int pos = items.reminders.size();
         items.reminders.add(a);
         adapter.notifyItemInserted(pos);
-        select(-1);
-        selected = a.id;
+        selectAdd(a.id);
         list.smoothScrollToPosition(pos);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.unregisterOnSharedPreferenceChangeListener(this);
@@ -264,9 +263,8 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         every.setText(str);
     }
 
-    void updateTime(View view, ReminderSet a) {
-        TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        time.setText(a.format());
+    void updateTime(ViewHolder h, ReminderSet a) {
+        h.time.setText(a.format());
     }
 
     @Override

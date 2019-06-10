@@ -32,6 +32,17 @@ import java.util.Collections;
 public class AlarmsFragment extends WeekSetFragment {
     HourlyApplication.ItemsStorage items;
 
+    public static class ViewHolder extends WeekSetFragment.ViewHolder {
+        TextView am;
+        TextView pm;
+
+        public ViewHolder(View v) {
+            super(v);
+            am = (TextView) v.findViewById(R.id.alarm_am);
+            pm = (TextView) v.findViewById(R.id.alarm_pm);
+        }
+    }
+
     public AlarmsFragment() {
     }
 
@@ -111,7 +122,7 @@ public class AlarmsFragment extends WeekSetFragment {
                     }
                 });
 
-                updateTime(h.itemView, (Alarm) w);
+                updateTime(h, (Alarm) w);
                 h.time.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -124,7 +135,7 @@ public class AlarmsFragment extends WeekSetFragment {
                                 public void run() {
                                     if (w.enabled)
                                         HourlyApplication.toastAlarmSet(getActivity(), t);
-                                    updateTime(h.itemView, (Alarm) w);
+                                    updateTime(h, (Alarm) w);
                                     save(w);
                                 }
                             };
@@ -146,7 +157,7 @@ public class AlarmsFragment extends WeekSetFragment {
             @Override
             public void fillCompact(final ViewHolder h, final WeekSet a, boolean animate) {
                 super.fillCompact(h, a, animate);
-                updateTime(h.itemView, (Alarm) a);
+                updateTime(h, (Alarm) a);
                 h.time.setClickable(false);
             }
         };
@@ -239,8 +250,7 @@ public class AlarmsFragment extends WeekSetFragment {
         Collections.sort(items.alarms, new Alarm.CustomComparator());
         int pos = items.alarms.indexOf(a);
         adapter.notifyItemInserted(pos);
-        select(-1);
-        selected = a.id;
+        selectAdd(a.id);
         list.smoothScrollToPosition(pos);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.unregisterOnSharedPreferenceChangeListener(this);
@@ -259,24 +269,20 @@ public class AlarmsFragment extends WeekSetFragment {
         boxAnimate = false;
     }
 
-    void updateTime(View view, Alarm a) {
-        TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        TextView am = (TextView) view.findViewById(R.id.alarm_am);
-        TextView pm = (TextView) view.findViewById(R.id.alarm_pm);
-
+    void updateTime(ViewHolder h, Alarm a) {
         int hour = a.getHour();
 
-        am.setText(HourlyApplication.getHour4String(getActivity(), hour));
-        pm.setText(HourlyApplication.getHour4String(getActivity(), hour));
+        h.am.setText(HourlyApplication.getHour4String(getActivity(), hour));
+        h.pm.setText(HourlyApplication.getHour4String(getActivity(), hour));
 
-        time.setText(a.format2412());
+        h.time.setText(a.format2412());
 
         if (DateFormat.is24HourFormat(getActivity())) {
-            am.setVisibility(View.GONE);
-            pm.setVisibility(View.GONE);
+            h.am.setVisibility(View.GONE);
+            h.pm.setVisibility(View.GONE);
         } else {
-            am.setVisibility(a.getHour() >= 12 ? View.GONE : View.VISIBLE);
-            pm.setVisibility(a.getHour() >= 12 ? View.VISIBLE : View.GONE);
+            h.am.setVisibility(a.getHour() >= 12 ? View.GONE : View.VISIBLE);
+            h.pm.setVisibility(a.getHour() >= 12 ? View.VISIBLE : View.GONE);
         }
     }
 
