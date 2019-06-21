@@ -25,8 +25,8 @@ public class WakeScreen {
 
     public static int ID = -5; // notification wake id
 
-    public static final String DOZE_ENABLED = "doze_enabled"; // Ambient Display
-    public static final String LOCK_SCREEN_SHOW_NOTIFICATIONS = "lock_screen_show_notifications"; // show notifications on lockscreen
+    public static final String DOZE_ENABLED = "doze_enabled"; // Bettery / Ambient Display / New notifications
+    public static final String LOCK_SCREEN_SHOW_NOTIFICATIONS = "lock_screen_show_notifications"; // Security / Lock screen preferences / On the lock screen
 
     public static final String WAKEID = "wake";
 
