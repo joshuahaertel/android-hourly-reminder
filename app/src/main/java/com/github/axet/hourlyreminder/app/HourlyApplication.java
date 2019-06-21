@@ -687,11 +687,10 @@ public class HourlyApplication extends MainApplication {
                             showIntent.setAction(MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true);
                         am.setAlarm(time15, upcomingIntent, time, showIntent);
                     } else {
-                        if (Build.VERSION.SDK_INT >= 23 && sec < 15 * 60) { // 15 min interval
+                        if (Build.VERSION.SDK_INT >= 23 && sec < 15 * 60) // 15 min interval
                             am.checkPost(time15, upcomingIntent); // post intent, do not create alarm
-                        } else {
+                        else
                             am.setExact(time15, upcomingIntent);
-                        }
                     }
                 }
             }
@@ -767,9 +766,8 @@ public class HourlyApplication extends MainApplication {
             for (ReminderSet rr : reminders) {
                 if (rr.enabled) {
                     for (Reminder r : rr.list) {
-                        if (r.getTime() == time && r.enabled) {
+                        if (r.getTime() == time && r.enabled)
                             return true;
-                        }
                     }
                 }
             }
@@ -797,11 +795,10 @@ public class HourlyApplication extends MainApplication {
             SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(HourlyApplication.this);
             int repeat = getRepeat(time) * 60; // make seconds
             int sec;
-            if (Build.VERSION.SDK_INT >= 23 && !shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) { // 15 min interval
+            if (Build.VERSION.SDK_INT >= 23 && !shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) // 15 min interval
                 sec = repeat / 4; // 60 / 4 = 15min
-            } else {
+            else
                 sec = repeat / 12; // 60 / 12 = 5min
-            }
             return sec;
         }
 

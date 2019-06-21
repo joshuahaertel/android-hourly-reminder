@@ -1,24 +1,22 @@
 package com.github.axet.hourlyreminder.fragments;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.FrameLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.axet.androidlibrary.app.Storage;
-import com.github.axet.androidlibrary.widgets.OpenFileDialog;
 import com.github.axet.androidlibrary.widgets.RingtoneChoicer;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
@@ -33,52 +31,153 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class RemindersFragment extends WeekSetFragment implements DialogInterface.OnDismissListener {
-
     HourlyApplication.ItemsStorage items;
 
-    public RemindersFragment() {
-    }
+    public static class ViewHolder extends WeekSetFragment.ViewHolder {
+        public View every;
+        public TextView everyText;
 
-    public int getPosition(long id) {
-        for (int i = 0; i < items.reminders.size(); i++) {
-            if (items.reminders.get(i).id == id)
-                return i;
+        public ViewHolder(View v) {
+            super(v);
+            every = v.findViewById(R.id.alarm_every);
+            everyText = (TextView) v.findViewById(R.id.alarm_every_text);
         }
-        return -1;
     }
 
-    @Override
-    public int getCount() {
-        return items.reminders.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return items.reminders.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return items.reminders.get(position).id;
+    public RemindersFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         items = HourlyApplication.from(getContext()).items;
-    }
+        adapter = new Adapter<ViewHolder>() {
+            @Override
+            public int getItemCount() {
+                return items.reminders.size();
+            }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
+            @Override
+            public Object getItem(int position) {
+                return items.reminders.get(position);
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return items.reminders.get(position).id;
+            }
+
+            @Override
+            public int getPosition(long id) {
+                for (int i = 0; i < items.reminders.size(); i++) {
+                    if (items.reminders.get(i).id == id)
+                        return i;
+                }
+                return -1;
+            }
+
+            @Override
+            public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+                View convertView = inflater.inflate(R.layout.reminder, parent, false);
+                return new ViewHolder(convertView);
+            }
+
+            @Override
+            public void fillDetailed(final ViewHolder h, final WeekSet w, final boolean animate) {
+                super.fillDetailed(h, w, animate);
+
+                final ReminderSet rr = (ReminderSet) w;
+
+                h.ringtoneButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Uri uri = w.ringtoneValue;
+
+                        if (uri == null)
+                            uri = ReminderSet.DEFAULT_NOTIFICATION;
+
+                        RingtoneChoicer r = new RingtoneChoicer() {
+                            @Override
+                            public void onResult(Uri uri, boolean tmp) {
+                                if (tmp) {
+                                    File f = storage.storeRingtone(uri);
+                                    uri = Uri.fromFile(f);
+                                }
+                                w.ringtoneValue = fallbackUri(uri);
+                                save(w);
+                            }
+
+                            @Override
+                            public void onDismiss() {
+                                choicer = null;
+                            }
+                        };
+                        r.setPermissionsDialog(RemindersFragment.this, Storage.PERMISSIONS_RO, RESULT_RINGTONE);
+                        r.setRingtone(RemindersFragment.this, ReminderSet.TYPE_NOTIFICATION, ReminderSet.DEFAULT_NOTIFICATION, getString(R.string.Reminder), RESULT_RINGTONE);
+                        choicer = r;
+                        choicer.show(uri);
+                    }
+                });
+
+                updateTime(h, (ReminderSet) w);
+                h.time.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        HoursDialogFragment dialog = new HoursDialogFragment();
+
+                        Bundle args = new Bundle();
+                        args.putInt("index", items.reminders.indexOf(w));
+                        args.putStringArrayList("hours", new ArrayList<>(rr.hours));
+
+                        dialog.setArguments(args);
+                        dialog.show(getFragmentManager(), "");
+                    }
+                });
+
+                h.every.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        RepeatDialogFragment d = new RepeatDialogFragment();
+
+                        Bundle args = new Bundle();
+                        args.putInt("index", items.reminders.indexOf(w));
+                        args.putInt("mins", rr.repeat);
+                        d.setArguments(args);
+
+                        d.show(getFragmentManager(), "");
+                    }
+                });
+                updateEvery(h, w);
+
+                h.weekdays.setButtonDrawable(null);
+                h.weekdays.setClickable(false);
+            }
+
+            @Override
+            public void fillCompact(final ViewHolder h, final WeekSet a, boolean animate) {
+                super.fillCompact(h, a, animate);
+
+                updateTime(h, (ReminderSet) a);
+                h.time.setClickable(false);
+
+                h.every.setClickable(false);
+
+                updateEvery(h, a);
+            }
+        };
+        adapter.setHasStableIds(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_alarms, container, false);
-        list = (ListView) rootView.findViewById(R.id.section_label);
-        list.setAdapter(this);
-        list.setOnScrollListener(this);
+        list = (RecyclerView) rootView.findViewById(R.id.section_label);
+        list.setLayoutManager(new LinearLayoutManager(getContext()));
+        list.setAdapter(adapter);
+        list.setItemAnimator(animator);
+        list.addOnScrollListener(animator.onScrollListener);
+        list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
         FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,7 +196,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         });
 
         if (selected > 0)
-            list.smoothScrollToPosition(getPosition(selected));
+            list.smoothScrollToPosition(adapter.getPosition(selected));
 
         return rootView;
     }
@@ -107,20 +206,8 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         super.onSharedPreferenceChanged(sharedPreferences, key);
         if (key.startsWith(HourlyApplication.PREFERENCE_REMINDERS_PREFIX)) {
             items.loadReminders(sharedPreferences);
-            changed();
+            adapter.notifyDataSetChanged();
         }
-    }
-
-    @Override
-    public View getView(final int position, View convertView, final ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        if (convertView == null) {
-            convertView = inflater.inflate(R.layout.reminder, parent, false);
-            convertView.setTag(-1);
-        }
-
-        return super.getView(position, convertView, parent);
     }
 
     @Override
@@ -135,13 +222,14 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         shared.unregisterOnSharedPreferenceChangeListener(this); // prevent reload reminders
         items.saveReminders();
         shared.registerOnSharedPreferenceChangeListener(this);
-        changed();
+        adapter.notifyItemChanged(items.reminders.indexOf(a));
     }
 
     public void addAlarm(ReminderSet a) {
+        int pos = items.reminders.size();
         items.reminders.add(a);
-        select(a.id);
-        int pos = items.reminders.indexOf(a);
+        adapter.notifyItemInserted(pos);
+        selectAdd(a.id);
         list.smoothScrollToPosition(pos);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getActivity());
         shared.unregisterOnSharedPreferenceChangeListener(this);
@@ -160,96 +248,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
         shared.registerOnSharedPreferenceChangeListener(this);
     }
 
-    @Override
-    public void fillDetailed(final View view, final WeekSet w, final boolean animate) {
-        super.fillDetailed(view, w, animate);
-
-        final ReminderSet rr = (ReminderSet) w;
-
-        View ringtoneButton = view.findViewById(R.id.alarm_ringtone_value_box);
-        ringtoneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Uri uri = w.ringtoneValue;
-
-                if (uri == null) {
-                    uri = ReminderSet.DEFAULT_NOTIFICATION;
-                }
-
-                RingtoneChoicer r = new RingtoneChoicer() {
-                    @Override
-                    public void onResult(Uri uri, boolean tmp) {
-                        if (tmp) {
-                            File f = storage.storeRingtone(uri);
-                            uri = Uri.fromFile(f);
-                        }
-                        w.ringtoneValue = fallbackUri(uri);
-                        save(w);
-                    }
-
-                    @Override
-                    public void onDismiss() {
-                        choicer = null;
-                    }
-                };
-                r.setPermissionsDialog(RemindersFragment.this, Storage.PERMISSIONS_RO, RESULT_RINGTONE);
-                r.setRingtone(RemindersFragment.this, ReminderSet.TYPE_NOTIFICATION, ReminderSet.DEFAULT_NOTIFICATION, getString(R.string.Reminder), RESULT_RINGTONE);
-                choicer = r;
-                choicer.show(uri);
-            }
-        });
-
-        final TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        updateTime(view, (ReminderSet) w);
-        time.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HoursDialogFragment dialog = new HoursDialogFragment();
-
-                Bundle args = new Bundle();
-                args.putInt("index", items.reminders.indexOf(w));
-                args.putStringArrayList("hours", new ArrayList<>(rr.hours));
-
-                dialog.setArguments(args);
-                dialog.show(getFragmentManager(), "");
-            }
-        });
-
-        TextView every = (TextView) view.findViewById(R.id.alarm_every);
-        ((FrameLayout) every.getParent()).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                RepeatDialogFragment d = new RepeatDialogFragment();
-
-                Bundle args = new Bundle();
-                args.putInt("index", items.reminders.indexOf(w));
-                args.putInt("mins", rr.repeat);
-                d.setArguments(args);
-
-                d.show(getFragmentManager(), "");
-            }
-        });
-        updateEvery(every, w);
-
-        final CheckBox weekdays = (CheckBox) view.findViewById(R.id.alarm_week_days);
-        weekdays.setButtonDrawable(null);
-        weekdays.setClickable(false);
-    }
-
-    @Override
-    public void fillCompact(final View view, final WeekSet a, boolean animate) {
-        super.fillCompact(view, a, animate);
-        TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        updateTime(view, (ReminderSet) a);
-        time.setClickable(false);
-
-        TextView every = (TextView) view.findViewById(R.id.alarm_every);
-        every.setClickable(false);
-
-        updateEvery(every, a);
-    }
-
-    void updateEvery(TextView every, WeekSet a) {
+    void updateEvery(ViewHolder h, WeekSet a) {
         String str = "";
         final ReminderSet rr = (ReminderSet) a;
         if (rr.repeat < 0) {
@@ -264,12 +263,11 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                     break;
             }
         }
-        every.setText(str);
+        h.everyText.setText(str);
     }
 
-    void updateTime(View view, ReminderSet a) {
-        TextView time = (TextView) view.findViewById(R.id.alarm_time);
-        time.setText(a.format());
+    void updateTime(ViewHolder h, ReminderSet a) {
+        h.time.setText(a.format());
     }
 
     @Override

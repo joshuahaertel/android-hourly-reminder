@@ -2,37 +2,24 @@ package com.github.axet.hourlyreminder.dialogs;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.RadioButton;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.github.axet.androidlibrary.widgets.CircularSeekBar;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.hourlyreminder.R;
-import com.github.axet.hourlyreminder.alarms.Reminder;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class RepeatDialogFragment extends DialogFragment {
-    private boolean mPreferenceChanged;
-
     View v;
 
     TextView textint;
@@ -49,7 +36,6 @@ public class RepeatDialogFragment extends DialogFragment {
     String[] ss;
     int[] mm = new int[]{60, 30, 20, 15, 10, 5};
 
-    int index;
     int mins;
 
     RadioButton buttonMins; // repeat every specified minute interval
@@ -63,16 +49,14 @@ public class RepeatDialogFragment extends DialogFragment {
         public int mins;
 
         public Result() {
-            this.index = getArguments().getInt("index");
-            this.ok = RepeatDialogFragment.this.ok;
-            if (buttonHourly.isChecked()) {
-                this.mins = -RepeatDialogFragment.this.mins;
-            } else {
-                this.mins = RepeatDialogFragment.this.mins;
-            }
-            if (this.mins == 0 || this.mins == -60) {
-                this.mins = 60;
-            }
+            index = getArguments().getInt("index");
+            ok = RepeatDialogFragment.this.ok;
+            if (buttonHourly.isChecked())
+                mins = -RepeatDialogFragment.this.mins;
+            else
+                mins = RepeatDialogFragment.this.mins;
+            if (mins == 0 || mins == -60)
+                mins = 60;
         }
 
         @Override
@@ -92,7 +76,6 @@ public class RepeatDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             mins = savedInstanceState.getInt("mins");
-            mPreferenceChanged = savedInstanceState.getBoolean("changed");
         } else {
             mins = getArguments().getInt("mins");
         }
@@ -106,7 +89,6 @@ public class RepeatDialogFragment extends DialogFragment {
         } else {
             outState.putInt("mins", mins);
         }
-        outState.putBoolean("changed", mPreferenceChanged);
     }
 
     @Override
@@ -140,7 +122,6 @@ public class RepeatDialogFragment extends DialogFragment {
     }
 
     View createView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Context context = inflater.getContext();
         final View view = inflater.inflate(R.layout.repeat, container, false);
         v = view;
 
@@ -208,22 +189,17 @@ public class RepeatDialogFragment extends DialogFragment {
         return view;
     }
 
-    void changed(View view) {
-        mPreferenceChanged = true;
-    }
-
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
         Activity a = getActivity();
-        if (a instanceof DialogInterface.OnDismissListener) {
+        if (a instanceof DialogInterface.OnDismissListener)
             ((DialogInterface.OnDismissListener) a).onDismiss(new Result());
-        }
     }
 
     void updateText() {
+        int color = ThemeUtils.getThemeColor(getContext(), android.R.attr.colorForeground);
         final int accent = ThemeUtils.getThemeColor(getContext(), R.attr.colorAccent);
-        int color = 0xFFAAAAAA;
         if (mins == 0 || mins == 60) {
             text.setText(R.string.hourly);
         } else {
@@ -236,7 +212,7 @@ public class RepeatDialogFragment extends DialogFragment {
                 textint.setVisibility(View.VISIBLE);
                 v.setVisibility(View.VISIBLE);
                 setRepeatColor(v, color);
-                TextView t = (TextView) v.findViewById(R.id.alarm_every);
+                TextView t = (TextView) v.findViewById(R.id.alarm_every_text);
                 t.setText(ss[i]);
                 final int m = i;
                 v.setOnClickListener(new View.OnClickListener() {
@@ -277,7 +253,7 @@ public class RepeatDialogFragment extends DialogFragment {
 
     void setRepeatColor(View v, int c) {
         ImageView i = (ImageView) v.findViewById(R.id.alarm_every_image);
-        TextView t = (TextView) v.findViewById(R.id.alarm_every);
+        TextView t = (TextView) v.findViewById(R.id.alarm_every_text);
         if (t != null)
             t.setTextColor(c);
         if (i != null)

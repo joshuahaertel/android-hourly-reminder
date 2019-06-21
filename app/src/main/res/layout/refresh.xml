@@ -1,4 +1,5 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/alarm_every"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center">
@@ -12,7 +13,7 @@
         android:tint="@android:color/darker_gray" />
 
     <TextView
-        android:id="@+id/alarm_every"
+        android:id="@+id/alarm_every_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
