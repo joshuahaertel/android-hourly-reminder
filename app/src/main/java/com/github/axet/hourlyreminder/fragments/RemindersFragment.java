@@ -2,6 +2,7 @@ package com.github.axet.hourlyreminder.fragments;
 
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -150,7 +152,7 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
                 });
                 updateEvery(h, w);
 
-                h.weekdays.setButtonDrawable(null);
+                h.weekdays.setButtonDrawable(new StateListDrawable());
                 h.weekdays.setClickable(false);
             }
 
