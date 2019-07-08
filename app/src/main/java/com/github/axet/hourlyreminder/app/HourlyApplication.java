@@ -824,6 +824,8 @@ public class HourlyApplication extends MainApplication {
         channelErrors = new NotificationChannelCompat(this, "errors", "System Errors", NotificationManagerCompat.IMPORTANCE_MAX);
         channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
 
+        OptimizationPreferenceCompat.setEventServiceIcon(true);
+
         switch (getVersion(PREFERENCE_VERSION, R.xml.pref_settings)) {
             case -1:
                 SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(this);

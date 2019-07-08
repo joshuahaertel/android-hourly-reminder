@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         v.updateLayout(tab);
 
         if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
-            OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION).show();
+            OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION, AlarmService.class).show();
         else if (OptimizationPreferenceCompat.needBootWarning(this, HourlyApplication.PREFERENCE_BOOT, HourlyApplication.PREFERENCE_INSTALL))
             OptimizationPreferenceCompat.buildBootWarning(this).show();
 

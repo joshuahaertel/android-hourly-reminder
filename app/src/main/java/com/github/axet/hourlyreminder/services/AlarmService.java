@@ -47,10 +47,6 @@ public class AlarmService extends PersistentService implements SharedPreferences
     // reminder broadcast triggers sound
     public static final String REMINDER = HourlyApplication.class.getCanonicalName() + ".REMINDER";
 
-    static {
-        OptimizationPreferenceCompat.setEventServiceIcon(true);
-    }
-
     HourlyApplication.ItemsStorage items;
     Sound sound;
     WakeScreen wake;
