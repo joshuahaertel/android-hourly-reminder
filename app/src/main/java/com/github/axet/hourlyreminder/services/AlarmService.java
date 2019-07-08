@@ -48,11 +48,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
     public static final String REMINDER = HourlyApplication.class.getCanonicalName() + ".REMINDER";
 
     static {
-        OptimizationPreferenceCompat.ICON = true;
-    }
-
-    {
-        id = HourlyApplication.NOTIFICATION_PERSISTENT_ICON;
+        OptimizationPreferenceCompat.setEventServiceIcon(true);
     }
 
     HourlyApplication.ItemsStorage items;
@@ -62,7 +58,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
     public static void registerNext(Context context) {
         HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
         boolean b = items.registerNextAlarm();
-        startIfPersistent(context, b, new Intent(context, AlarmService.class), HourlyApplication.PREFERENCE_OPTIMIZATION);
+        OptimizationPreferenceCompat.startIfPersistent(context, HourlyApplication.PREFERENCE_OPTIMIZATION, b, new Intent(context, AlarmService.class));
     }
 
     public static void startClock(Context context) { // https://stackoverflow.com/questions/3590955
@@ -116,7 +112,29 @@ public class AlarmService extends PersistentService implements SharedPreferences
 
     @Override
     public void onCreateOptimization() {
-        optimization = new ServiceReceiver(HourlyApplication.PREFERENCE_OPTIMIZATION, HourlyApplication.PREFERENCE_NEXT);
+        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, HourlyApplication.NOTIFICATION_PERSISTENT_ICON, HourlyApplication.PREFERENCE_OPTIMIZATION, HourlyApplication.PREFERENCE_NEXT) {
+            @Override
+            public Notification build(Intent intent) {
+                PendingIntent main = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+                RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Low(context, R.layout.notification_alarm);
+
+                builder.setViewVisibility(R.id.notification_button, View.GONE);
+
+                builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
+                        .setChannel(HourlyApplication.from(context).channelStatus)
+                        .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
+                        .setTitle(getString(R.string.app_name))
+                        .setText(getString(R.string.optimization_alive))
+                        .setWhen(icon.notification)
+                        .setMainIntent(main)
+                        .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.ic_launcher_notification)
+                        .setOngoing(true);
+
+                return builder.build();
+            }
+        };
         optimization.create();
     }
 
@@ -204,7 +222,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
 
     public void registerNext() {
         boolean b = items.registerNextAlarm();
-        if (!isPersistent(this, b, HourlyApplication.PREFERENCE_OPTIMIZATION)) {
+        if (!OptimizationPreferenceCompat.isPersistentKeep(this, HourlyApplication.PREFERENCE_OPTIMIZATION, b)) {
             sound.after(new Runnable() {
                 @Override
                 public void run() {
@@ -343,27 +361,5 @@ public class AlarmService extends PersistentService implements SharedPreferences
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
-    }
-
-    @Override
-    public Notification build(Intent intent) {
-        PendingIntent main = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-
-        RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Low(this, R.layout.notification_alarm);
-
-        builder.setViewVisibility(R.id.notification_button, View.GONE);
-
-        builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
-                .setChannel(HourlyApplication.from(this).channelStatus)
-                .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
-                .setTitle(getString(R.string.app_name))
-                .setText(getString(R.string.optimization_alive))
-                .setWhen(notification)
-                .setMainIntent(main)
-                .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
-                .setSmallIcon(R.drawable.ic_launcher_notification)
-                .setOngoing(true);
-
-        return builder.build();
     }
 }

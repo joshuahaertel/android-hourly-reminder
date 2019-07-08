@@ -21,6 +21,7 @@ import android.view.View;
 
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.services.PersistentService;
+import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
@@ -59,10 +60,6 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
     public static final int ALARM_AUTO_OFF = 15; // if no auto snooze enabled wait 15 min
     public static final int ALARM_SNOOZE_AUTO_OFF = 45; // if auto snooze enabled or manually snoozed wait 45 min
 
-    {
-        id = HourlyApplication.NOTIFICATION_ALARM_ICON;
-    }
-
     HourlyApplication.ItemsStorage items;
     FireAlarmReceiver receiver;
     Sound sound;
@@ -77,6 +74,8 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
     SensorManager sm;
 
     PhoneStateChangeListener pscl;
+
+    OptimizationPreferenceCompat.NotificationIcon icon;
 
     public static void snooze(Context context, FireAlarmService.FireAlarm a) {
         Intent intent = new Intent(context, FireAlarmService.class).setAction(SNOOZE).putExtra("alarm", a.save().toString());
@@ -333,6 +332,40 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
         filter.addAction(SHOW_ACTIVITY);
         filter.addAction(RESUME_ACTIVITY);
         registerReceiver(receiver, filter);
+
+        icon = new OptimizationPreferenceCompat.NotificationIcon(this, HourlyApplication.NOTIFICATION_ALARM_ICON) {
+            @Override
+            public Notification build(Intent intent) {
+                String json = intent.getStringExtra("alarm");
+                String text = intent.getStringExtra("text");
+
+                PendingIntent button = PendingIntent.getService(context, 0,
+                        new Intent(context, FireAlarmService.class).setAction(FireAlarmService.DISMISS).putExtra("alarm", json),
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+
+                PendingIntent main = PendingIntent.getBroadcast(context, 0,
+                        new Intent(SHOW_ACTIVITY).putExtra("alarm", json),
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+
+                RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(context, R.layout.notification_alarm);
+
+                builder.setOnClickPendingIntent(R.id.notification_button, button);
+
+                builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
+                        .setChannel(HourlyApplication.from(context).channelAlarms)
+                        .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
+                        .setTitle(getString(R.string.Alarm))
+                        .setText(text)
+                        .setWhen(notification)
+                        .setMainIntent(main)
+                        .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.ic_launcher_notification)
+                        .setOngoing(true);
+
+                return builder.build();
+            }
+        };
+        icon.create();
     }
 
     @Override
@@ -410,7 +443,7 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
                 sm.registerListener(this, a, SensorManager.SENSOR_DELAY_GAME);
         }
 
-        updateIcon(new Intent().putExtra("alarm", alarm.save().toString()).putExtra("text", Alarm.format2412(this, alarm.settime)));
+        icon.updateIcon(new Intent().putExtra("alarm", alarm.save().toString()).putExtra("text", Alarm.format2412(this, alarm.settime)));
 
         silenced = sound.playAlarm(alarm, 1000, alive); // did we silence an alarm?
         sound.silencedToast(silenced, alarm.settime);
@@ -544,42 +577,6 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
 
         if (sm != null)
             sm.unregisterListener(this);
-    }
-
-    @Override
-    public void updateIcon() {
-        super.updateIcon(new Intent());
-    }
-
-    @Override
-    public Notification build(Intent intent) {
-        String json = intent.getStringExtra("alarm");
-        String text = intent.getStringExtra("text");
-
-        PendingIntent button = PendingIntent.getService(this, 0,
-                new Intent(this, FireAlarmService.class).setAction(FireAlarmService.DISMISS).putExtra("alarm", json),
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        PendingIntent main = PendingIntent.getBroadcast(this, 0,
-                new Intent(SHOW_ACTIVITY).putExtra("alarm", json),
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Builder(this, R.layout.notification_alarm);
-
-        builder.setOnClickPendingIntent(R.id.notification_button, button);
-
-        builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
-                .setChannel(HourlyApplication.from(this).channelAlarms)
-                .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
-                .setTitle(getString(R.string.Alarm))
-                .setText(text)
-                .setWhen(notification)
-                .setMainIntent(main)
-                .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
-                .setSmallIcon(R.drawable.ic_launcher_notification)
-                .setOngoing(true);
-
-        return builder.build();
     }
 
     @Override

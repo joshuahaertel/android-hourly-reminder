@@ -53,7 +53,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     Sound sound;
     Handler handler = new Handler();
-    PersistentService.SettingsReceiver receiver;
+    OptimizationPreferenceCompat.SettingsReceiver receiver;
 
     public static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -192,7 +192,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
         optimization.enable(AlarmService.class);
-        receiver = new PersistentService.SettingsReceiver(new Intent(getContext(), AlarmService.class), HourlyApplication.PREFERENCE_OPTIMIZATION);
+        receiver = new OptimizationPreferenceCompat.SettingsReceiver(new Intent(getContext(), AlarmService.class), HourlyApplication.PREFERENCE_OPTIMIZATION);
         receiver.register(getContext());
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
