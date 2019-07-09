@@ -11,6 +11,6 @@ public class OnBootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         OptimizationPreferenceCompat.setBootInstallTime(context, HourlyApplication.PREFERENCE_BOOT, System.currentTimeMillis());
-        AlarmService.registerNext(context);
+        AlarmService.registerNextAlarm(context);
     }
 }

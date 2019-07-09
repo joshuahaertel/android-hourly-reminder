@@ -10,6 +10,6 @@ public class OnExternalReceiver extends com.github.axet.androidlibrary.services.
     public void onReceive(Context context, Intent intent) {
         if (!isExternal(context))
             return;
-        AlarmService.registerNext(context);
+        AlarmService.registerNextAlarm(context);
     }
 }

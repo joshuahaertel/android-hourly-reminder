@@ -206,11 +206,11 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         v.updateLayout(tab);
 
         if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
-            OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION, AlarmService.class).show();
+            OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION, OptimizationPreferenceCompat.forceInit(AlarmService.class)).show();
         else if (OptimizationPreferenceCompat.needBootWarning(this, HourlyApplication.PREFERENCE_BOOT, HourlyApplication.PREFERENCE_INSTALL))
             OptimizationPreferenceCompat.buildBootWarning(this).show();
 
-        AlarmService.registerNext(this);
+        AlarmService.registerNextAlarm(this);
 
         openIntent(getIntent());
     }

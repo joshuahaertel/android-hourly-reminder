@@ -51,10 +51,23 @@ public class AlarmService extends PersistentService implements SharedPreferences
     Sound sound;
     WakeScreen wake;
 
-    public static void registerNext(Context context) {
+    static {
+        OptimizationPreferenceCompat.setEventServiceIcon(true);
+    }
+
+    public static boolean registerNext(Context context) {
         HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
         boolean b = items.registerNextAlarm();
-        OptimizationPreferenceCompat.startIfPersistent(context, HourlyApplication.PREFERENCE_OPTIMIZATION, b, new Intent(context, AlarmService.class));
+        b |= OptimizationPreferenceCompat.isPersistent(context, HourlyApplication.PREFERENCE_OPTIMIZATION);
+        return b;
+    }
+
+    public static void registerNextAlarm(Context context) {
+        boolean b = registerNext(context);
+        if (b)
+            OptimizationPreferenceCompat.startService(context, new Intent(context, AlarmService.class));
+        else
+            context.stopService(new Intent(context, AlarmService.class));
     }
 
     public static void startClock(Context context) { // https://stackoverflow.com/questions/3590955
@@ -217,8 +230,8 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     public void registerNext() {
-        boolean b = items.registerNextAlarm();
-        if (!OptimizationPreferenceCompat.isPersistentKeep(this, HourlyApplication.PREFERENCE_OPTIMIZATION, b)) {
+        boolean b = registerNext(this);
+        if (!b) {
             sound.after(new Runnable() {
                 @Override
                 public void run() {

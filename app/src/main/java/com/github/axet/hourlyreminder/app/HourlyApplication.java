@@ -484,7 +484,7 @@ public class HourlyApplication extends MainApplication {
             SharedPreferences.Editor edit = shared.edit();
             saveAlarms(edit, alarms);
             edit.commit();
-            AlarmService.registerNext(HourlyApplication.this);
+            AlarmService.registerNextAlarm(HourlyApplication.this);
         }
 
         public void saveReminders() {
@@ -492,7 +492,7 @@ public class HourlyApplication extends MainApplication {
             SharedPreferences.Editor edit = shared.edit();
             saveReminders(edit, reminders);
             edit.commit();
-            AlarmService.registerNext(HourlyApplication.this);
+            AlarmService.registerNextAlarm(HourlyApplication.this);
         }
 
         public List<ReminderSet> loadReminders(SharedPreferences shared) {
@@ -823,8 +823,6 @@ public class HourlyApplication extends MainApplication {
         channelAlarms = new NotificationChannelCompat(this, "alarms", "Alarms", NotificationManagerCompat.IMPORTANCE_LOW);
         channelErrors = new NotificationChannelCompat(this, "errors", "System Errors", NotificationManagerCompat.IMPORTANCE_MAX);
         channelUpcoming = new NotificationChannelCompat(this, "upcoming", "Upcoming", NotificationManagerCompat.IMPORTANCE_LOW);
-
-        OptimizationPreferenceCompat.setEventServiceIcon(true);
 
         switch (getVersion(PREFERENCE_VERSION, R.xml.pref_settings)) {
             case -1:
