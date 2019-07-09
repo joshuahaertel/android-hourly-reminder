@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.provider.AlarmClock;
 import android.support.annotation.Nullable;
@@ -58,8 +59,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
     public static boolean registerNext(Context context) {
         HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
         boolean b = items.registerNextAlarm();
-        b |= OptimizationPreferenceCompat.isPersistent(context, HourlyApplication.PREFERENCE_OPTIMIZATION);
-        return b;
+        return OptimizationPreferenceCompat.isPersistent(context, HourlyApplication.PREFERENCE_OPTIMIZATION, b);
     }
 
     public static void registerNextAlarm(Context context) {
