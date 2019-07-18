@@ -49,7 +49,6 @@ public class TTSPreference extends EditTextPreference {
         public Locale locale;
 
         public TTSConfig() {
-
         }
 
         public TTSConfig(TTSConfig c) {

@@ -76,12 +76,27 @@ public class Sound extends TTS {
         return track;
     }
 
-    public static JSONArray toJSONArray(List<Uri> list) {
+    public static <T> JSONArray toJSONArray(List<T> list) {
         ArrayList<String> ll = new ArrayList<>();
-        for (Uri u : list) {
+        for (T u : list)
             ll.add(u.toString());
-        }
         return new JSONArray(ll);
+    }
+
+    public static ArrayList<Uri> toUriArray(JSONArray aa) {
+        ArrayList<Uri> l = new ArrayList<>();
+        try {
+            if (aa != null) {
+                for (int i = 0; i < aa.length(); i++) {
+                    String s = aa.getString(i);
+                    Uri u = Uri.parse(s);
+                    l.add(u);
+                }
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        return l;
     }
 
     /**
@@ -107,21 +122,18 @@ public class Sound extends TTS {
                 value = Long.parseLong(v);
             }
         }
-        if (value != 0) {
+        if (value != 0)
             list.add(value);
-        }
         long[] r = new long[list.size()];
-        for (int i = 0; i < r.length; i++) {
+        for (int i = 0; i < r.length; i++)
             r[i] = list.get(i);
-        }
         return r;
     }
 
     public static long patternLength(long[] patttern) {
         long ll = 0;
-        for (long l : patttern) {
+        for (long l : patttern)
             ll += l;
-        }
         return ll;
     }
 
@@ -179,29 +191,6 @@ public class Sound extends TTS {
             l.add(s);
         }
 
-        ArrayList<Uri> load(JSONArray aa) {
-            ArrayList<Uri> l = new ArrayList<>();
-            try {
-                if (aa != null) {
-                    for (int i = 0; i < aa.length(); i++) {
-                        String s = aa.getString(i);
-                        Uri u;
-                        if (s.startsWith(ContentResolver.SCHEME_CONTENT)) {
-                            u = Uri.parse(s);
-                        } else if (s.startsWith(ContentResolver.SCHEME_FILE)) {
-                            u = Uri.parse(s);
-                        } else {
-                            u = Uri.fromFile(new File(s));
-                        }
-                        l.add(u);
-                    }
-                }
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-            return l;
-        }
-
         public void load(String json) {
             try {
                 JSONObject o = new JSONObject(json);
@@ -213,12 +202,12 @@ public class Sound extends TTS {
 
         public void load(JSONObject o) {
             try {
-                beforeOnce = load(o.optJSONArray("beforeOnce")); // opt for <= 2.1.4
-                before = load(o.optJSONArray("before")); // opt for unknown old version
+                beforeOnce = toUriArray(o.optJSONArray("beforeOnce")); // opt for <= 2.1.4
+                before = toUriArray(o.optJSONArray("before")); // opt for unknown old version
                 beep = o.getBoolean("beep");
                 speech = o.getBoolean("speech");
-                afterOnce = load(o.optJSONArray("afterOnce")); // opt for <= 2.1.4
-                after = load(o.optJSONArray("after")); // opt for unknown old version
+                afterOnce = toUriArray(o.optJSONArray("afterOnce")); // opt for <= 2.1.4
+                after = toUriArray(o.optJSONArray("after")); // opt for unknown old version
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
@@ -301,16 +290,14 @@ public class Sound extends TTS {
 
         if (shared.getBoolean(HourlyApplication.PREFERENCE_CALLSILENCE, false)) {
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            if (tm.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK) {
+            if (tm.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK)
                 return Silenced.CALL;
-            }
         }
 
         if (shared.getBoolean(HourlyApplication.PREFERENCE_MUSICSILENCE, false)) {
             AudioManager tm = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            if (tm.isMusicActive()) {
+            if (tm.isMusicActive())
                 return Silenced.MUSIC;
-            }
         }
 
         if (shared.getBoolean(HourlyApplication.PREFERENCE_PHONESILENCE, false)) {
@@ -324,20 +311,17 @@ public class Sound extends TTS {
             if (Build.VERSION.SDK_INT < 16) {
                 int t = tm.getVibrateSetting(AudioManager.VIBRATE_TYPE_RINGER);
                 if (t == AudioManager.VIBRATE_SETTING_ON) {
-                    if (config.isChecked() || flash.isChecked()) { // if vibrate enabled
+                    if (config.isChecked() || flash.isChecked()) // if vibrate enabled
                         return Silenced.VIBRATE;
-                    }
                 }
                 if (t == AudioManager.VIBRATE_SETTING_ONLY_SILENT && mode == AudioManager.RINGER_MODE_SILENT) {
-                    if (config.isChecked() || flash.isChecked()) { // if vibrate enabled
+                    if (config.isChecked() || flash.isChecked()) // if vibrate enabled
                         return Silenced.VIBRATE;
-                    }
                     return Silenced.SETTINGS;
                 }
             }
-            if (mode == AudioManager.RINGER_MODE_SILENT) {
+            if (mode == AudioManager.RINGER_MODE_SILENT)
                 return Silenced.SETTINGS;
-            }
             // https://stackoverflow.com/questions/31387137/android-detect-do-not-disturb-status
             if (Build.VERSION.SDK_INT >= 17) {
                 switch (getDNDMode()) {
@@ -526,11 +510,10 @@ public class Sound extends TTS {
 
         track = t;
 
-        if (Build.VERSION.SDK_INT < 21) {
+        if (Build.VERSION.SDK_INT < 21)
             track.setStereoVolume(getVolume(), getVolume());
-        } else {
+        else
             track.setVolume(getVolume());
-        }
 
         final Runnable end = new Runnable() {
             @Override

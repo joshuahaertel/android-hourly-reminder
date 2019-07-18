@@ -380,9 +380,8 @@ public class HourlyApplication extends MainApplication {
                 a.ringtone = true;
                 a.setWeekDaysValues(Week.WEEKDAY);
                 alarms.add(a);
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
 
                 a = new Alarm(HourlyApplication.this);
@@ -393,9 +392,8 @@ public class HourlyApplication extends MainApplication {
                 a.ringtone = true;
                 a.setWeekDaysValues(Week.WEEKEND);
                 alarms.add(a);
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
 
                 a = new Alarm(HourlyApplication.this);
@@ -405,9 +403,8 @@ public class HourlyApplication extends MainApplication {
                 a.beep = true;
                 a.ringtone = true;
                 alarms.add(a);
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
             }
 
@@ -454,9 +451,8 @@ public class HourlyApplication extends MainApplication {
             for (int i = 0; i < alarms.size(); i++) {
                 Alarm a = alarms.get(i);
 
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
 
                 edit.putString(PREFERENCE_ALARMS_PREFIX + i, a.save().toString());
