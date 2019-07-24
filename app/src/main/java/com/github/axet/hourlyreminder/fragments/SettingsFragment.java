@@ -25,12 +25,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.github.axet.androidlibrary.activities.AppCompatSettingsThemeActivity;
 import com.github.axet.androidlibrary.app.Storage;
-import com.github.axet.androidlibrary.services.PersistentService;
-import com.github.axet.androidlibrary.widgets.AppCompatSettingsThemeActivity;
-import com.github.axet.androidlibrary.widgets.FilePathPreference;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
-import com.github.axet.androidlibrary.widgets.SeekBarPreference;
+import com.github.axet.androidlibrary.preferences.FilePathPreference;
+import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.preferences.SeekBarPreference;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;

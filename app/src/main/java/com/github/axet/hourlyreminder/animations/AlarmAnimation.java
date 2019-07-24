@@ -28,10 +28,7 @@ public class AlarmAnimation extends ExpandAnimation {
         return apply(new LateCreator() {
             @Override
             public MarginAnimation create() {
-                AlarmAnimation a = new AlarmAnimation(list, v, expand, animate);
-                if (expand)
-                    atomicExpander = a;
-                return a;
+                return new AlarmAnimation(list, v, expand, animate);
             }
         }, v, expand, animate);
     }
@@ -119,7 +116,7 @@ public class AlarmAnimation extends ExpandAnimation {
     }
 
     void colorOn() {
-        final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
+//        final TextView time = (TextView) convertView.findViewById(R.id.alarm_time);
 //        GlowAnimation a = new GlowAnimation(time) {
 //            @Override
 //            public void end() {

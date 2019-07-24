@@ -15,7 +15,7 @@ import android.util.AndroidRuntimeException;
 import android.util.Log;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.widgets.TTSPreference;

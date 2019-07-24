@@ -26,8 +26,8 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.LinearLayout;
 
-import com.github.axet.androidlibrary.widgets.AppCompatSettingsThemeActivity;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.activities.AppCompatSettingsThemeActivity;
+import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Toast;
@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatSettingsThemeActivity implements Dial
         if (OptimizationPreferenceCompat.needKillWarning(this, HourlyApplication.PREFERENCE_NEXT))
             OptimizationPreferenceCompat.buildKilledWarning(new ContextThemeWrapper(this, getAppTheme()), true, HourlyApplication.PREFERENCE_OPTIMIZATION, OptimizationPreferenceCompat.forceInit(AlarmService.class)).show();
         else if (OptimizationPreferenceCompat.needBootWarning(this, HourlyApplication.PREFERENCE_BOOT, HourlyApplication.PREFERENCE_INSTALL))
-            OptimizationPreferenceCompat.buildBootWarning(this).show();
+            OptimizationPreferenceCompat.buildBootWarning(this, HourlyApplication.PREFERENCE_BOOT).show();
 
         AlarmService.registerNextAlarm(this);
 
