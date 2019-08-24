@@ -347,9 +347,8 @@ public class Sound extends TTS {
 
         Silenced s = silencedPlaylist(flashConfig, config, rr);
 
-        if (config.reminders) {
+        if (config.reminders)
             vibrate(config.remindersPattern);
-        }
 
         if (flashConfig.reminders) {
             try {
@@ -381,33 +380,30 @@ public class Sound extends TTS {
         final Runnable speech = new Runnable() {
             @Override
             public void run() {
-                if (rr.speech) {
+                if (rr.speech)
                     playSpeech(time, after);
-                } else {
+                else
                     after.run();
-                }
             }
         };
 
         final Runnable beep = new Runnable() {
             @Override
             public void run() {
-                if (rr.beep) {
+                if (rr.beep)
                     playBeep(speech);
-                } else {
+                else
                     speech.run();
-                }
             }
         };
 
         final Runnable before = new Runnable() {
             @Override
             public void run() {
-                if (!rr.before.isEmpty()) {
+                if (!rr.before.isEmpty())
                     playCustom(rr.before, beep);
-                } else {
+                else
                     beep.run();
-                }
             }
         };
 

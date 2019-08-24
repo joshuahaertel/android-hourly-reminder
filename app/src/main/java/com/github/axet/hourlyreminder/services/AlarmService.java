@@ -181,7 +181,6 @@ public class AlarmService extends PersistentService implements SharedPreferences
     public void onStartCommand(Intent intent) {
         super.onStartCommand(intent);
         String action = intent.getAction();
-        Log.d(TAG, "onStartCommand " + action);
         if (action != null) {
             if (action.equals(NOTIFICATION)) {
                 long time = intent.getLongExtra("time", 0);
@@ -253,11 +252,10 @@ public class AlarmService extends PersistentService implements SharedPreferences
         for (Alarm a : items.alarms) { // here can be two alarms with same time
             if (a.getTime() == time && a.enabled) {
                 Log.d(TAG, "Sound Alarm " + Alarm.format24(a.getTime()));
-                if (alarm == null) {
+                if (alarm == null)
                     alarm = new FireAlarmService.FireAlarm(a);
-                } else {
+                else
                     alarm.merge(a);
-                }
                 if (!a.weekdaysCheck) {
                     // disable alarm after it goes off for non recurring alarms (!a.weekdays)
                     a.setEnable(false);
@@ -306,6 +304,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
         if (rlist != null) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             if (prefs.getBoolean(HourlyApplication.PREFERENCE_WAKEUP, true)) {
+                Log.d(TAG, "Wake screen");
                 if (wake == null)
                     wake = new WakeScreen(this);
                 wake.wake();
