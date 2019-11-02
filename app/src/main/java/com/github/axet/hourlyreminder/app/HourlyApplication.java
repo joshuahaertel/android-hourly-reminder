@@ -429,9 +429,8 @@ public class HourlyApplication extends MainApplication {
                     }
                     Alarm a = new Alarm(HourlyApplication.this, json);
 
-                    while (ids.contains(a.id)) {
+                    while (ids.contains(a.id))
                         a.id++;
-                    }
                     ids.add(a.id);
 
                     alarms.add(a);
@@ -521,13 +520,12 @@ public class HourlyApplication extends MainApplication {
                         rs.ringtoneValue = ReminderSet.DEFAULT_NOTIFICATION;
                     } else {
                         Uri u;
-                        if (uri.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                        if (uri.startsWith(ContentResolver.SCHEME_CONTENT))
                             u = Uri.parse(uri);
-                        } else if (uri.startsWith(ContentResolver.SCHEME_FILE)) {
+                        else if (uri.startsWith(ContentResolver.SCHEME_FILE))
                             u = Uri.parse(uri);
-                        } else {
+                        else
                             u = Uri.fromFile(new File(uri));
-                        }
                         rs.ringtoneValue = u;
                     }
                 } else if (custom.equals("sound")) {
@@ -536,13 +534,12 @@ public class HourlyApplication extends MainApplication {
                         rs.ringtoneValue = ReminderSet.DEFAULT_NOTIFICATION;
                     } else {
                         Uri u;
-                        if (uri.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                        if (uri.startsWith(ContentResolver.SCHEME_CONTENT))
                             u = Uri.parse(uri);
-                        } else if (uri.startsWith(ContentResolver.SCHEME_FILE)) {
+                        else if (uri.startsWith(ContentResolver.SCHEME_FILE))
                             u = Uri.parse(uri);
-                        } else {
+                        else
                             u = Uri.fromFile(new File(uri));
-                        }
                         rs.ringtoneValue = u;
                     }
                 }
@@ -617,11 +614,10 @@ public class HourlyApplication extends MainApplication {
                 Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetReminder: " + AlarmManager.formatTime(time));
 
                 AlarmManager.Alarm a;
-                if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
+                if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true))
                     a = am.setAlarm(time, reminderIntent, new Intent(HourlyApplication.this, MainActivity.class).setAction(MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true));
-                } else {
+                else
                     a = am.setExact(time, reminderIntent);
-                }
                 if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) // exact on time lock enabled only for reminders
                     huaweiLock(time, a);
             }
@@ -769,7 +765,6 @@ public class HourlyApplication extends MainApplication {
             }
             return false;
         }
-
 
         int getRepeat(long time) {
             TreeSet<Integer> rep = new TreeSet<>();
