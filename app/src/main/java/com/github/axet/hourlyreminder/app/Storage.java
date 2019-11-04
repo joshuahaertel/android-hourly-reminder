@@ -31,9 +31,8 @@ public class Storage extends com.github.axet.androidlibrary.app.Storage {
 
     public File storeRingtone(Uri uri) {
         File dir = new File(context.getApplicationInfo().dataDir, RINGTONES);
-        if (!dir.exists() && !dir.mkdirs()) {
+        if (!Storage.mkdirs(dir))
             throw new RuntimeException("unable to create: " + dir);
-        }
 
         HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
 
