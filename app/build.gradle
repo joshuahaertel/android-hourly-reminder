@@ -41,6 +41,6 @@ android {
 
 dependencies {
     testImplementation 'junit:junit:4.12'
-    implementation 'com.github.axet:android-library:1.32.5' // implementation project(':android-library')
+    implementation 'com.github.axet:android-library:1.32.7' // implementation project(':android-library')
     implementation 'com.android.support:design:25.3.1'
 }
