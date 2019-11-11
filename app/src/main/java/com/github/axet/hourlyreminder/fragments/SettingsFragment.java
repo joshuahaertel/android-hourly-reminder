@@ -25,12 +25,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.github.axet.androidlibrary.activities.AppCompatSettingsThemeActivity;
 import com.github.axet.androidlibrary.app.Storage;
-import com.github.axet.androidlibrary.services.PersistentService;
-import com.github.axet.androidlibrary.widgets.AppCompatSettingsThemeActivity;
-import com.github.axet.androidlibrary.widgets.FilePathPreference;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
-import com.github.axet.androidlibrary.widgets.SeekBarPreference;
+import com.github.axet.androidlibrary.preferences.FilePathPreference;
+import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.preferences.SeekBarPreference;
 import com.github.axet.androidlibrary.widgets.ThemeUtils;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
@@ -53,7 +52,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     Sound sound;
     Handler handler = new Handler();
-    PersistentService.SettingsReceiver receiver;
+    OptimizationPreferenceCompat.SettingsReceiver receiver;
 
     public static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -192,7 +191,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         OptimizationPreferenceCompat optimization = (OptimizationPreferenceCompat) findPreference(HourlyApplication.PREFERENCE_OPTIMIZATION);
         optimization.enable(AlarmService.class);
-        receiver = new PersistentService.SettingsReceiver(new Intent(getContext(), AlarmService.class), HourlyApplication.PREFERENCE_OPTIMIZATION);
+        receiver = new OptimizationPreferenceCompat.SettingsReceiver(new Intent(getContext(), AlarmService.class), HourlyApplication.PREFERENCE_OPTIMIZATION);
         receiver.register(getContext());
 
         SharedPreferences shared = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());

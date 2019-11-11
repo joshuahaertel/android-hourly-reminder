@@ -19,7 +19,7 @@ import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.MainApplication;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.widgets.NotificationChannelCompat;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
@@ -380,9 +380,8 @@ public class HourlyApplication extends MainApplication {
                 a.ringtone = true;
                 a.setWeekDaysValues(Week.WEEKDAY);
                 alarms.add(a);
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
 
                 a = new Alarm(HourlyApplication.this);
@@ -393,9 +392,8 @@ public class HourlyApplication extends MainApplication {
                 a.ringtone = true;
                 a.setWeekDaysValues(Week.WEEKEND);
                 alarms.add(a);
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
 
                 a = new Alarm(HourlyApplication.this);
@@ -405,9 +403,8 @@ public class HourlyApplication extends MainApplication {
                 a.beep = true;
                 a.ringtone = true;
                 alarms.add(a);
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
             }
 
@@ -432,9 +429,8 @@ public class HourlyApplication extends MainApplication {
                     }
                     Alarm a = new Alarm(HourlyApplication.this, json);
 
-                    while (ids.contains(a.id)) {
+                    while (ids.contains(a.id))
                         a.id++;
-                    }
                     ids.add(a.id);
 
                     alarms.add(a);
@@ -454,9 +450,8 @@ public class HourlyApplication extends MainApplication {
             for (int i = 0; i < alarms.size(); i++) {
                 Alarm a = alarms.get(i);
 
-                while (ids.contains(a.id)) {
+                while (ids.contains(a.id))
                     a.id++;
-                }
                 ids.add(a.id);
 
                 edit.putString(PREFERENCE_ALARMS_PREFIX + i, a.save().toString());
@@ -484,7 +479,7 @@ public class HourlyApplication extends MainApplication {
             SharedPreferences.Editor edit = shared.edit();
             saveAlarms(edit, alarms);
             edit.commit();
-            AlarmService.registerNext(HourlyApplication.this);
+            AlarmService.registerNextAlarm(HourlyApplication.this);
         }
 
         public void saveReminders() {
@@ -492,7 +487,7 @@ public class HourlyApplication extends MainApplication {
             SharedPreferences.Editor edit = shared.edit();
             saveReminders(edit, reminders);
             edit.commit();
-            AlarmService.registerNext(HourlyApplication.this);
+            AlarmService.registerNextAlarm(HourlyApplication.this);
         }
 
         public List<ReminderSet> loadReminders(SharedPreferences shared) {
@@ -525,13 +520,12 @@ public class HourlyApplication extends MainApplication {
                         rs.ringtoneValue = ReminderSet.DEFAULT_NOTIFICATION;
                     } else {
                         Uri u;
-                        if (uri.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                        if (uri.startsWith(ContentResolver.SCHEME_CONTENT))
                             u = Uri.parse(uri);
-                        } else if (uri.startsWith(ContentResolver.SCHEME_FILE)) {
+                        else if (uri.startsWith(ContentResolver.SCHEME_FILE))
                             u = Uri.parse(uri);
-                        } else {
+                        else
                             u = Uri.fromFile(new File(uri));
-                        }
                         rs.ringtoneValue = u;
                     }
                 } else if (custom.equals("sound")) {
@@ -540,13 +534,12 @@ public class HourlyApplication extends MainApplication {
                         rs.ringtoneValue = ReminderSet.DEFAULT_NOTIFICATION;
                     } else {
                         Uri u;
-                        if (uri.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                        if (uri.startsWith(ContentResolver.SCHEME_CONTENT))
                             u = Uri.parse(uri);
-                        } else if (uri.startsWith(ContentResolver.SCHEME_FILE)) {
+                        else if (uri.startsWith(ContentResolver.SCHEME_FILE))
                             u = Uri.parse(uri);
-                        } else {
+                        else
                             u = Uri.fromFile(new File(uri));
-                        }
                         rs.ringtoneValue = u;
                     }
                 }
@@ -621,11 +614,10 @@ public class HourlyApplication extends MainApplication {
                 Log.d(TAG, "Current: " + AlarmManager.formatTime(cur.getTimeInMillis()) + "; SetReminder: " + AlarmManager.formatTime(time));
 
                 AlarmManager.Alarm a;
-                if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) {
+                if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true))
                     a = am.setAlarm(time, reminderIntent, new Intent(HourlyApplication.this, MainActivity.class).setAction(MainActivity.SHOW_REMINDERS_PAGE).putExtra(ALARMINFO, true));
-                } else {
+                else
                     a = am.setExact(time, reminderIntent);
-                }
                 if (shared.getBoolean(HourlyApplication.PREFERENCE_ALARM, true)) // exact on time lock enabled only for reminders
                     huaweiLock(time, a);
             }
@@ -773,7 +765,6 @@ public class HourlyApplication extends MainApplication {
             }
             return false;
         }
-
 
         int getRepeat(long time) {
             TreeSet<Integer> rep = new TreeSet<>();

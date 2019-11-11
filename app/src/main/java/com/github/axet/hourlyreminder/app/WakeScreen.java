@@ -16,7 +16,7 @@ import android.support.v4.app.NotificationCompat;
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.widgets.NotificationChannelCompat;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.hourlyreminder.BuildConfig;
 import com.github.axet.hourlyreminder.R;
 

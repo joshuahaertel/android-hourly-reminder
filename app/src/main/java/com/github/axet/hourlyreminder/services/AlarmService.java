@@ -17,8 +17,8 @@ import android.util.Log;
 import android.view.View;
 
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
+import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.services.PersistentService;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.activities.MainActivity;
@@ -47,22 +47,26 @@ public class AlarmService extends PersistentService implements SharedPreferences
     // reminder broadcast triggers sound
     public static final String REMINDER = HourlyApplication.class.getCanonicalName() + ".REMINDER";
 
-    static {
-        OptimizationPreferenceCompat.ICON = true;
-    }
-
-    {
-        id = HourlyApplication.NOTIFICATION_PERSISTENT_ICON;
-    }
-
     HourlyApplication.ItemsStorage items;
     Sound sound;
     WakeScreen wake;
 
-    public static void registerNext(Context context) {
+    static {
+        OptimizationPreferenceCompat.setEventServiceIcon(true);
+    }
+
+    public static boolean registerNext(Context context) {
         HourlyApplication.ItemsStorage items = HourlyApplication.from(context).items;
         boolean b = items.registerNextAlarm();
-        startIfPersistent(context, b, new Intent(context, AlarmService.class), HourlyApplication.PREFERENCE_OPTIMIZATION);
+        return OptimizationPreferenceCompat.isPersistent(context, HourlyApplication.PREFERENCE_OPTIMIZATION, b);
+    }
+
+    public static void registerNextAlarm(Context context) {
+        boolean b = registerNext(context);
+        if (b)
+            OptimizationPreferenceCompat.startService(context, new Intent(context, AlarmService.class));
+        else
+            context.stopService(new Intent(context, AlarmService.class));
     }
 
     public static void startClock(Context context) { // https://stackoverflow.com/questions/3590955
@@ -116,7 +120,29 @@ public class AlarmService extends PersistentService implements SharedPreferences
 
     @Override
     public void onCreateOptimization() {
-        optimization = new ServiceReceiver(HourlyApplication.PREFERENCE_OPTIMIZATION, HourlyApplication.PREFERENCE_NEXT);
+        optimization = new OptimizationPreferenceCompat.ServiceReceiver(this, HourlyApplication.NOTIFICATION_PERSISTENT_ICON, HourlyApplication.PREFERENCE_OPTIMIZATION, HourlyApplication.PREFERENCE_NEXT) {
+            @Override
+            public Notification build(Intent intent) {
+                PendingIntent main = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+                RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Low(context, R.layout.notification_alarm);
+
+                builder.setViewVisibility(R.id.notification_button, View.GONE);
+
+                builder.setTheme(HourlyApplication.getTheme(context, R.style.AppThemeLight, R.style.AppThemeDark))
+                        .setChannel(HourlyApplication.from(context).channelStatus)
+                        .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
+                        .setTitle(getString(R.string.app_name))
+                        .setText(getString(R.string.optimization_alive))
+                        .setWhen(icon.notification)
+                        .setMainIntent(main)
+                        .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.ic_launcher_notification)
+                        .setOngoing(true);
+
+                return builder.build();
+            }
+        };
         optimization.create();
     }
 
@@ -155,7 +181,6 @@ public class AlarmService extends PersistentService implements SharedPreferences
     public void onStartCommand(Intent intent) {
         super.onStartCommand(intent);
         String action = intent.getAction();
-        Log.d(TAG, "onStartCommand " + action);
         if (action != null) {
             if (action.equals(NOTIFICATION)) {
                 long time = intent.getLongExtra("time", 0);
@@ -203,8 +228,8 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     public void registerNext() {
-        boolean b = items.registerNextAlarm();
-        if (!isPersistent(this, b, HourlyApplication.PREFERENCE_OPTIMIZATION)) {
+        boolean b = registerNext(this);
+        if (!b) {
             sound.after(new Runnable() {
                 @Override
                 public void run() {
@@ -227,11 +252,10 @@ public class AlarmService extends PersistentService implements SharedPreferences
         for (Alarm a : items.alarms) { // here can be two alarms with same time
             if (a.getTime() == time && a.enabled) {
                 Log.d(TAG, "Sound Alarm " + Alarm.format24(a.getTime()));
-                if (alarm == null) {
+                if (alarm == null)
                     alarm = new FireAlarmService.FireAlarm(a);
-                } else {
+                else
                     alarm.merge(a);
-                }
                 if (!a.weekdaysCheck) {
                     // disable alarm after it goes off for non recurring alarms (!a.weekdays)
                     a.setEnable(false);
@@ -280,6 +304,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
         if (rlist != null) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             if (prefs.getBoolean(HourlyApplication.PREFERENCE_WAKEUP, true)) {
+                Log.d(TAG, "Wake screen");
                 if (wake == null)
                     wake = new WakeScreen(this);
                 wake.wake();
@@ -343,27 +368,5 @@ public class AlarmService extends PersistentService implements SharedPreferences
 
             nm.notify(HourlyApplication.NOTIFICATION_MISSED_ICON, builder.build());
         }
-    }
-
-    @Override
-    public Notification build(Intent intent) {
-        PendingIntent main = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-
-        RemoteNotificationCompat.Builder builder = new RemoteNotificationCompat.Low(this, R.layout.notification_alarm);
-
-        builder.setViewVisibility(R.id.notification_button, View.GONE);
-
-        builder.setTheme(HourlyApplication.getTheme(this, R.style.AppThemeLight, R.style.AppThemeDark))
-                .setChannel(HourlyApplication.from(this).channelStatus)
-                .setImageViewTint(R.id.icon_circle, builder.getThemeColor(R.attr.colorButtonNormal))
-                .setTitle(getString(R.string.app_name))
-                .setText(getString(R.string.optimization_alive))
-                .setWhen(notification)
-                .setMainIntent(main)
-                .setAdaptiveIcon(R.drawable.ic_launcher_foreground)
-                .setSmallIcon(R.drawable.ic_launcher_notification)
-                .setOngoing(true);
-
-        return builder.build();
     }
 }

@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.github.axet.androidlibrary.widgets.AppCompatThemeActivity;
+import com.github.axet.androidlibrary.activities.AppCompatThemeActivity;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.app.HourlyApplication;

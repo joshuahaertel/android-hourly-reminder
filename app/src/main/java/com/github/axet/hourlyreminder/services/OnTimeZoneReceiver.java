@@ -13,6 +13,6 @@ public class OnTimeZoneReceiver extends BroadcastReceiver {
         if (a == null)
             return;
         if (a.equals(Intent.ACTION_TIMEZONE_CHANGED))
-            AlarmService.registerNext(context);
+            AlarmService.registerNextAlarm(context);
     }
 }

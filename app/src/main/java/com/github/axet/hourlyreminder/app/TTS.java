@@ -15,7 +15,7 @@ import android.util.AndroidRuntimeException;
 import android.util.Log;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
-import com.github.axet.androidlibrary.widgets.OptimizationPreferenceCompat;
+import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.Toast;
 import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.widgets.TTSPreference;
@@ -315,9 +315,8 @@ public class TTS extends SoundConfig {
             h = hour;
             if (h >= 12)
                 h = h - 12;
-            if (h == 0) { // 12
+            if (h == 0) // 12
                 h = 12;
-            }
         }
 
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
@@ -330,9 +329,8 @@ public class TTS extends SoundConfig {
 
         Locale ru = new Locale("ru");
         if (locale.toString().startsWith(ru.toString())) {
-            if (speakAMPMFlag) {
+            if (speakAMPMFlag)
                 speakAMPM = HourlyApplication.getHour4String(context, ru, hour);
-            }
 
             speakHour = HourlyApplication.getQuantityString(context, ru, R.plurals.hours, h, h);
             speakMinute = HourlyApplication.getQuantityString(context, ru, R.plurals.minutes, min, min);
@@ -341,9 +339,8 @@ public class TTS extends SoundConfig {
         // English requires zero minutes
         Locale en = new Locale("en");
         if (locale.toString().startsWith(en.toString())) {
-            if (speakAMPMFlag) {
+            if (speakAMPMFlag)
                 speakAMPM = HourlyApplication.getHour4String(context, en, hour);
-            }
 
             speakHour = String.format("%d", h);
 
@@ -353,9 +350,8 @@ public class TTS extends SoundConfig {
                 speakMinute = String.format("%d", min);
         }
 
-        if (speakHour.isEmpty()) {
+        if (speakHour.isEmpty())
             speakHour = String.format("%d", h);
-        }
 
         if (speakMinute.isEmpty())
             speakMinute = String.format("%d", min);
