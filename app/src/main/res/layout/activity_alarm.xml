@@ -6,10 +6,15 @@
     android:background="?attr/alarmBackground"
     tools:context=".activities.AlarmActivity">
 
-    <com.github.axet.androidlibrary.widgets.EqualLinearLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="0.1" />
 
         <RelativeLayout
             android:id="@+id/time"
@@ -50,14 +55,16 @@
 
         <View
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="5dp">
 
             <TextView
                 android:id="@+id/alarm_title"
@@ -114,7 +121,7 @@
                 android:text="@string/SoundSilenced"
                 android:textColor="@android:color/white" />
         </LinearLayout>
-    </com.github.axet.androidlibrary.widgets.EqualLinearLayout>
+    </LinearLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -153,5 +160,4 @@
             android:text="@string/dismiss_alarm"
             android:textColor="@android:color/white" />
     </RelativeLayout>
-
 </FrameLayout>

@@ -21,12 +21,12 @@ import com.github.axet.hourlyreminder.app.Sound;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
 import java.util.Calendar;
+import java.util.List;
 
 public class AlarmActivity extends AppCompatThemeActivity {
     public static final String TAG = AlarmActivity.class.getSimpleName();
 
-    // alarm activity action. close it.
-    public static final String CLOSE_ACTIVITY = AlarmActivity.class.getCanonicalName() + ".CLOSE_ACTIVITY";
+    public static final String CLOSE_ACTIVITY = AlarmActivity.class.getCanonicalName() + ".CLOSE_ACTIVITY"; // alarm activity action. close it.
 
     Handler handler = new Handler();
     Runnable updateClock;
@@ -46,6 +46,12 @@ public class AlarmActivity extends AppCompatThemeActivity {
         context.startActivity(intent);
     }
 
+    public static String trimRight(String s, String t) {
+        if (s.endsWith(t))
+            return s.substring(0, s.length() - t.length());
+        return s;
+    }
+
     @Override
     public int getAppTheme() {
         return HourlyApplication.getTheme(this, R.style.AppThemeLight_FullScreen, R.style.AppThemeDark_FullScreen);
@@ -57,7 +63,6 @@ public class AlarmActivity extends AppCompatThemeActivity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-
         String action = intent.getAction();
         if (action != null && action.equals(CLOSE_ACTIVITY)) {
             finish();
@@ -102,6 +107,21 @@ public class AlarmActivity extends AppCompatThemeActivity {
         updateTime(alarm, a.settime);
 
         updateClock();
+
+        String name = "";
+        List<Alarm> alarms = HourlyApplication.from(this).items.alarms;
+        for (Long id : a.ids) {
+            for (Alarm b : alarms) {
+                if (b.id == id)
+                    name += b.name + "; ";
+            }
+        }
+        name = name.trim();
+        name = trimRight(name, ";");
+        if (!name.isEmpty()) {
+            TextView title = (TextView) findViewById(R.id.alarm_title);
+            title.setText(name);
+        }
 
         View dismiss = findViewById(R.id.alarm_activity_button);
         dismiss.setOnClickListener(new View.OnClickListener() {
@@ -152,18 +172,11 @@ public class AlarmActivity extends AppCompatThemeActivity {
             finish();
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-    }
-
     void updateClock() {
         View time = findViewById(R.id.time);
         updateTime(time, System.currentTimeMillis());
-
-        if (updateClock == null) {
+        if (updateClock == null)
             handler.removeCallbacks(updateClock);
-        }
         updateClock = new Runnable() {
             @Override
             public void run() {
@@ -192,7 +205,6 @@ public class AlarmActivity extends AppCompatThemeActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
-
         if (updateClock != null) {
             handler.removeCallbacks(updateClock);
             updateClock = null;
