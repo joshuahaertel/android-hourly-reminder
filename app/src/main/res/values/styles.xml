@@ -23,7 +23,19 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppThemeLight.FullScreen" parent="@android:style/Theme.Light.NoTitleBar.Fullscreen"></style>
+    <style name="AppThemeLight.FullScreen" parent="@android:style/Theme.Light.NoTitleBar.Fullscreen">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccentLight</item>
+        <item name="alarmBackground">@color/alarmBackgroundLight</item>
+        <item name="alarmRing">@drawable/round_circle_light</item>
+        <item name="alarmDismiss">@drawable/round_dismiss_light</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+        <item name="dialogTheme">@style/AppThemeDialogLight</item>
+        <item name="alertDialogTheme">@style/AppThemeDialogLight</item>
+        <item name="round_corners">@drawable/round_corners_light</item>
+        <item name="round_background">@drawable/round_background_light</item>
+    </style>
 
     <style name="AppThemeLight.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="android:textColorPrimary">@android:color/white</item>
@@ -40,12 +52,25 @@
         <item name="round_background">@drawable/round_background_dark</item>
     </style>
 
+    <style name="AppThemeDialogDark" parent="@style/Theme.AppCompat.Dialog.Alert">
+        <item name="colorAccent">@color/colorAccentDark</item>
+    </style>
+
     <style name="AppThemeDark.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppThemeDark.FullScreen" parent="@android:style/Theme.NoTitleBar.Fullscreen"></style>
+    <style name="AppThemeDark.FullScreen" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+        <item name="alarmBackground">@color/actionBarBackgroundDark</item>
+        <item name="alarmRing">@drawable/round_circle_dark</item>
+        <item name="alarmDismiss">@drawable/round_dismiss_dark</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+        <item name="dialogTheme">@style/AppThemeDialogDark</item>
+        <item name="alertDialogTheme">@style/AppThemeDialogDark</item>
+        <item name="round_corners">@drawable/round_corners_dark</item>
+        <item name="round_background">@drawable/round_background_dark</item>
+    </style>
 
     <style name="AppThemeDark.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark" />
 
