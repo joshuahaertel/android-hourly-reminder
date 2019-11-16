@@ -36,7 +36,7 @@ public class WeekSet extends Week {
         this.id = System.currentTimeMillis();
         enabled = false;
         weekdaysCheck = true;
-        weekDaysValues = DEF_DAYS;
+        weekDaysValues = new ArrayList<>(DEF_DAYS);
         ringtone = true;
         beep = true;
         speech = true;
