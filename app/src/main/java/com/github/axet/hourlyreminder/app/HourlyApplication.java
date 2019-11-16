@@ -444,32 +444,24 @@ public class HourlyApplication extends MainApplication {
 
         public void saveAlarms(SharedPreferences.Editor edit, List<Alarm> alarms) {
             edit.putInt(PREFERENCE_ALARMS_PREFIX + "count", alarms.size());
-
             Set<Long> ids = new TreeSet<>();
-
             for (int i = 0; i < alarms.size(); i++) {
                 Alarm a = alarms.get(i);
-
                 while (ids.contains(a.id))
                     a.id++;
                 ids.add(a.id);
-
                 edit.putString(PREFERENCE_ALARMS_PREFIX + i, a.save().toString());
             }
         }
 
         public void saveReminders(SharedPreferences.Editor edit, List<ReminderSet> reminders) {
             edit.putInt(PREFERENCE_REMINDERS_PREFIX + "count", reminders.size());
-
             Set<Long> ids = new TreeSet<>();
-
             for (int i = 0; i < reminders.size(); i++) {
                 ReminderSet a = reminders.get(i);
-
                 while (ids.contains(a.id))
                     a.id++;
                 ids.add(a.id);
-
                 edit.putString(PREFERENCE_REMINDERS_PREFIX + i, a.save().toString());
             }
         }

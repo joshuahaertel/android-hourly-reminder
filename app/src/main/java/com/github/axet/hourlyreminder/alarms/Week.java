@@ -52,7 +52,6 @@ public class Week {
 
     public Week(Week copy) {
         this.context = copy.context;
-
         enabled = copy.enabled;
         weekdaysCheck = copy.weekdaysCheck;
         weekDaysValues = new ArrayList<>(copy.weekDaysValues);
@@ -139,13 +138,11 @@ public class Week {
         ArrayList w = new ArrayList<>();
         for (String s : set) {
             int i;
-
             try {
                 i = Integer.parseInt(s);
             } catch (NumberFormatException e) {
                 i = parseTag(s);
             }
-
             w.add(i);
         }
         weekDaysValues = w;
@@ -153,9 +150,8 @@ public class Week {
 
     public void setWeekDaysValues(Integer[] set) {
         ArrayList w = new ArrayList<>();
-        for (Integer s : set) {
+        for (Integer s : set)
             w.add(s);
-        }
         weekDaysValues = w;
     }
 
@@ -164,9 +160,8 @@ public class Week {
     }
 
     public void setEveryday() {
-        for (int w : Week.EVERYDAY) {
+        for (int w : Week.EVERYDAY)
             weekDaysValues.add(w);
-        }
     }
 
     public boolean isWeek(int week) {
@@ -211,18 +206,14 @@ public class Week {
     }
 
     public String formatDays() {
-        if (!weekdaysCheck) {
+        if (!weekdaysCheck)
             return context.getString(R.string.once);
-        }
-        if (isEveryday(weekDaysValues)) {
+        if (isEveryday(weekDaysValues))
             return context.getString(R.string.Everyday);
-        }
-        if (isWeekdays(weekDaysValues)) {
+        if (isWeekdays(weekDaysValues))
             return context.getString(R.string.Weekdays);
-        }
-        if (isWeekend(weekDaysValues)) {
+        if (isWeekend(weekDaysValues))
             return context.getString(R.string.Weekend);
-        }
         String str = "";
         for (Integer i : Week.order(weekDaysValues)) {
             if (!str.isEmpty())
@@ -257,12 +248,10 @@ public class Week {
 
     public void setWeek(int week, boolean b) {
         weekDaysValues.remove(new Integer(week));
-        if (b) {
+        if (b)
             weekDaysValues.add(week);
-        }
-        if (noDays()) {
+        if (noDays())
             weekdaysCheck = false;
-        }
         setNext();
     }
 

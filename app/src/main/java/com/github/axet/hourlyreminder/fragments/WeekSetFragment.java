@@ -167,7 +167,6 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                     final CheckBox child = (CheckBox) c;
                     child.setText(getString(Week.DAYS[startweek]).substring(0, 1));
                     final int week = Week.EVERYDAY[startweek];
-
                     child.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
