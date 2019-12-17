@@ -10,7 +10,6 @@ import com.github.axet.hourlyreminder.app.HourlyApplication;
 public class OnUpgradeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        OptimizationPreferenceCompat.setBootInstallTime(context, HourlyApplication.PREFERENCE_INSTALL, System.currentTimeMillis());
         AlarmService.registerNextAlarm(context);
     }
 }
