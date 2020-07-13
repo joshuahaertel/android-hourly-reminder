@@ -221,8 +221,18 @@ public class AlarmsFragment extends WeekSetFragment {
     @Override
     public void setEnable(WeekSet a, boolean e) {
         super.setEnable(a, e);
-        if (e)
+        if (e) {
             HourlyApplication.toastAlarmSet(getActivity(), (WeekTime) a);
+        } else {
+            final SharedPreferences shared = android.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+            String json = shared.getString(HourlyApplication.PREFERENCE_ACTIVE_ALARM, "");
+            if (!json.isEmpty()) {
+                FireAlarmService.FireAlarm alarm = new FireAlarmService.FireAlarm(json);
+                if (alarm.ids.contains(a.id)) { // active alarm == disabled alarm
+                    FireAlarmService.dismissActiveAlarm(getContext());
+                }
+            }
+        }
     }
 
     @Override

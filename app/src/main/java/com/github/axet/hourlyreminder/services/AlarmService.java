@@ -216,9 +216,8 @@ public class AlarmService extends PersistentService implements SharedPreferences
         for (ReminderSet rr : items.reminders) {
             if (rr.enabled) {
                 for (Reminder r : rr.list) {
-                    if (r.getTime() == time && r.enabled) {
+                    if (r.getTime() == time && r.enabled)
                         r.setTomorrow();
-                    }
                 }
             }
         }
