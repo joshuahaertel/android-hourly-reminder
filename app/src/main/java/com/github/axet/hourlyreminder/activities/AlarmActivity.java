@@ -112,7 +112,7 @@ public class AlarmActivity extends AppCompatThemeActivity {
         List<Alarm> alarms = HourlyApplication.from(this).items.alarms;
         for (Long id : a.ids) {
             for (Alarm b : alarms) {
-                if (b.id == id)
+                if (b.id == id && b.name != null && !b.name.isEmpty())
                     name += b.name + "; ";
             }
         }
