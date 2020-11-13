@@ -18,6 +18,7 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.alarms.Alarm;
 import com.github.axet.hourlyreminder.app.HourlyApplication;
 import com.github.axet.hourlyreminder.app.Sound;
+import com.github.axet.hourlyreminder.app.SoundConfig;
 import com.github.axet.hourlyreminder.services.FireAlarmService;
 
 import java.util.Calendar;
@@ -31,7 +32,7 @@ public class AlarmActivity extends AppCompatThemeActivity {
     Handler handler = new Handler();
     Runnable updateClock;
 
-    public static void start(Context context, FireAlarmService.FireAlarm alarm, Sound.Silenced silenced) {
+    public static void start(Context context, FireAlarmService.FireAlarm alarm, SoundConfig.Silenced silenced) {
         Intent intent = new Intent(context, AlarmActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS | Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.putExtra("state", alarm.save().toString());

@@ -8,7 +8,7 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
-public class SoundConfig extends com.github.axet.androidlibrary.sound.Sound {
+public class SoundConfig extends TTS {
     public static final String TAG = SoundConfig.class.getSimpleName();
 
     public final static int SOUND_CHANNELS = AudioFormat.CHANNEL_OUT_MONO;
@@ -22,12 +22,6 @@ public class SoundConfig extends com.github.axet.androidlibrary.sound.Sound {
         MUSIC
     }
 
-    public static class SoundChannel {
-        public int streamType; // AudioManager.STREAM_* == AudioSystem.STREAM_*
-        public int usage; // AudioAttributes.USAGE_*
-        public int ct; // AudioAttributes.CONTENT_TYPE_*
-    }
-
     Handler handler;
 
     public SoundConfig(Context context) {
@@ -35,19 +29,15 @@ public class SoundConfig extends com.github.axet.androidlibrary.sound.Sound {
         this.handler = new Handler();
     }
 
-    public SoundChannel getSoundChannel() {
-        SoundChannel s = new SoundChannel();
+    @Override
+    public Channel getSoundChannel() {
+        Channel s;
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         boolean b = shared.getBoolean(HourlyApplication.PREFERENCE_PHONESILENCE, false);
-        if (b) {
-            s.streamType = AudioManager.STREAM_NOTIFICATION;
-            s.usage = AudioAttributes.USAGE_NOTIFICATION;
-            s.ct = AudioAttributes.CONTENT_TYPE_SONIFICATION;
-        } else {
-            s.streamType = AudioManager.STREAM_ALARM;
-            s.usage = AudioAttributes.USAGE_ALARM;
-            s.ct = AudioAttributes.CONTENT_TYPE_SONIFICATION;
-        }
+        if (b)
+            s = Channel.NORMAL;
+        else
+            s = Channel.ALARM;
         return s;
     }
 
@@ -59,17 +49,10 @@ public class SoundConfig extends com.github.axet.androidlibrary.sound.Sound {
         return getVolume();
     }
 
-    float getVolume() {
+    @Override
+    public float getVolume() {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         float vol = shared.getFloat(HourlyApplication.PREFERENCE_VOLUME, 1f);
         return reduce(vol);
-    }
-
-    float reduce(float vol) {
-        return (float) Math.pow(vol, 3);
-    }
-
-    float unreduce(float vol) {
-        return (float) Math.exp(Math.log(vol) / 3);
     }
 }
