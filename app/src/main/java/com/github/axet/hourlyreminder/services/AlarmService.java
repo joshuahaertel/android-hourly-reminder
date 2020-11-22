@@ -111,7 +111,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
         super.onCreate();
 
         HourlyApplication app = HourlyApplication.from(this);
-        sound = app.sound;
+        sound = new Sound(this);
         items = app.items;
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -162,6 +162,11 @@ public class AlarmService extends PersistentService implements SharedPreferences
         if (wake != null) {
             wake.close();
             wake = null;
+        }
+
+        if (sound != null) {
+            sound.close();
+            sound = null;
         }
     }
 
