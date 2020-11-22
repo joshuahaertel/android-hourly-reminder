@@ -2,6 +2,8 @@ package com.github.axet.hourlyreminder.alarms;
 
 import android.content.Context;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -159,7 +161,6 @@ public class WeekTime extends WeekSet {
     }
 
     public String toString() {
-        SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return "WeekTime: " + s.format(new Date(time));
+        return "WeekTime: " + AlarmManager.formatTime(time);
     }
 }

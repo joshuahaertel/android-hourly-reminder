@@ -64,10 +64,10 @@ public class ReminderSet extends WeekSet {
 
     @Override
     public String formatDays() {
-        if (!weekdaysCheck) {
+        if (!weekdaysCheck)
             return context.getString(R.string.Everyday);
-        }
-        return super.formatDays();
+        else
+            return super.formatDays();
     }
 
     public void reload() {
@@ -90,14 +90,12 @@ public class ReminderSet extends WeekSet {
             for (int prev = 23; prev >= 0; prev--) {
                 Reminder.Key hh = new Reminder.Key(prev, Reminder.HALF);
                 int i = list.indexOf(hh.key);
-                if (i != -1) {
+                if (i != -1)
                     start = i;
-                }
                 Reminder.Key h = new Reminder.Key(prev);
                 i = list.indexOf(h.key);
-                if (i == -1) {
+                if (i == -1)
                     break;
-                }
                 start = i;
             }
         }
@@ -105,9 +103,8 @@ public class ReminderSet extends WeekSet {
         Reminder.Key prev = null;
         for (int i = 0; i <= list.size(); i++) {
             int index = start + i;
-            if (index >= list.size()) {
+            if (index >= list.size())
                 index -= list.size();
-            }
             Reminder.Key s = new Reminder.Key(list.get(index));
             if (prev != null) {
                 int max;
@@ -128,7 +125,7 @@ public class ReminderSet extends WeekSet {
     void add(Reminder.Key prev, int max) {
         if (repeat > 0) {
             for (int m = prev.min; m < max; m += repeat) {
-                Reminder r = new Reminder(context, getWeekDaysProperty());
+                Reminder r = new Reminder(context, getWeekDaysProperty(), this);
                 r.enabled = true;
                 r.setTime(prev.hour, m);
                 this.list.add(r);
@@ -136,7 +133,7 @@ public class ReminderSet extends WeekSet {
         } else { // negative means once per hour at specified time
             int min = -repeat;
             if (prev.min < min) {
-                Reminder r = new Reminder(context, getWeekDaysProperty());
+                Reminder r = new Reminder(context, getWeekDaysProperty(), this);
                 r.enabled = true;
                 r.setTime(prev.hour, min);
                 this.list.add(r);
@@ -281,5 +278,10 @@ public class ReminderSet extends WeekSet {
     @Override
     protected Uri defaultRingtone() {
         return DEFAULT_NOTIFICATION;
+    }
+
+    @Override
+    public String toString() {
+        return format() + " " +formatDays();
     }
 }

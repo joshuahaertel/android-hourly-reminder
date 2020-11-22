@@ -156,7 +156,7 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                     onWeekSetEnableClick(h, w);
                 }
             });
-            h.enable.setChecked(w.getEnable());
+            h.enable.setChecked(w.isEnabled());
             if (!animate)
                 h.enable.jumpDrawablesToCurrentState();
 
@@ -379,7 +379,7 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                     onWeekSetEnableClick(h, a);
                 }
             });
-            h.enable.setChecked(a.getEnable());
+            h.enable.setChecked(a.isEnabled());
             if (!animate)
                 h.enable.jumpDrawablesToCurrentState();
 

@@ -747,7 +747,7 @@ public class HourlyApplication extends MainApplication {
 
         boolean isAlarm(long time) {
             for (Alarm a : alarms) {
-                if (a.getTime() == time && a.getEnable())
+                if (a.getTime() == time && a.isEnabled())
                     return true;
             }
             return false;
@@ -755,13 +755,13 @@ public class HourlyApplication extends MainApplication {
 
         boolean isSpeaking(long time) {
             for (Alarm a : alarms) {
-                if (a.getTime() == time && a.getEnable() && a.speech)
+                if (a.getTime() == time && a.isEnabled() && a.speech)
                     return true;
             }
             for (ReminderSet rr : reminders) {
-                if (rr.enabled) {
+                if (rr.enabled && rr.speech) {
                     for (Reminder r : rr.list) {
-                        if (r.getTime() == time && r.enabled && r.speech)
+                        if (r.getTime() == time && r.enabled)
                             return true;
                     }
                 }

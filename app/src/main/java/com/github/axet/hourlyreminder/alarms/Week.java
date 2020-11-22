@@ -91,9 +91,8 @@ public class Week {
 
     public static Set<String> getWeekDaysProperty(List<Integer> ww) {
         TreeSet<String> set = new TreeSet<>();
-        for (Integer w : ww) {
+        for (Integer w : ww)
             set.add(w.toString());
-        }
         return set;
     }
 
@@ -115,9 +114,8 @@ public class Week {
     int parseTag(String d) {
         for (int i = 0; i < Week.DAYS.length; i++) {
             String day = DAYS_VALUES[i];
-            if (day.equals(d)) {
+            if (day.equals(d))
                 return Week.EVERYDAY[i];
-            }
         }
         throw new RuntimeException("unknown day");
     }
@@ -263,9 +261,8 @@ public class Week {
 
     // get time for Alarm Manager
     public long getAlarmTime(Calendar cal, Calendar cur) {
-        if (weekdaysCheck) {
+        if (weekdaysCheck)
             cal = rollWeek(cal);
-        }
 
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
