@@ -1,5 +1,6 @@
 package com.github.axet.hourlyreminder.app;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
@@ -19,7 +20,6 @@ import com.github.axet.hourlyreminder.R;
 import com.github.axet.hourlyreminder.widgets.TTSPreference;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -38,6 +38,16 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
     public static File cacheUri(Context context, Locale lang, String speak) {
         File cache = CacheImagesAdapter.getCache(context);
         return new File(cache, CacheImagesAdapter.CACHE_NAME + MD5.digest(lang + "_" + speak));
+    }
+
+    @TargetApi(30)
+    public static int synthesizeToFile(TextToSpeech tts, String speak, Bundle params, ParcelFileDescriptor fd, String s) {
+        try {
+            Method m = tts.getClass().getMethod("synthesizeToFile", CharSequence.class, Bundle.class, ParcelFileDescriptor.class, String.class);
+            return (int) m.invoke(tts, speak, params, fd, s);
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public TTS(Context context) {
@@ -85,13 +95,14 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
             if (Build.VERSION.SDK_INT >= 30) {
                 try {
                     ParcelFileDescriptor fd = ParcelFileDescriptor.open(cache, ParcelFileDescriptor.MODE_CREATE | ParcelFileDescriptor.MODE_READ_WRITE);
-                    Method m = tts.getClass().getMethod("synthesizeToFile", CharSequence.class, Bundle.class, ParcelFileDescriptor.class, String.class);
-                    if ((int) m.invoke(tts, speak, params, fd, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS) {
+                    if (synthesizeToFile(tts, speak.text, params, fd, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS) {
                         cache.delete();
                         return null;
                     }
-                } catch (FileNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    Log.d(TAG, "unable tts to file", e);
+                    cache.delete();
+                    return null;
                 }
             } else {
                 if (tts.synthesizeToFile(speak.text, params, cache, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS) {

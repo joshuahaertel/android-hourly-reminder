@@ -158,6 +158,7 @@ public class TTSPreference extends EditTextPreference {
                     update();
                 }
             };
+            sound.ttsCreate();
 
             String values;
             if (savedInstanceState != null) {
