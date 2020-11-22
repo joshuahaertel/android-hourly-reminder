@@ -646,7 +646,7 @@ public class HourlyApplication extends MainApplication {
         // service will call showNotificationUpcoming(time)
         //
         void updateNotificationUpcomingAlarm(long time) {
-            if (time != 0)
+            if (time != 0 && isSpeaking(time))
                 sound.cache(time);
 
             SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(HourlyApplication.this);
@@ -690,7 +690,7 @@ public class HourlyApplication extends MainApplication {
         // time - upcoming alarm time, show text.
         @SuppressLint("RestrictedApi")
         public void showNotificationUpcoming(long time) {
-            if (time != 0)
+            if (time != 0 && isSpeaking(time))
                 sound.cache(time);
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(HourlyApplication.this);
@@ -749,6 +749,22 @@ public class HourlyApplication extends MainApplication {
             for (Alarm a : alarms) {
                 if (a.getTime() == time && a.getEnable())
                     return true;
+            }
+            return false;
+        }
+
+        boolean isSpeaking(long time) {
+            for (Alarm a : alarms) {
+                if (a.getTime() == time && a.getEnable() && a.speech)
+                    return true;
+            }
+            for (ReminderSet rr : reminders) {
+                if (rr.enabled) {
+                    for (Reminder r : rr.list) {
+                        if (r.getTime() == time && r.enabled && r.speech)
+                            return true;
+                    }
+                }
             }
             return false;
         }
