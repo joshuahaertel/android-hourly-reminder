@@ -105,13 +105,9 @@
     <PreferenceCategory
         android:key="speak"
         android:title="@string/pref_speak">
-        <ListPreference
+        <com.github.axet.androidlibrary.preferences.TTSPreferenceCompat
             android:defaultValue=""
-            android:entries="@array/languages_text"
-            android:entryValues="@array/languages_values"
             android:key="language"
-            android:negativeButtonText="@null"
-            android:positiveButtonText="@null"
             android:summary="@string/pref_tts_summary"
             android:title="@string/pref_tts_title" />
         <com.github.axet.hourlyreminder.widgets.TTSPreference
