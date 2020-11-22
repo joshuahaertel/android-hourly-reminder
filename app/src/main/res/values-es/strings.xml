@@ -45,8 +45,6 @@
         <item>20 min</item>
     </string-array>
 
-    <string name="system">Lenguaje del sistema</string>
-
     <string-array name="patterns_text">
         <item>Simple</item>
         <item>Pitido-Pitido</item>

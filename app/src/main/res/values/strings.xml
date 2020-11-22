@@ -125,23 +125,6 @@
         <item>20</item>
     </string-array>
 
-    <string name="system">System Language</string>
-
-    <string-array name="languages_text" translatable="false">
-        <item>@string/system</item>
-        <item>English</item>
-        <item>Español</item>
-        <item>Русский</item>
-    </string-array>
-
-    <!-- keep locale names correspond to strings-suffix, andoid failed to correct fallback from ru_RU locale to ru -->
-    <string-array name="languages_values" translatable="false">
-        <item></item>
-        <item>en</item>
-        <item>es</item>
-        <item>ru</item>
-    </string-array>
-
     <string-array name="patterns_text">
         <item>Single</item>
         <item>Beat-Beat</item>

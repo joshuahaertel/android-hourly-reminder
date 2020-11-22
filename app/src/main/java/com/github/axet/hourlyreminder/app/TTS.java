@@ -46,13 +46,10 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
     }
 
     public File cache(long time) {
-        String speak = seakText(time);
+        Speak speak = seakText(time);
         if (speak == null)
             return null; // lang not supported
-        Locale lang = getUserLocale();
-        if (lang == null)
-            return null;
-        File cache = cacheUri(context, lang, speak);
+        File cache = cacheUri(context, speak.locale, speak.text);
         if (cache.exists()) {
             if (cache.length() == 0 && cache.lastModified() + 5 * AlarmManager.MIN1 > time)
                 return cache; // keep recent cache if file size == 0
@@ -65,6 +62,7 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
             return null;
         }
         Log.d(TAG, "caching '" + speak + "' to " + cache);
+        tts.setLanguage(speak.locale);
         if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
             params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, getSoundChannel().streamType);
@@ -82,7 +80,7 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
                     throw new RuntimeException(e);
                 }
             } else {
-                if (tts.synthesizeToFile(speak, params, cache, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS) {
+                if (tts.synthesizeToFile(speak.text, params, cache, UUID.randomUUID().toString()) != TextToSpeech.SUCCESS) {
                     cache.delete();
                     return null;
                 }
@@ -92,7 +90,7 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
             params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(getSoundChannel().streamType));
             params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(getVolume()));
             params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
-            if (tts.synthesizeToFile(speak, params, cache.getAbsolutePath()) != TextToSpeech.SUCCESS) {
+            if (tts.synthesizeToFile(speak.text, params, cache.getAbsolutePath()) != TextToSpeech.SUCCESS) {
                 cache.delete();
                 return null;
             }
@@ -101,18 +99,15 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
     }
 
     public void playSpeech(final long time, final Runnable done) {
-        String speak = seakText(time);
+        Speak speak = seakText(time);
         if (speak != null) {
-            Locale lang = getUserLocale();
-            if (lang != null) {
-                File cache = cacheUri(context, lang, speak);
-                if (cache.exists() && cache.length() > 0) {
-                    Log.d(TAG, "playing cache '" + speak + "' from " + cache);
-                    if (playCache(cache, done))
-                        return;
-                    else
-                        cache.delete();
-                }
+            File cache = cacheUri(context, speak.locale, speak.text);
+            if (cache.exists() && cache.length() > 0) {
+                Log.d(TAG, "playing cache '" + speak + "' from " + cache);
+                if (playCache(cache, done))
+                    return;
+                else
+                    cache.delete();
             }
         }
         super.playSpeech(speak, done);
@@ -233,10 +228,10 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
         return speak;
     }
 
-    public String seakText(long time) {
+    public Speak seakText(long time) {
         Locale locale = getTTSLocale();
         if (locale == null)
             return null;
-        return speakText(time, locale, DateFormat.is24HourFormat(context));
+        return new Speak(locale, speakText(time, locale, DateFormat.is24HourFormat(context)));
     }
 }
