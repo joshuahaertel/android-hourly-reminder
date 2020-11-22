@@ -42,7 +42,6 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
 
     public TTS(Context context) {
         super(context);
-        ttsCreate();
     }
 
     public File cache(final long time) {

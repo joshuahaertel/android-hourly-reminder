@@ -89,14 +89,15 @@ public class Reminder extends WeekTime {
         super(context);
     }
 
-    public Reminder(Context context, Set days, ReminderSet s) {
+    public Reminder(ReminderSet s, int h, int m) {
+        super(s, h, m);
+        weekdaysCheck = true;
+        setWeekDaysProperty(s.getWeekDaysProperty());
+    }
+
+    public Reminder(Context context, Set days) {
         super(context);
         weekdaysCheck = true;
-        beep = s.beep;
-        speech = s.speech;
-        ringtone = s.ringtone;
-        ringtoneValue = s.ringtoneValue;
-        name = s.name;
         setWeekDaysProperty(days);
     }
 

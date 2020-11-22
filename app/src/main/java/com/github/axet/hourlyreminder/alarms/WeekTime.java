@@ -40,6 +40,11 @@ public class WeekTime extends WeekSet {
         min = copy.min;
     }
 
+    public WeekTime(WeekSet copy, int h, int m) {
+        super(copy);
+        setTime(h, m);
+    }
+
     public WeekTime(Context context, String json) {
         super(context, json);
     }

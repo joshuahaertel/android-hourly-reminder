@@ -125,17 +125,15 @@ public class ReminderSet extends WeekSet {
     void add(Reminder.Key prev, int max) {
         if (repeat > 0) {
             for (int m = prev.min; m < max; m += repeat) {
-                Reminder r = new Reminder(context, getWeekDaysProperty(), this);
+                Reminder r = new Reminder(this, prev.hour, m);
                 r.enabled = true;
-                r.setTime(prev.hour, m);
                 this.list.add(r);
             }
         } else { // negative means once per hour at specified time
             int min = -repeat;
             if (prev.min < min) {
-                Reminder r = new Reminder(context, getWeekDaysProperty(), this);
+                Reminder r = new Reminder(this, prev.hour, min);
                 r.enabled = true;
-                r.setTime(prev.hour, min);
                 this.list.add(r);
             }
         }
@@ -282,6 +280,6 @@ public class ReminderSet extends WeekSet {
 
     @Override
     public String toString() {
-        return format() + " " +formatDays();
+        return format() + " " + formatDays();
     }
 }
