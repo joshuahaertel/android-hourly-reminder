@@ -62,7 +62,7 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
             Log.e(TAG, "unable to create cache", e);
             return null;
         }
-        Log.d(TAG, "caching '" + speak + "' to " + cache);
+        Log.d(TAG, "caching '" + speak.text + "' to " + cache);
         tts.setLanguage(speak.locale);
         if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
@@ -104,7 +104,7 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
         if (speak != null) {
             File cache = cacheUri(context, speak.locale, speak.text);
             if (cache.exists() && cache.length() > 0) {
-                Log.d(TAG, "playing cache '" + speak + "' from " + cache);
+                Log.d(TAG, "playing cache '" + speak.text + "' from " + cache);
                 if (playCache(cache, done))
                     return;
                 else
