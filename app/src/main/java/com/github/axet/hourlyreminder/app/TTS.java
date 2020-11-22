@@ -243,7 +243,11 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
     }
 
     public Speak seakText(long time) {
-        Locale locale = getTTSLocale();
+        Locale locale;
+        if (tts == null)
+            locale = getUserLocale();
+        else
+            locale = getTTSLocale();
         if (locale == null)
             return null;
         return new Speak(locale, speakText(time, locale, DateFormat.is24HourFormat(context)));
