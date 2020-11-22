@@ -12,6 +12,7 @@ import android.speech.tts.TextToSpeech;
 import android.text.format.DateFormat;
 import android.util.Log;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.crypto.MD5;
 import com.github.axet.androidlibrary.widgets.CacheImagesAdapter;
 import com.github.axet.hourlyreminder.R;
@@ -34,9 +35,9 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
         CacheImagesAdapter.cacheClear(context);
     }
 
-    public static File cacheUri(Context context, String speak) {
+    public static File cacheUri(Context context, Locale lang, String speak) {
         File cache = CacheImagesAdapter.getCache(context);
-        return new File(cache, CacheImagesAdapter.CACHE_NAME + MD5.digest(speak));
+        return new File(cache, CacheImagesAdapter.CACHE_NAME + MD5.digest(lang + "_" + speak));
     }
 
     public TTS(Context context) {
@@ -48,9 +49,14 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
         String speak = seakText(time);
         if (speak == null)
             return null; // lang not supported
-        File cache = cacheUri(context, speak);
-        if (cache.exists())
-            return cache;
+        Locale lang = getUserLocale();
+        if (lang == null)
+            return null;
+        File cache = cacheUri(context, lang, speak);
+        if (cache.exists()) {
+            if (cache.length() == 0 && cache.lastModified() + 5 * AlarmManager.MIN1 > time)
+                return cache; // keep recent cache if file size == 0
+        }
         try {
             if (!cache.createNewFile()) // synthesizeToFile async
                 return null;
@@ -97,13 +103,16 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
     public void playSpeech(final long time, final Runnable done) {
         String speak = seakText(time);
         if (speak != null) {
-            File cache = cacheUri(context, speak);
-            if (cache.exists() && cache.length() > 0) {
-                Log.d(TAG, "playing cache '" + speak + "' from " + cache);
-                if (playCache(cache, done))
-                    return;
-                else
-                    cache.delete();
+            Locale lang = getUserLocale();
+            if (lang != null) {
+                File cache = cacheUri(context, lang, speak);
+                if (cache.exists() && cache.length() > 0) {
+                    Log.d(TAG, "playing cache '" + speak + "' from " + cache);
+                    if (playCache(cache, done))
+                        return;
+                    else
+                        cache.delete();
+                }
             }
         }
         super.playSpeech(speak, done);
