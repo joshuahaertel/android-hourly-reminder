@@ -45,11 +45,11 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
         ttsCreate();
     }
 
-    public File cache(long time) {
+    public File cache(final long time) {
         Speak speak = seakText(time);
         if (speak == null)
             return null; // lang not supported
-        File cache = cacheUri(context, speak.locale, speak.text);
+        final File cache = cacheUri(context, speak.locale, speak.text);
         if (cache.exists()) {
             long now = System.currentTimeMillis();
             if (cache.length() == 0 && cache.lastModified() + 5 * AlarmManager.MIN1 > now)

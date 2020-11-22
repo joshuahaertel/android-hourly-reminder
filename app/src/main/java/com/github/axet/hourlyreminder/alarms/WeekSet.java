@@ -52,7 +52,7 @@ public class WeekSet extends Week {
             setNext();
     }
 
-    public boolean getEnable() {
+    public boolean isEnabled() {
         return enabled;
     }
 

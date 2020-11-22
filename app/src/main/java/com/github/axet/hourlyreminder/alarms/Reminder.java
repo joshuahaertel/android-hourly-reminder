@@ -3,11 +3,19 @@ package com.github.axet.hourlyreminder.alarms;
 import android.content.Context;
 import android.text.format.DateFormat;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
 
 public class Reminder extends WeekTime {
     public static final int HALF = 30;
+
+    public static String format(int hour) {
+        return String.format("%02d", hour);
+    }
 
     public static class Key {
         public String key;
@@ -61,14 +69,12 @@ public class Reminder extends WeekTime {
             };
 
             if (min == 0) {
-                if (h24) {
+                if (h24)
                     return Reminder.format(hour);
-                }
                 return H12[hour];
             } else {
-                if (h24) {
+                if (h24)
                     return Reminder.format(hour) + ":" + Reminder.format(min);
-                }
                 return H12[hour] + ":" + Reminder.format(min);
             }
         }
@@ -83,14 +89,15 @@ public class Reminder extends WeekTime {
         super(context);
     }
 
-    public Reminder(Context context, Set days) {
+    public Reminder(Context context, Set days, ReminderSet s) {
         super(context);
         weekdaysCheck = true;
+        beep = s.beep;
+        speech = s.speech;
+        ringtone = s.ringtone;
+        ringtoneValue = s.ringtoneValue;
+        name = s.name;
         setWeekDaysProperty(days);
-    }
-
-    public static String format(int hour) {
-        return String.format("%02d", hour);
     }
 
     // check if it is the same hour and min. if reminder loaded late, it will have time will be in the future
@@ -108,6 +115,10 @@ public class Reminder extends WeekTime {
         int min = cal.get(Calendar.MINUTE);
 
         return this.hour == hour && this.min == min;
+    }
+
+    public String toString() {
+        return String.format("Reminder (%02d:%02d) at %s", getHour(), getMin(), AlarmManager.formatTime(time));
     }
 
 }
