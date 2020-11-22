@@ -47,8 +47,16 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
     public File cache(final long time) {
         if (tts == null)
             ttsCreate();
-        if (onInit != null)
+        if (onInit != null) {
+            delayed = new Runnable() {
+                @Override
+                public void run() {
+                    cache(time);
+                }
+            };
+            dones.add(delayed);
             return null;
+        }
         Speak speak = seakText(time);
         if (speak == null)
             return null; // lang not supported
