@@ -646,6 +646,9 @@ public class HourlyApplication extends MainApplication {
         // service will call showNotificationUpcoming(time)
         //
         void updateNotificationUpcomingAlarm(long time) {
+            if (time != 0)
+                sound.cache(time);
+
             SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(HourlyApplication.this);
 
             Intent upcomingIntent = new Intent(HourlyApplication.this, AlarmService.class).setAction(AlarmService.NOTIFICATION).putExtra("time", time);
