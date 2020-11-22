@@ -18,6 +18,7 @@ import android.util.Log;
 import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.MainApplication;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
+import com.github.axet.androidlibrary.widgets.AdaptiveImageView;
 import com.github.axet.androidlibrary.widgets.NotificationChannelCompat;
 import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.widgets.RemoteNotificationCompat;
@@ -353,6 +354,7 @@ public class HourlyApplication extends MainApplication {
 
         public ItemsStorage() {
             load();
+            TTS.clearCache(HourlyApplication.this);
         }
 
         public void load() {
@@ -685,6 +687,9 @@ public class HourlyApplication extends MainApplication {
         // time - upcoming alarm time, show text.
         @SuppressLint("RestrictedApi")
         public void showNotificationUpcoming(long time) {
+            if (time != 0)
+                sound.cache(time);
+
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(HourlyApplication.this);
             if (!prefs.getBoolean(HourlyApplication.PREFERENCE_NOTIFICATIONS, true))
                 return;
