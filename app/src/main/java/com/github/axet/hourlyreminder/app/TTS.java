@@ -48,6 +48,8 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
         if (tts == null)
             ttsCreate();
         if (onInit != null) {
+            dones.remove(delayed);
+            handler.removeCallbacks(delayed);
             delayed = new Runnable() {
                 @Override
                 public void run() {
