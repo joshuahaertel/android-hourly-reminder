@@ -55,6 +55,10 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
             if (cache.length() == 0 && cache.lastModified() + 5 * AlarmManager.MIN1 > now)
                 return cache; // keep recent cache if file size == 0
         }
+        if (tts == null)
+            ttsCreate();
+        if (onInit != null)
+            return null;
         try {
             if (!cache.createNewFile()) // synthesizeToFile async
                 return null;
