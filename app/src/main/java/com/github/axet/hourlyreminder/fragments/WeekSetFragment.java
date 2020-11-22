@@ -153,8 +153,7 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
             h.enable.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setEnable(w, h.enable.isChecked());
-                    save(w);
+                    onWeekSetEnableClick(h, w);
                 }
             });
             h.enable.setChecked(w.getEnable());
@@ -377,8 +376,7 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
             h.enable.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setEnable(a, h.enable.isChecked());
-                    save(a);
+                    onWeekSetEnableClick(h, a);
                 }
             });
             h.enable.setChecked(a.getEnable());
@@ -508,6 +506,11 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
         sound.vibrateStop();
         sound.playerClose();
         preview = false;
+    }
+
+    void onWeekSetEnableClick(ViewHolder h, WeekSet a) {
+        setEnable(a, h.enable.isChecked());
+        save(a);
     }
 
     public Sound.Silenced playPreview(WeekSet a) {

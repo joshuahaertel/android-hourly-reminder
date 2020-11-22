@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Sound extends TTS {
+public class Sound extends SoundConfig {
     public static final String TAG = Sound.class.getSimpleName();
 
     ToneGenerator tone;
@@ -55,7 +55,7 @@ public class Sound extends TTS {
     FlashPreference.Flash flash;
 
     // https://gist.github.com/slightfoot/6330866
-    public static AudioTrack generateTone(SoundChannel c, double hz, int dur) {
+    public static AudioTrack generateTone(Channel c, double hz, int dur) {
         int rate = getValidAudioRate(SOUND_CHANNELS, SOUND_SAMPLERATE);
         if (rate == -1)
             throw new RuntimeException("Unable to find proper audio attrs");
@@ -491,7 +491,7 @@ public class Sound extends TTS {
 
     int getToneVolume() {
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        SoundChannel c = getSoundChannel();
+        Channel c = getSoundChannel();
         float systemVolume = am.getStreamVolume(c.streamType) / (float) am.getStreamMaxVolume(c.streamType);
         systemVolume = unreduce(systemVolume);
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
@@ -620,7 +620,7 @@ public class Sound extends TTS {
         final float startVolume;
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        SoundChannel c = getSoundChannel();
+        Channel c = getSoundChannel();
         float systemVolume = am.getStreamVolume(c.streamType) / (float) am.getStreamMaxVolume(c.streamType);
         float alarmVolume = getVolume();
 
@@ -680,7 +680,7 @@ public class Sound extends TTS {
 
     MediaPlayer create(Uri uri) { // MediaPlayer.create expand
         if (Build.VERSION.SDK_INT >= 21) {
-            SoundChannel c = getSoundChannel();
+            Channel c = getSoundChannel();
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setUsage(c.usage)
                     .setContentType(c.ct)
