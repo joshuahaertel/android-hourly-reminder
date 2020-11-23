@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
-public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
+public class TTS extends com.github.axet.androidlibrary.sound.TTS {
     public static final String TAG = TTS.class.getSimpleName();
 
     public static void clearCache(Context context) {
@@ -149,7 +149,9 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
         return playOnce(Uri.fromFile(cache), done) != null;
     }
 
-    public abstract MediaPlayer playOnce(Uri uri, Runnable done);
+    public MediaPlayer playOnce(Uri uri, Runnable done) {
+        throw new RuntimeException("not implemented");
+    }
 
     public String speakText(long time, Locale locale, boolean is24) {
         Calendar c = Calendar.getInstance();
