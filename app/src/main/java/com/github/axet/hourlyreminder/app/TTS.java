@@ -30,10 +30,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
-public class TTS extends com.github.axet.androidlibrary.sound.TTS {
+public class TTS extends Player {
     public static final String TAG = TTS.class.getSimpleName();
-
-    MediaPlayer player;
 
     public static void clearCache(Context context) {
         CacheImagesAdapter.cacheClear(context);
@@ -159,24 +157,8 @@ public class TTS extends com.github.axet.androidlibrary.sound.TTS {
         }
         dones.add(done);
         playOncePrepare(player, done);
-        player.start();
-        this.player = player;
+        startPlayer(player);
         return true;
-    }
-
-    void playerCl() {
-        if (player != null) {
-            player.release();
-            player = null;
-        }
-    }
-
-    MediaPlayer create(Uri uri) {
-        throw new RuntimeException("not implemented");
-    }
-
-    void playOncePrepare(final MediaPlayer player, final Runnable done) {
-        throw new RuntimeException("not implemented");
     }
 
     public String speakText(long time, Locale locale, boolean is24) {
