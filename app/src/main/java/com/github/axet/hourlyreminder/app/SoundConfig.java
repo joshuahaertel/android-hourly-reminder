@@ -22,11 +22,8 @@ public class SoundConfig extends TTS {
         MUSIC
     }
 
-    Handler handler;
-
     public SoundConfig(Context context) {
         super(context);
-        this.handler = new Handler();
     }
 
     @Override

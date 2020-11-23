@@ -18,6 +18,7 @@ import com.github.axet.androidlibrary.app.Storage;
 import com.github.axet.androidlibrary.crypto.MD5;
 import com.github.axet.androidlibrary.widgets.CacheImagesAdapter;
 import com.github.axet.hourlyreminder.R;
+import com.github.axet.hourlyreminder.alarms.ReminderSet;
 import com.github.axet.hourlyreminder.widgets.TTSPreference;
 
 import java.io.File;
@@ -31,6 +32,8 @@ import java.util.UUID;
 
 public class TTS extends com.github.axet.androidlibrary.sound.TTS {
     public static final String TAG = TTS.class.getSimpleName();
+
+    MediaPlayer player;
 
     public static void clearCache(Context context) {
         CacheImagesAdapter.cacheClear(context);
@@ -145,11 +148,33 @@ public class TTS extends com.github.axet.androidlibrary.sound.TTS {
         super.playSpeech(speak, done);
     }
 
-    public boolean playCache(File cache, Runnable done) {
-        return playOnce(Uri.fromFile(cache), done) != null;
+    public boolean playCache(File cache, final Runnable done) {
+        playerCl();
+        MediaPlayer player;
+        try {
+            player = create(Uri.fromFile(cache));
+        } catch (RuntimeException e) {
+            Log.d(TAG, "unable to play cache", e);
+            return false;
+        }
+        dones.add(done);
+        playOncePrepare(player, done);
+        this.player = player;
+        return true;
     }
 
-    public MediaPlayer playOnce(Uri uri, Runnable done) {
+    void playerCl() {
+        if (player != null) {
+            player.release();
+            player = null;
+        }
+    }
+
+    MediaPlayer create(Uri uri) {
+        throw new RuntimeException("not implemented");
+    }
+
+    void playOncePrepare(final MediaPlayer player, final Runnable done) {
         throw new RuntimeException("not implemented");
     }
 

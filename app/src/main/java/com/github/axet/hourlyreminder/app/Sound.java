@@ -574,7 +574,7 @@ public class Sound extends SoundConfig {
         }
 
         player.setLooping(true);
-        startPlayer(player);
+        startVolumePlayer(player);
     }
 
     void toastTone(Throwable e) {
@@ -607,7 +607,7 @@ public class Sound extends SoundConfig {
         toneLoop = null;
     }
 
-    public void startPlayer(final MediaPlayer player) {
+    public void startVolumePlayer(final MediaPlayer player) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         final int inc = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_INCREASE_VOLUME, "0")) * 1000;
 
@@ -752,7 +752,7 @@ public class Sound extends SoundConfig {
         return playOnce(player, done);
     }
 
-    MediaPlayer playOnce(final MediaPlayer player, final Runnable done) { // done should be added by caller
+    void playOncePrepare(final MediaPlayer player, final Runnable done) { // done should be added by caller
         player.setLooping(false); // https://code.google.com/p/android/issues/detail?id=1314
 
         final MediaPlayer.OnCompletionListener c = new MediaPlayer.OnCompletionListener() {
@@ -788,9 +788,11 @@ public class Sound extends SoundConfig {
         loop.run();
 
         player.setOnCompletionListener(c);
+    }
 
-        startPlayer(player);
-
+    MediaPlayer playOnce(final MediaPlayer player, final Runnable done) { // done should be added by caller
+        playOncePrepare(player, done);
+        startVolumePlayer(player);
         return player;
     }
 
