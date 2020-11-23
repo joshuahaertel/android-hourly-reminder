@@ -838,7 +838,10 @@ public class Sound extends SoundConfig {
         }
     }
 
+    @Override
     void playerCl() {
+        super.playerCl();
+
         if (increaseVolume != null) {
             increaseVolume.stop();
             increaseVolume = null;
