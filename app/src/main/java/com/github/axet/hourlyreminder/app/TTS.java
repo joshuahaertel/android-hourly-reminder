@@ -14,6 +14,7 @@ import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.github.axet.androidlibrary.app.AlarmManager;
+import com.github.axet.androidlibrary.app.Storage;
 import com.github.axet.androidlibrary.crypto.MD5;
 import com.github.axet.androidlibrary.widgets.CacheImagesAdapter;
 import com.github.axet.hourlyreminder.R;
@@ -38,6 +39,10 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
     public static File cacheUri(Context context, Locale lang, String speak) {
         File cache = CacheImagesAdapter.getCache(context);
         return new File(cache, CacheImagesAdapter.CACHE_NAME + MD5.digest(lang + "_" + speak));
+    }
+
+    public static void cacheTouch(File cache) {
+        Storage.touch(cache);
     }
 
     @TargetApi(30)
@@ -129,10 +134,12 @@ public abstract class TTS extends com.github.axet.androidlibrary.sound.TTS {
             File cache = cacheUri(context, speak.locale, speak.text);
             if (cache.exists() && cache.length() > 0) {
                 Log.d(TAG, "playing cache '" + speak.text + "' from " + cache);
-                if (playCache(cache, done))
+                if (playCache(cache, done)) {
+                    cacheTouch(cache);
                     return;
-                else
+                } else {
                     cache.delete();
+                }
             }
         }
         super.playSpeech(speak, done);
