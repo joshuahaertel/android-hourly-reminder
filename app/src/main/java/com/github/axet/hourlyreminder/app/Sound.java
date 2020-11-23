@@ -40,8 +40,9 @@ public class Sound extends SoundConfig {
 
     ToneGenerator tone;
     Runnable toneLoop;
-    MediaPlayer player;
     AudioTrack track;
+    FlashPreference.Flash flash;
+    FadeVolume increaseVolume;
     long[] vibrateTrack;
     Runnable vibrateEnd = new Runnable() {
         @Override
@@ -50,9 +51,6 @@ public class Sound extends SoundConfig {
             vibrateTrack = null;
         }
     };
-    FadeVolume increaseVolume;
-    Runnable loop; // loop preventer
-    FlashPreference.Flash flash;
 
     // https://gist.github.com/slightfoot/6330866
     public static AudioTrack generateTone(Channel c, double hz, int dur) {
@@ -437,7 +435,7 @@ public class Sound extends SoundConfig {
 
         dones.add(done);
 
-        player = playOnce(uri, new Runnable() {
+        playOnce(uri, new Runnable() {
             @Override
             public void run() {
                 done(done);
@@ -465,7 +463,7 @@ public class Sound extends SoundConfig {
             try {
                 playerCl();
                 MediaPlayer p = create(ReminderSet.DEFAULT_NOTIFICATION); // first fallback to system media player
-                player = playOnce(p, done);
+                playOnce(p, done);
             } catch (RuntimeException e2) { // second fallback to tone (samsung phones crashes on tone native initialization (seems like some AudioTrack initialization failed)
                 Log.d(TAG, "Unable get tone", e2);
                 toastTone(e2);
@@ -537,6 +535,7 @@ public class Sound extends SoundConfig {
     public void playRingtone(Uri uri) {
         playerCl();
 
+        MediaPlayer player;
         try {
             player = create(uri);
         } catch (RuntimeException e1) {
@@ -574,7 +573,7 @@ public class Sound extends SoundConfig {
         }
 
         player.setLooping(true);
-        startPlayer(player);
+        startVolumePlayer(player);
     }
 
     void toastTone(Throwable e) {
@@ -607,7 +606,7 @@ public class Sound extends SoundConfig {
         toneLoop = null;
     }
 
-    public void startPlayer(final MediaPlayer player) {
+    public void startVolumePlayer(final MediaPlayer player) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         final int inc = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_INCREASE_VOLUME, "0")) * 1000;
 
@@ -648,7 +647,7 @@ public class Sound extends SoundConfig {
         };
         increaseVolume.run();
 
-        player.start();
+        startPlayer(player);
     }
 
     public void timeToast(long time) {
@@ -715,7 +714,7 @@ public class Sound extends SoundConfig {
     }
 
     // called from reminder or test sound button
-    public MediaPlayer playOnce(Uri uri, final Runnable done) {
+    public void playOnce(Uri uri, final Runnable done) {
         dones.add(done);
 
         MediaPlayer player;
@@ -745,53 +744,16 @@ public class Sound extends SoundConfig {
                     notificationAlarm();
                     handler.postDelayed(end, 1000);
                 }
-                return null;
+                return;
             }
         }
 
-        return playOnce(player, done);
+        playOnce(player, done);
     }
 
-    MediaPlayer playOnce(final MediaPlayer player, final Runnable done) { // done should be added by caller
-        player.setLooping(false); // https://code.google.com/p/android/issues/detail?id=1314
-
-        final MediaPlayer.OnCompletionListener c = new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                playerCl();
-                done(done);
-            }
-        };
-
-        loop = new Runnable() { // loop detector. mediaplayer has bug looping non looped sounds
-            int last = 0;
-            long delay;
-
-            {
-                delay = player.getDuration(); // we can't pool as fast as we want
-                if (delay <= 0)
-                    delay = 200; // also, mediaplayer has bug, which return unaccurate current playback position at first 400ms
-            }
-
-            @Override
-            public void run() {
-                int pos = player.getCurrentPosition();
-                if (pos < last) {
-                    c.onCompletion(player);
-                    return;
-                }
-                last = pos;
-                handler.postDelayed(loop, delay);
-                delay = 200; // first run takes getDuration(), next 200 ms
-            }
-        };
-        loop.run();
-
-        player.setOnCompletionListener(c);
-
-        startPlayer(player);
-
-        return player;
+    void playOnce(final MediaPlayer player, final Runnable done) { // done should be added by caller
+        playOncePrepare(player, done);
+        startVolumePlayer(player);
     }
 
     public void vibrate(String pattern) {
@@ -836,23 +798,16 @@ public class Sound extends SoundConfig {
         }
     }
 
+    @Override
     void playerCl() {
+        super.playerCl();
+
         if (increaseVolume != null) {
             increaseVolume.stop();
             increaseVolume = null;
         }
 
-        if (loop != null) {
-            handler.removeCallbacks(loop);
-            loop = null;
-        }
-
         toneClose();
-
-        if (player != null) {
-            player.release();
-            player = null;
-        }
 
         beepClose();
     }
@@ -862,12 +817,6 @@ public class Sound extends SoundConfig {
             track.release();
             track = null;
         }
-    }
-
-    public void playerClose() {
-        playerCl();
-        dones.clear();
-        exits.clear();
     }
 
     public Silenced playAlarm(final FireAlarmService.FireAlarm alarm, final long delay, final Runnable late) {

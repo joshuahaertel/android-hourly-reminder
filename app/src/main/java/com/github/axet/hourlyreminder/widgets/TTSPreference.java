@@ -171,11 +171,10 @@ public class TTSPreference extends EditTextPreference {
             try {
                 Locale locale = sound.getUserLocale();
                 config = new TTSConfig(locale);
-                if (values == null || values.isEmpty()) {
+                if (values == null || values.isEmpty())
                     config.def(getContext());
-                } else {
+                else
                     config.load(new JSONObject(values));
-                }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }

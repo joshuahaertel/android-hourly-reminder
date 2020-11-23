@@ -2,13 +2,10 @@ package com.github.axet.hourlyreminder.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.media.AudioAttributes;
 import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 
-public abstract class SoundConfig extends TTS {
+public class SoundConfig extends TTS {
     public static final String TAG = SoundConfig.class.getSimpleName();
 
     public final static int SOUND_CHANNELS = AudioFormat.CHANNEL_OUT_MONO;
@@ -22,11 +19,8 @@ public abstract class SoundConfig extends TTS {
         MUSIC
     }
 
-    Handler handler;
-
     public SoundConfig(Context context) {
         super(context);
-        this.handler = new Handler();
     }
 
     @Override
