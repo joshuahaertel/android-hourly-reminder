@@ -159,6 +159,7 @@ public class TTS extends com.github.axet.androidlibrary.sound.TTS {
         }
         dones.add(done);
         playOncePrepare(player, done);
+        player.start();
         this.player = player;
         return true;
     }
@@ -252,7 +253,6 @@ public class TTS extends com.github.axet.androidlibrary.sound.TTS {
         if (locale.toString().startsWith(ru.toString())) {
             if (speakAMPMFlag)
                 speakAMPM = HourlyApplication.getHour4String(context, ru, hour);
-
             speakHour = HourlyApplication.getQuantityString(context, ru, R.plurals.hours, h, h);
             speakMinute = HourlyApplication.getQuantityString(context, ru, R.plurals.minutes, min, min);
         }
