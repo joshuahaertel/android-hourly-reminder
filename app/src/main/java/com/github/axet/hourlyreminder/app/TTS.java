@@ -61,6 +61,15 @@ public class TTS extends Player {
     }
 
     public File cache(final long time) {
+        Speak speak = seakText(time);
+        if (speak == null)
+            return null; // lang not supported
+        final File cache = cacheUri(context, speak.locale, speak.text);
+        if (cache.exists()) {
+            long now = System.currentTimeMillis();
+            if (cache.length() > 0 || cache.lastModified() + 5 * AlarmManager.MIN1 > now)
+                return cache; // keep recent cache if file size == 0
+        }
         if (tts == null)
             ttsCreate();
         if (onInit != null) {
@@ -75,15 +84,6 @@ public class TTS extends Player {
             dones.add(delayed);
             return null;
         }
-        Speak speak = seakText(time);
-        if (speak == null)
-            return null; // lang not supported
-        final File cache = cacheUri(context, speak.locale, speak.text);
-        if (cache.exists()) {
-            long now = System.currentTimeMillis();
-            if (cache.length() == 0 && cache.lastModified() + 5 * AlarmManager.MIN1 > now)
-                return cache; // keep recent cache if file size == 0
-        }
         try {
             if (!cache.createNewFile()) // synthesizeToFile async
                 return null;
@@ -95,8 +95,6 @@ public class TTS extends Player {
         tts.setLanguage(speak.locale);
         if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
-            params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, getSoundChannel().streamType);
-            params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, getVolume());
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (Build.VERSION.SDK_INT >= 30) {
                 try {
@@ -118,8 +116,6 @@ public class TTS extends Player {
             }
         } else {
             HashMap<String, String> params = new HashMap<>();
-            params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(getSoundChannel().streamType));
-            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(getVolume()));
             params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (tts.synthesizeToFile(speak.text, params, cache.getAbsolutePath()) != TextToSpeech.SUCCESS) {
                 cache.delete();
@@ -143,6 +139,7 @@ public class TTS extends Player {
                 }
             }
         }
+        Log.d(TAG, "speaking '" + speak.text + "' (" + speak.locale + ")");
         super.playSpeech(speak, done);
     }
 
