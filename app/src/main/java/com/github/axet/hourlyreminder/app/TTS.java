@@ -95,8 +95,6 @@ public class TTS extends Player {
         tts.setLanguage(speak.locale);
         if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
-            params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, getSoundChannel().streamType);
-            params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, getVolume());
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (Build.VERSION.SDK_INT >= 30) {
                 try {
@@ -118,8 +116,6 @@ public class TTS extends Player {
             }
         } else {
             HashMap<String, String> params = new HashMap<>();
-            params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(getSoundChannel().streamType));
-            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(getVolume()));
             params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "DONE");
             if (tts.synthesizeToFile(speak.text, params, cache.getAbsolutePath()) != TextToSpeech.SUCCESS) {
                 cache.delete();
