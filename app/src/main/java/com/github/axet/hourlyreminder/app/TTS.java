@@ -139,6 +139,7 @@ public class TTS extends Player {
                 }
             }
         }
+        Log.d(TAG, "speaking '" + speak.text + "' (" + speak.locale + ")");
         super.playSpeech(speak, done);
     }
 
