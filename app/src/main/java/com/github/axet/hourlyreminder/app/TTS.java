@@ -67,7 +67,7 @@ public class TTS extends Player {
         final File cache = cacheUri(context, speak.locale, speak.text);
         if (cache.exists()) {
             long now = System.currentTimeMillis();
-            if (cache.length() == 0 && cache.lastModified() + 5 * AlarmManager.MIN1 > now)
+            if (cache.length() > 0 || cache.lastModified() + 5 * AlarmManager.MIN1 > now)
                 return cache; // keep recent cache if file size == 0
         }
         if (tts == null)
