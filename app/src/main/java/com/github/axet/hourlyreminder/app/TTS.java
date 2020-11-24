@@ -157,6 +157,7 @@ public class TTS extends Player {
         }
         dones.add(done);
         playOncePrepare(player, done);
+        player.setVolume(getVolume(), getVolume());
         startPlayer(player);
         return true;
     }
