@@ -53,7 +53,13 @@ public class AlarmService extends PersistentService implements SharedPreferences
     Sound sound;
     WakeScreen wake;
     Handler handler = new Handler();
-    Runnable stopSelf = new Runnable() {
+    Runnable stopSelf1 = new Runnable() {
+        @Override
+        public void run() {
+            handler.post(stopSelf2); // on power safe onStartCommand called twice for Notification and REMINDER in seq
+        }
+    };
+    Runnable stopSelf2 = new Runnable() {
         @Override
         public void run() {
             Log.d(TAG, "stopSelf");
@@ -242,16 +248,11 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     public void registerNext() {
-        handler.removeCallbacks(stopSelf);
+        sound.exits.remove(stopSelf1);
+        handler.removeCallbacks(stopSelf2);
         boolean b = registerNext(this);
-        if (!b) {
-            sound.after(new Runnable() {
-                @Override
-                public void run() {
-                    handler.post(stopSelf); // on power safe onStartCommand called twice for Notification and REMINDER in seq
-                }
-            });
-        }
+        if (!b)
+            sound.after(stopSelf1);
     }
 
     // alarm come from service call (System Alarm Manager) for specified time
