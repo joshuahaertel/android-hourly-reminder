@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
@@ -356,10 +357,13 @@ public class Sound extends SoundConfig {
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
+            Log.d(TAG, "Silent Reminder " + AlarmManager.formatTime(time));
             dones.add(done);
             done(done);
             return s;
         }
+
+        Log.d(TAG, "Sound Reminder " + AlarmManager.formatTime(time));
 
         final Runnable after = new Runnable() {
             @Override

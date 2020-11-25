@@ -16,6 +16,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.services.PersistentService;
@@ -288,11 +289,10 @@ public class AlarmService extends PersistentService implements SharedPreferences
                         if (rr.last < time) {
                             rr.last = time;
                             if (alarm == null) { // do not cross alarms
-                                if (rlist == null) {
+                                if (rlist == null)
                                     rlist = new Sound.Playlist(rr);
-                                } else {
+                                else
                                     rlist.merge(rr);
-                                }
                             } else { // merge reminder with alarm
                                 alarm.merge(rr);
                             }
@@ -302,8 +302,10 @@ public class AlarmService extends PersistentService implements SharedPreferences
             }
         }
 
-        if (alarm != null)
+        if (alarm != null) {
+            Log.d(TAG, "Sound Alarm: " + alarm);
             FireAlarmService.activateAlarm(this, alarm);
+        }
 
         if (rlist != null) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -325,7 +327,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
         if (alarm != null || rlist != null)
             items.save();
         else
-            Log.d(TAG, "Time ignored: " + time);
+            Log.d(TAG, "Time ignored: " + AlarmManager.formatTime(time)); // double fire, ignore second alarm
         registerNext();
     }
 
