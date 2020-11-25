@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.AlarmClock;
 import android.support.annotation.Nullable;
@@ -51,6 +52,14 @@ public class AlarmService extends PersistentService implements SharedPreferences
     HourlyApplication.ItemsStorage items;
     Sound sound;
     WakeScreen wake;
+    Handler handler = new Handler();
+    Runnable stopSelf = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, "stopSelf");
+            stopSelf();
+        }
+    };
 
     static {
         OptimizationPreferenceCompat.setEventServiceIcon(true);
@@ -233,12 +242,13 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     public void registerNext() {
+        handler.removeCallbacks(stopSelf);
         boolean b = registerNext(this);
         if (!b) {
             sound.after(new Runnable() {
                 @Override
                 public void run() {
-                    stopSelf();
+                    handler.post(stopSelf); // on power safe onStartCommand called twice for Notification and REMINDER in seq
                 }
             });
         }
@@ -256,7 +266,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
         FireAlarmService.FireAlarm alarm = null;
         for (Alarm a : items.alarms) { // here can be two alarms with same time
             if (a.getTime() == time && a.enabled) {
-                Log.d(TAG, "Sound Alarm " + Alarm.format24(a.getTime()));
+                Log.d(TAG, "Sound Alarm " + Alarm.format24(time));
                 if (alarm == null)
                     alarm = new FireAlarmService.FireAlarm(a);
                 else
@@ -302,12 +312,11 @@ public class AlarmService extends PersistentService implements SharedPreferences
             }
         }
 
-        if (alarm != null) {
-            Log.d(TAG, "Sound Alarm: " + alarm);
+        if (alarm != null)
             FireAlarmService.activateAlarm(this, alarm);
-        }
 
         if (rlist != null) {
+            Log.d(TAG, "Reminder " + AlarmManager.formatTime(time) + " a=" + rlist.beep + " s=" + rlist.speech + " r=" + rlist.isRingtone());
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             if (prefs.getBoolean(HourlyApplication.PREFERENCE_WAKEUP, true)) {
                 Log.d(TAG, "Wake screen");

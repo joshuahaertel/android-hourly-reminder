@@ -224,6 +224,10 @@ public class Sound extends SoundConfig {
                 throw new RuntimeException(e);
             }
         }
+
+        public boolean isRingtone() {
+            return !(after.isEmpty() && afterOnce.isEmpty() && before.isEmpty() && beforeOnce.isEmpty());
+        }
     }
 
     public Sound(Context context) {
@@ -357,13 +361,10 @@ public class Sound extends SoundConfig {
 
         // do we have slince alarm?
         if (s != Silenced.NONE) {
-            Log.d(TAG, "Silent Reminder " + AlarmManager.formatTime(time));
             dones.add(done);
             done(done);
             return s;
         }
-
-        Log.d(TAG, "Sound Reminder " + AlarmManager.formatTime(time));
 
         final Runnable after = new Runnable() {
             @Override
