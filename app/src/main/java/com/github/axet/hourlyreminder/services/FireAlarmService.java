@@ -19,6 +19,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.services.PersistentService;
 import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
@@ -312,6 +313,10 @@ public class FireAlarmService extends PersistentService implements SensorEventLi
                     return true;
             }
             return false;
+        }
+
+        public String toString() {
+            return "Alarm " + AlarmManager.formatTime(settime);
         }
     }
 

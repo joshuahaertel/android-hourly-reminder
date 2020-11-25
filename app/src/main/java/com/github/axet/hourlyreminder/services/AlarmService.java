@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.AlarmClock;
 import android.support.annotation.Nullable;
@@ -16,6 +17,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.preferences.OptimizationPreferenceCompat;
 import com.github.axet.androidlibrary.services.PersistentService;
@@ -50,6 +52,14 @@ public class AlarmService extends PersistentService implements SharedPreferences
     HourlyApplication.ItemsStorage items;
     Sound sound;
     WakeScreen wake;
+    Handler handler = new Handler();
+    Runnable stopSelf = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, "stopSelf");
+            stopSelf();
+        }
+    };
 
     static {
         OptimizationPreferenceCompat.setEventServiceIcon(true);
@@ -232,12 +242,13 @@ public class AlarmService extends PersistentService implements SharedPreferences
     }
 
     public void registerNext() {
+        handler.removeCallbacks(stopSelf);
         boolean b = registerNext(this);
         if (!b) {
             sound.after(new Runnable() {
                 @Override
                 public void run() {
-                    stopSelf();
+                    handler.post(stopSelf); // on power safe onStartCommand called twice for Notification and REMINDER in seq
                 }
             });
         }
@@ -255,7 +266,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
         FireAlarmService.FireAlarm alarm = null;
         for (Alarm a : items.alarms) { // here can be two alarms with same time
             if (a.getTime() == time && a.enabled) {
-                Log.d(TAG, "Sound Alarm " + Alarm.format24(a.getTime()));
+                Log.d(TAG, "Sound Alarm " + Alarm.format24(time));
                 if (alarm == null)
                     alarm = new FireAlarmService.FireAlarm(a);
                 else
@@ -288,11 +299,10 @@ public class AlarmService extends PersistentService implements SharedPreferences
                         if (rr.last < time) {
                             rr.last = time;
                             if (alarm == null) { // do not cross alarms
-                                if (rlist == null) {
+                                if (rlist == null)
                                     rlist = new Sound.Playlist(rr);
-                                } else {
+                                else
                                     rlist.merge(rr);
-                                }
                             } else { // merge reminder with alarm
                                 alarm.merge(rr);
                             }
@@ -306,6 +316,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
             FireAlarmService.activateAlarm(this, alarm);
 
         if (rlist != null) {
+            Log.d(TAG, "Reminder " + AlarmManager.formatTime(time) + " a=" + rlist.beep + " s=" + rlist.speech + " r=" + rlist.isRingtone());
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             if (prefs.getBoolean(HourlyApplication.PREFERENCE_WAKEUP, true)) {
                 Log.d(TAG, "Wake screen");
@@ -325,7 +336,7 @@ public class AlarmService extends PersistentService implements SharedPreferences
         if (alarm != null || rlist != null)
             items.save();
         else
-            Log.d(TAG, "Time ignored: " + time);
+            Log.d(TAG, "Time ignored: " + AlarmManager.formatTime(time)); // double fire, ignore second alarm
         registerNext();
     }
 

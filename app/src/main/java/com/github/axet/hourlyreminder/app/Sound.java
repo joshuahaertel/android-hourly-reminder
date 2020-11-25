@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
@@ -222,6 +223,10 @@ public class Sound extends SoundConfig {
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        public boolean isRingtone() {
+            return !(after.isEmpty() && afterOnce.isEmpty() && before.isEmpty() && beforeOnce.isEmpty());
         }
     }
 
