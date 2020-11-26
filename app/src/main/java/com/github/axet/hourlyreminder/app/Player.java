@@ -82,7 +82,7 @@ public class Player extends TTS {
         }
     }
 
-    void playOncePrepare(final MediaPlayer player, final Runnable done) { // done should be added by caller
+    Runnable playOncePrepare(final MediaPlayer player, final Runnable done) { // done should be added by caller
         player.setLooping(false); // https://code.google.com/p/android/issues/detail?id=1314
 
         final MediaPlayer.OnCompletionListener c = new MediaPlayer.OnCompletionListener() {
@@ -93,7 +93,7 @@ public class Player extends TTS {
             }
         };
 
-        loop = new Runnable() { // loop detector. mediaplayer has bug looping non looped sounds
+        Runnable loop = new Runnable() { // loop detector. mediaplayer has bug looping non looped sounds
             int last = 0;
             long delay;
 
@@ -111,19 +111,28 @@ public class Player extends TTS {
                     return;
                 }
                 last = pos;
-                handler.postDelayed(loop, delay);
+                handler.postDelayed(this, delay);
                 delay = 200; // first run takes getDuration(), next 200 ms
             }
         };
 
         player.setOnCompletionListener(c);
+
+        return loop;
     }
 
-    public void startPlayer(MediaPlayer player) {
-        if (loop != null)
+    public void startVolumePlayer(MediaPlayer player, Runnable loop) {
+        player.setVolume(getVolume(), getVolume());
+        startPlayer(player, loop);
+    }
+
+    public void startPlayer(MediaPlayer player, Runnable loop) {
+        if (loop != null) {
+            this.loop = loop;
             loop.run();
-        player.start();
+        }
         this.player = player;
+        player.start();
     }
 
     public void close() {
