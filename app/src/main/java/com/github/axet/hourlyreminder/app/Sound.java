@@ -14,7 +14,6 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.github.axet.androidlibrary.app.AlarmManager;
 import com.github.axet.androidlibrary.app.NotificationManagerCompat;
 import com.github.axet.androidlibrary.sound.AudioTrack;
 import com.github.axet.androidlibrary.sound.FadeVolume;
@@ -578,7 +577,7 @@ public class Sound extends SoundConfig {
         }
 
         player.setLooping(true);
-        startVolumePlayer(player);
+        startIncPlayer(player, null);
     }
 
     void toastTone(Throwable e) {
@@ -611,13 +610,12 @@ public class Sound extends SoundConfig {
         toneLoop = null;
     }
 
-    public void startVolumePlayer(final MediaPlayer player) {
+    public void startIncPlayer(final MediaPlayer player, final Runnable loop) {
         SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(context);
         final int inc = Integer.parseInt(shared.getString(HourlyApplication.PREFERENCE_INCREASE_VOLUME, "0")) * 1000;
 
         if (inc == 0) {
-            player.setVolume(getVolume(), getVolume());
-            player.start();
+            startVolumePlayer(player, loop);
             return;
         }
 
@@ -652,7 +650,7 @@ public class Sound extends SoundConfig {
         };
         increaseVolume.run();
 
-        startPlayer(player);
+        startPlayer(player, loop);
     }
 
     public void timeToast(long time) {
@@ -757,8 +755,8 @@ public class Sound extends SoundConfig {
     }
 
     void playOnce(final MediaPlayer player, final Runnable done) { // done should be added by caller
-        playOncePrepare(player, done);
-        startVolumePlayer(player);
+        Runnable loop = playOncePrepare(player, done);
+        startIncPlayer(player, loop);
     }
 
     public void vibrate(String pattern) {
