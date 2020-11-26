@@ -58,9 +58,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     Handler handler = new Handler();
     OptimizationPreferenceCompat.SettingsReceiver receiver;
 
+    public static void showSystemVolumePopup(Context context, int streamType) {
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        try {
+            am.setStreamVolume(streamType, am.getStreamVolume(streamType), AudioManager.FLAG_SHOW_UI);
+        } catch (SecurityException e) {
+            Log.e(TAG, "setstreamvolume", e);
+        }
+    }
+
     public static void notificationPolicySettings(Context context) { // also need manifeset settings
         if (Build.VERSION.SDK_INT >= 23)
-            context.startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS), 0);
+            context.startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS));
     }
 
     public static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
@@ -114,12 +123,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public void onDisplayPreferenceDialog(Preference preference) {
         if (preference instanceof SeekBarPreference) {
             Sound.Channel c = sound.getSoundChannel();
-            AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
-            try {
-                am.setStreamVolume(c.streamType, am.getStreamVolume(c.streamType), AudioManager.FLAG_SHOW_UI);
-            } catch (SecurityException e) {
-                Log.e(TAG, "setstreamvolume", e);
-            }
+            showSystemVolumePopup(getContext(), c.streamType);
             SeekBarPreference.show(this, preference.getKey());
             return;
         }
