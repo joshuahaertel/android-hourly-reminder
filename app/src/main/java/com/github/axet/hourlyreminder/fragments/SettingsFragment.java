@@ -9,6 +9,7 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.preference.Preference;
@@ -19,6 +20,7 @@ import android.support.v7.preference.SwitchPreferenceCompat;
 import android.support.v7.widget.ContentFrameLayout;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +48,8 @@ import com.github.axet.hourlyreminder.widgets.TTSPreference;
 import java.util.Set;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
+    public static final String TAG = SettingsFragment.class.getSimpleName();
+
     public static final String[] PERMISSIONS = new String[]{Manifest.permission.READ_PHONE_STATE};
 
     public static final int RESULT_PHONE = 1;
@@ -53,6 +57,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     Sound sound;
     Handler handler = new Handler();
     OptimizationPreferenceCompat.SettingsReceiver receiver;
+
+    public static void notificationPolicySettings(Context context) { // also need manifeset settings
+        if (Build.VERSION.SDK_INT >= 23)
+            context.startActivity(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS), 0);
+    }
 
     public static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -106,7 +115,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         if (preference instanceof SeekBarPreference) {
             Sound.Channel c = sound.getSoundChannel();
             AudioManager am = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
-            am.setStreamVolume(c.streamType, am.getStreamVolume(c.streamType), AudioManager.FLAG_SHOW_UI);
+            try {
+                am.setStreamVolume(c.streamType, am.getStreamVolume(c.streamType), AudioManager.FLAG_SHOW_UI);
+            } catch (SecurityException e) {
+                Log.e(TAG, "setstreamvolume", e);
+            }
             SeekBarPreference.show(this, preference.getKey());
             return;
         }
