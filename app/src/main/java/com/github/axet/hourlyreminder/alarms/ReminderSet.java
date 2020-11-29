@@ -140,6 +140,12 @@ public class ReminderSet extends WeekSet {
     }
 
     @Override
+    public void setNext() {
+        super.setNext();
+        reload();
+    }
+
+    @Override
     public void load(JSONObject o) throws JSONException {
         super.load(o);
         this.weekdaysCheck = true; // force weekdays to true for reminders
