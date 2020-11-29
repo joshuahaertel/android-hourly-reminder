@@ -138,9 +138,9 @@ public class TTS extends Player {
                     cache.delete();
                 }
             }
+            Log.d(TAG, "speaking '" + speak.text + "' (" + speak.locale + ")");
+            super.playSpeech(speak, done);
         }
-        Log.d(TAG, "speaking '" + speak.text + "' (" + speak.locale + ")");
-        super.playSpeech(speak, done);
     }
 
     public boolean playCache(File cache, final Runnable done) {
@@ -273,7 +273,7 @@ public class TTS extends Player {
         else
             locale = getTTSLocale();
         if (locale == null)
-            return null;
+            locale = getUserLocale();
         return new Speak(locale, speakText(time, locale, DateFormat.is24HourFormat(context)));
     }
 }
