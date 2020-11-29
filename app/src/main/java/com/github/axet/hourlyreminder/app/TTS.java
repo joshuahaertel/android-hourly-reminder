@@ -127,20 +127,18 @@ public class TTS extends Player {
 
     public void playSpeech(final long time, final Runnable done) {
         Speak speak = seakText(time);
-        if (speak != null) {
-            File cache = cacheUri(context, speak.locale, speak.text);
-            if (cache.exists() && cache.length() > 0) {
-                Log.d(TAG, "playing cache '" + speak.text + "' from " + cache);
-                if (playCache(cache, done)) {
-                    cacheTouch(cache);
-                    return;
-                } else {
-                    cache.delete();
-                }
+        File cache = cacheUri(context, speak.locale, speak.text);
+        if (cache.exists() && cache.length() > 0) {
+            Log.d(TAG, "playing cache '" + speak.text + "' from " + cache);
+            if (playCache(cache, done)) {
+                cacheTouch(cache);
+                return;
+            } else {
+                cache.delete();
             }
-            Log.d(TAG, "speaking '" + speak.text + "' (" + speak.locale + ")");
-            super.playSpeech(speak, done);
         }
+        Log.d(TAG, "speaking '" + speak.text + "' (" + speak.locale + ")");
+        super.playSpeech(speak, done);
     }
 
     public boolean playCache(File cache, final Runnable done) {

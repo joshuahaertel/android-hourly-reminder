@@ -215,7 +215,6 @@ public class RemindersFragment extends WeekSetFragment implements DialogInterfac
     @Override
     public void setEnable(WeekSet a, boolean e) {
         super.setEnable(a, e);
-        ((ReminderSet) a).reload(); // update hours after enable / disable
     }
 
     void save(WeekSet a) {
