@@ -23,7 +23,7 @@ public class ReminderSet extends WeekSet {
 
     public Set<String> hours; // actual hours selected
     public List<Reminder> list; // generated reminders (depend on repeat)
-    public int repeat; // minutes
+    public int repeat; // minutes, negative means once per hour at specified time
     public long last; // last reminder announced, to prevent double announcements
 
     public static final Set<String> DEF_HOURS = new TreeSet<>(Arrays.asList(new String[]{"08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"}));
@@ -127,16 +127,22 @@ public class ReminderSet extends WeekSet {
             for (int m = prev.min; m < max; m += repeat) {
                 Reminder r = new Reminder(this, prev.hour, m);
                 r.enabled = true;
-                this.list.add(r);
+                list.add(r);
             }
-        } else { // negative means once per hour at specified time
+        } else {
             int min = -repeat;
             if (prev.min < min) {
                 Reminder r = new Reminder(this, prev.hour, min);
                 r.enabled = true;
-                this.list.add(r);
+                list.add(r);
             }
         }
+    }
+
+    @Override
+    public void setNext() {
+        super.setNext();
+        reload();
     }
 
     @Override
