@@ -41,6 +41,7 @@ public class Player extends TTS {
 
     MediaPlayer player;
     Runnable loop; // loop preventer
+    FadeVolume increaseVolume;
 
     public Player(Context context) {
         super(context);
@@ -126,6 +127,16 @@ public class Player extends TTS {
         startPlayer(player, loop);
     }
 
+    public void startPlayer(MediaPlayer player, Runnable loop, FadeVolume inc) {
+        if (inc != null) {
+            if (increaseVolume != null)
+                increaseVolume.stop();
+            increaseVolume = inc;
+            inc.run();
+        }
+        startPlayer(player, loop);
+    }
+
     public void startPlayer(MediaPlayer player, Runnable loop) {
         if (loop != null) {
             this.loop = loop;
@@ -144,6 +155,10 @@ public class Player extends TTS {
         if (loop != null) {
             handler.removeCallbacks(loop);
             loop = null;
+        }
+        if (increaseVolume != null) {
+            increaseVolume.stop();
+            increaseVolume = null;
         }
         if (player != null) {
             player.release();

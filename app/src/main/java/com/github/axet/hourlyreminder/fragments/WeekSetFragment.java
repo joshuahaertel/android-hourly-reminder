@@ -246,9 +246,8 @@ public abstract class WeekSetFragment extends Fragment implements SharedPreferen
                         WeekSetFragment.this.alarmRingtonePlay = h.alarmRingtonePlay;
                         return;
                     }
-                    if (s != Sound.Silenced.NONE) { // if not vibrating exit
+                    if (s != Sound.Silenced.NONE) // if not vibrating exit
                         return;
-                    }
 
                     WeekSetFragment.this.preview = true;
                     WeekSetFragment.this.alarmRingtonePlay = h.alarmRingtonePlay;

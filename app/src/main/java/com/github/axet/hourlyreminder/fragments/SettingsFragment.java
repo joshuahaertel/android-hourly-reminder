@@ -281,7 +281,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    SoundConfig.Silenced s = sound.playReminder(new ReminderSet(context), System.currentTimeMillis(), null);
+                    ReminderSet r = new ReminderSet(context);
+                    r.ringtone = true;
+                    SoundConfig.Silenced s = sound.playReminder(r, System.currentTimeMillis(), null);
                     sound.silencedToast(s, System.currentTimeMillis());
                 }
             });

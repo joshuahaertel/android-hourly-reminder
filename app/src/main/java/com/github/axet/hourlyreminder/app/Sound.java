@@ -42,7 +42,6 @@ public class Sound extends SoundConfig {
     Runnable toneLoop;
     AudioTrack track;
     FlashPreference.Flash flash;
-    FadeVolume increaseVolume;
     long[] vibrateTrack;
     Runnable vibrateEnd = new Runnable() {
         @Override
@@ -632,9 +631,7 @@ public class Sound extends SoundConfig {
         else
             startVolume = 0;
 
-        if (increaseVolume != null)
-            increaseVolume.stop();
-        increaseVolume = new FadeVolume(handler, inc) {
+        FadeVolume increaseVolume = new FadeVolume(handler, inc) {
             float rest = 1f - startVolume;
 
             @Override
@@ -648,9 +645,8 @@ public class Sound extends SoundConfig {
                 }
             }
         };
-        increaseVolume.run();
 
-        startPlayer(player, loop);
+        startPlayer(player, loop, increaseVolume);
     }
 
     public void timeToast(long time) {
@@ -804,14 +800,7 @@ public class Sound extends SoundConfig {
     @Override
     void playerCl() {
         super.playerCl();
-
-        if (increaseVolume != null) {
-            increaseVolume.stop();
-            increaseVolume = null;
-        }
-
         toneClose();
-
         beepClose();
     }
 
